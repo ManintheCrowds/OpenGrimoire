@@ -12,12 +12,28 @@ interface UseVisualizationDataOptions {
   realtime?: boolean;
 }
 
+const vizDebug =
+  typeof process !== 'undefined' &&
+  process.env.NODE_ENV === 'development' &&
+  process.env.NEXT_PUBLIC_DEBUG_VISUALIZATION === '1';
+
+function logViz(message: string, meta?: Record<string, unknown>) {
+  if (vizDebug) {
+    if (meta) console.log(message, meta);
+    else console.log(message);
+  }
+}
+
+function warnViz(message: string) {
+  if (vizDebug) console.warn(message);
+}
+
 // Fallback mock data
 const mockData: SurveyResponse[] = [
   {
     id: 'mock-1',
     attendee_id: 'mock-attendee-1',
-    years_at_medtronic: 5,
+    tenure_years: 5,
     learning_style: 'visual',
     shaped_by: 'mentor',
     peak_performance: 'Extrovert, Morning',
@@ -38,7 +54,7 @@ const mockData: SurveyResponse[] = [
   {
     id: 'mock-2',
     attendee_id: 'mock-attendee-2',
-    years_at_medtronic: 10,
+    tenure_years: 10,
     learning_style: 'auditory',
     shaped_by: 'challenge',
     peak_performance: 'Introvert, Morning',
@@ -59,7 +75,7 @@ const mockData: SurveyResponse[] = [
   {
     id: 'mock-3',
     attendee_id: 'mock-attendee-3',
-    years_at_medtronic: 15,
+    tenure_years: 15,
     learning_style: 'kinesthetic',
     shaped_by: 'success',
     peak_performance: 'Ambivert, Morning',
@@ -91,7 +107,7 @@ export function useVisualizationData({ realtime = true }: UseVisualizationDataOp
   
   useEffect(() => {
     if (prevDataLength.current !== data.length || prevIsLoading.current !== isLoading) {
-      console.log('📊 useVisualizationData state changed:', {
+      logViz('📊 useVisualizationData state changed', {
         dataLength: data.length,
         isLoading,
         error,
@@ -105,7 +121,7 @@ export function useVisualizationData({ realtime = true }: UseVisualizationDataOp
   // Validate survey response data
   const validateResponse = (response: any): response is SurveyResponse => {
     if (!response) return false;
-    if (typeof response.years_at_medtronic !== 'number' || response.years_at_medtronic < 0) return false;
+    if (typeof response.tenure_years !== 'number' || response.tenure_years < 0) return false;
     if (!response.learning_style || typeof response.learning_style !== 'string') return false;
     if (!response.shaped_by || typeof response.shaped_by !== 'string') return false;
     if (!response.peak_performance || typeof response.peak_performance !== 'string') return false;
@@ -155,30 +171,31 @@ export function useVisualizationData({ realtime = true }: UseVisualizationDataOp
                 return acc;
               }, []);
 
-            console.log('✅ Loaded real data:', {
+            logViz('✅ Loaded real data', {
               totalResponses: responses.length,
-              validResponses: validResponses.length,
-              sampleData: validResponses.slice(0, 2)
+              validResponses: validResponses.length
             });
             setData(validResponses);
             setIsMockData(false);
           } else {
-            console.warn('⚠️ No data available, using mock data');
+            warnViz('⚠️ No data available, using mock data');
             setData(mockData);
             setIsMockData(true);
           }
           setError(null);
         }
       } catch (err) {
-        console.error('❌ Error fetching data:', err);
+        const msg = err instanceof Error ? err.message : 'Failed to fetch data';
+        if (vizDebug) console.error('❌ Error fetching data:', err);
+        else console.error('❌ Error fetching data:', msg);
         if (mounted) {
           if (isRetry && retryCount < MAX_RETRIES) {
             retryCount++;
-            console.log(`🔄 Retrying data fetch (${retryCount}/${MAX_RETRIES}) in ${1000 * retryCount}ms`);
+            logViz(`🔄 Retrying data fetch (${retryCount}/${MAX_RETRIES}) in ${1000 * retryCount}ms`);
             setTimeout(() => fetchData(true), 1000 * retryCount);
           } else {
             setError(err instanceof Error ? err.message : 'Failed to fetch data');
-            console.log('🔄 Fallback to mock data due to error');
+            logViz('🔄 Fallback to mock data due to error');
             setData(mockData);
             setIsMockData(true);
           }
@@ -236,14 +253,16 @@ export function useVisualizationData({ realtime = true }: UseVisualizationDataOp
                 setData((currentData) => currentData.filter((item) => item.id !== payload.old.id));
               }
             } catch (err) {
-              console.error('Error processing realtime update:', err);
-              setError(err instanceof Error ? err.message : 'Failed to process update');
+              const rmsg = err instanceof Error ? err.message : 'Failed to process update';
+              if (vizDebug) console.error('Error processing realtime update:', err);
+              else console.error('Error processing realtime update:', rmsg);
+              setError(rmsg);
             }
           }
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            console.log('Successfully subscribed to realtime updates');
+            logViz('Successfully subscribed to realtime updates');
           } else {
             console.error('Failed to subscribe to realtime updates');
             setError('Realtime connection failed');

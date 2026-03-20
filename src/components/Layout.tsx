@@ -18,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-between items-center h-16 w-full px-4 sm:px-6 lg:px-8 max-w-none">
             <div className="flex">
               <Link href="/" className="flex items-center">
-                <span className="text-xl font-bold text-gray-900">WE Summit</span>
+                <span className="text-xl font-bold text-gray-900">Event Visualization Platform</span>
               </Link>
             </div>
             <div className="flex items-center">
@@ -26,6 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Link
                   href="/admin"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  data-testid="nav-link-admin"
                 >
                   Admin Panel
                 </Link>
@@ -44,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <footer className="bg-white w-full">
         <div className="py-4 w-full px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} Medtronic WE Summit. All rights reserved.
+            © {new Date().getFullYear()} Event Visualization Platform
           </p>
         </div>
       </footer>

@@ -1,19 +1,21 @@
 import json
 import random
+import sys
 from datetime import datetime, timedelta
 import os
 import uuid
 from supabase import create_client
 
-# Set environment variables directly
-os.environ['NEXT_PUBLIC_SUPABASE_URL'] = 'https://hdnyomaryleszrjbuprt.supabase.co'
-os.environ['NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'] = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkbnlvbWFyeWxlc3pyamJ1cHJ0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzE2OTc2OSwiZXhwIjoyMDYyNzQ1NzY5fQ.fhsW-nV_8X0w7kKpuKLsvR9GpKAaW0_r1SVPgDkhzX4'
+# Credentials must come from the environment (never commit secrets).
+_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+_key = os.getenv("NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY")
+if not _url or not _key:
+    sys.exit(
+        "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY "
+        "before running this script."
+    )
 
-# Initialize Supabase client
-supabase = create_client(
-    os.getenv('NEXT_PUBLIC_SUPABASE_URL'),
-    os.getenv('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY')
-)
+supabase = create_client(_url, _key)
 
 locations = [
     'minneapolis', 'galway', 'dublin', 'shanghai', 'tokyo', 'singapore',
@@ -67,7 +69,7 @@ unique_qualities = [
     "Despite my long tenure, I maintain a beginner's mindset that allows me to constantly question assumptions and find innovative approaches to longstanding challenges.",
     "My experience as a competitive athlete taught me how to rapidly adapt to changing circumstances and thrive under pressure, skills I bring to every project.",
     "I have a rare combination of technical expertise and communication skills that allows me to translate complex regulatory requirements into actionable engineering guidelines.",
-    "Having been a patient who used a Medtronic device before joining the company, I bring genuine empathy and firsthand experience to our patient-centered design discussions.",
+    "Having been a patient who used a medical device before joining the organization, I bring genuine empathy and firsthand experience to patient-centered design discussions.",
     "I excel at seeing connections between seemingly unrelated fields, which has led to several cross-functional innovations that merged technologies from different business units.",
     "My dual background in materials science and medicine gives me unique insights when troubleshooting biocompatibility issues in product development.",
     "I've developed a talent for spotting hidden talent in teams and creating opportunities for people to shine in ways they didn't know they could.",
@@ -94,13 +96,13 @@ def generate_fake_attendees():
 
 def generate_mock_data(attendee_ids):
     base_date = datetime(2025, 7, 8, 9, 0)
-    medtronic_data = []
+    survey_data = []
 
     for i, attendee_id in enumerate(attendee_ids):
         entry = {
             "id": str(uuid.uuid4()),
             "attendee_id": attendee_id,
-            "years_at_medtronic": random.randint(0, 24),
+            "tenure_years": random.randint(0, 24),
             "learning_style": random.choice(learning_styles),
             "shaped_by": random.choice(shaped_by_options),
             "peak_performance": random.choice(peak_performance_options),
@@ -111,9 +113,9 @@ def generate_mock_data(attendee_ids):
             "created_at": (base_date + timedelta(minutes=3 * i)).isoformat() + "Z",
             "updated_at": datetime.now().isoformat() + "Z"
         }
-        medtronic_data.append(entry)
+        survey_data.append(entry)
 
-    return {"medtronic_data": medtronic_data}
+    return {"survey_data": survey_data}
 
 # Generate and insert fake attendees
 attendees = generate_fake_attendees()
@@ -128,7 +130,7 @@ print("Fake attendees have been inserted into Supabase!")
 # Generate and insert survey responses
 mock_data = generate_mock_data(attendee_ids)
 
-for entry in mock_data["medtronic_data"]:
+for entry in mock_data["survey_data"]:
     supabase.table('survey_responses').insert(entry).execute()
 
 print("Mock survey responses have been injected into Supabase!")

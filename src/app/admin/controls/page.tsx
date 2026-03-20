@@ -120,7 +120,7 @@ export default function GlobalControlsPage() {
 
   // Category labels for display
   const categoryLabels: { [key: string]: string } = {
-    years_at_medtronic: 'Years at Medtronic',
+    tenure_years: 'Tenure (years)',
     peak_performance: 'Peak Performance',
     learning_style: 'Learning Style',
     motivation: 'Motivation',
@@ -134,14 +134,15 @@ export default function GlobalControlsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <img
-                src="/branding/art-logo-all/art-logo-k/art-logo-en-rgb-k.svg"
-                alt="Medtronic"
-                className="h-8 w-auto"
-              />
+              <div
+                className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-white font-bold text-sm shrink-0"
+                aria-hidden
+              >
+                OA
+              </div>
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  WE Summit
+                  OpenAtlas
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Global Visualization Controls

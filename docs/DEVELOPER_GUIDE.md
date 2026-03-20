@@ -33,7 +33,7 @@
    ```bash
    # Clone and install
    git clone <repository-url>
-   cd medtronic-we-summit
+   cd OpenAtlas
    npm install
    
    # Copy environment template
@@ -49,6 +49,8 @@
    - **Database Tools**: Supabase Studio, pgAdmin
 
 ### Environment Configuration
+
+Never commit `.env.local`. Placeholders only below — copy real values from the Supabase dashboard.
 
 ```env
 # .env.local
@@ -854,6 +856,8 @@ module.exports = {
 
 ## Security Best Practices
 
+**Public surface / env:** See [docs/security/PUBLIC_SURFACE_AUDIT.md](../security/PUBLIC_SURFACE_AUDIT.md) and [docs/security/NEXT_PUBLIC_AND_SECRETS.md](../security/NEXT_PUBLIC_AND_SECRETS.md) before adding `NEXT_PUBLIC_*` variables or logging survey-related data.
+
 ### Input Validation
 
 ```typescript
@@ -863,7 +867,7 @@ import { z } from 'zod';
 const surveySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email format'),
-  yearsAtMedtronic: z.number().min(0).max(50),
+  tenureYears: z.number().min(0).max(50),
   learningStyle: z.enum(['visual', 'auditory', 'kinesthetic'])
 });
 
@@ -1112,4 +1116,4 @@ const color = getNodeColor(
 3. Update type definitions in `types/survey.ts`
 4. Ensure all visualizations use `getNodeColor()` for consistency
 
-This developer guide provides a comprehensive foundation for working with the Medtronic WE Summit visualization platform. Follow these patterns and practices to maintain code quality and consistency across the project. 
+This developer guide provides a comprehensive foundation for working with the OpenAtlas (Agent Context Atlas) visualization stack. Follow these patterns and practices to maintain code quality and consistency across the project. 

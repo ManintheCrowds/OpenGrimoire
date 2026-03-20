@@ -17,31 +17,31 @@ import {
 
 // Mock data for testing
 const mockData = [
-  { years_at_medtronic: 10, learning_style: 'kinesthetic', shaped_by: 'mentor', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
-  { years_at_medtronic: 0, learning_style: 'reading_writing', shaped_by: 'other', peak_performance: 'Introvert, Morning', motivation: 'autonomy' },
-  { years_at_medtronic: 6, learning_style: 'auditory', shaped_by: 'other', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
-  { years_at_medtronic: 22, learning_style: 'kinesthetic', shaped_by: 'mentor', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
-  { years_at_medtronic: 19, learning_style: 'auditory', shaped_by: 'mentor', peak_performance: 'Introvert, Evening', motivation: 'recognition' },
-  { years_at_medtronic: 15, learning_style: 'visual', shaped_by: 'mentor', peak_performance: 'Ambivert, Morning', motivation: 'impact' },
-  { years_at_medtronic: 24, learning_style: 'reading_writing', shaped_by: 'mentor', peak_performance: 'Introvert, Morning', motivation: 'impact' },
-  { years_at_medtronic: 14, learning_style: 'auditory', shaped_by: 'failure', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
-  { years_at_medtronic: 5, learning_style: 'auditory', shaped_by: 'other', peak_performance: 'Introvert, Night', motivation: 'purpose' },
-  { years_at_medtronic: 15, learning_style: 'visual', shaped_by: 'other', peak_performance: 'Ambivert, Night', motivation: 'purpose' },
-  { years_at_medtronic: 24, learning_style: 'visual', shaped_by: 'failure', peak_performance: 'Extrovert, Morning', motivation: 'recognition' },
-  { years_at_medtronic: 8, learning_style: 'auditory', shaped_by: 'failure', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
-  { years_at_medtronic: 13, learning_style: 'reading_writing', shaped_by: 'other', peak_performance: 'Introvert, Morning', motivation: 'autonomy' },
-  { years_at_medtronic: 4, learning_style: 'kinesthetic', shaped_by: 'other', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
-  { years_at_medtronic: 18, learning_style: 'visual', shaped_by: 'challenge', peak_performance: 'Introvert, Evening', motivation: 'growth' },
-  { years_at_medtronic: 7, learning_style: 'reading_writing', shaped_by: 'success', peak_performance: 'Ambivert, Morning', motivation: 'impact' },
-  { years_at_medtronic: 12, learning_style: 'kinesthetic', shaped_by: 'team', peak_performance: 'Extrovert, Evening', motivation: 'recognition' },
-  { years_at_medtronic: 3, learning_style: 'auditory', shaped_by: 'mentor', peak_performance: 'Introvert, Night', motivation: 'purpose' },
-  { years_at_medtronic: 20, learning_style: 'visual', shaped_by: 'challenge', peak_performance: 'Extrovert, Morning', motivation: 'growth' },
-  { years_at_medtronic: 9, learning_style: 'reading_writing', shaped_by: 'failure', peak_performance: 'Ambivert, Night', motivation: 'autonomy' },
+  { tenure_years: 10, learning_style: 'kinesthetic', shaped_by: 'mentor', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
+  { tenure_years: 0, learning_style: 'reading_writing', shaped_by: 'other', peak_performance: 'Introvert, Morning', motivation: 'autonomy' },
+  { tenure_years: 6, learning_style: 'auditory', shaped_by: 'other', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
+  { tenure_years: 22, learning_style: 'kinesthetic', shaped_by: 'mentor', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
+  { tenure_years: 19, learning_style: 'auditory', shaped_by: 'mentor', peak_performance: 'Introvert, Evening', motivation: 'recognition' },
+  { tenure_years: 15, learning_style: 'visual', shaped_by: 'mentor', peak_performance: 'Ambivert, Morning', motivation: 'impact' },
+  { tenure_years: 24, learning_style: 'reading_writing', shaped_by: 'mentor', peak_performance: 'Introvert, Morning', motivation: 'impact' },
+  { tenure_years: 14, learning_style: 'auditory', shaped_by: 'failure', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
+  { tenure_years: 5, learning_style: 'auditory', shaped_by: 'other', peak_performance: 'Introvert, Night', motivation: 'purpose' },
+  { tenure_years: 15, learning_style: 'visual', shaped_by: 'other', peak_performance: 'Ambivert, Night', motivation: 'purpose' },
+  { tenure_years: 24, learning_style: 'visual', shaped_by: 'failure', peak_performance: 'Extrovert, Morning', motivation: 'recognition' },
+  { tenure_years: 8, learning_style: 'auditory', shaped_by: 'failure', peak_performance: 'Extrovert, Evening', motivation: 'autonomy' },
+  { tenure_years: 13, learning_style: 'reading_writing', shaped_by: 'other', peak_performance: 'Introvert, Morning', motivation: 'autonomy' },
+  { tenure_years: 4, learning_style: 'kinesthetic', shaped_by: 'other', peak_performance: 'Extrovert, Morning', motivation: 'autonomy' },
+  { tenure_years: 18, learning_style: 'visual', shaped_by: 'challenge', peak_performance: 'Introvert, Evening', motivation: 'growth' },
+  { tenure_years: 7, learning_style: 'reading_writing', shaped_by: 'success', peak_performance: 'Ambivert, Morning', motivation: 'impact' },
+  { tenure_years: 12, learning_style: 'kinesthetic', shaped_by: 'team', peak_performance: 'Extrovert, Evening', motivation: 'recognition' },
+  { tenure_years: 3, learning_style: 'auditory', shaped_by: 'mentor', peak_performance: 'Introvert, Night', motivation: 'purpose' },
+  { tenure_years: 20, learning_style: 'visual', shaped_by: 'challenge', peak_performance: 'Extrovert, Morning', motivation: 'growth' },
+  { tenure_years: 9, learning_style: 'reading_writing', shaped_by: 'failure', peak_performance: 'Ambivert, Night', motivation: 'autonomy' },
 ];
 
 function TestChordDiagram() {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [currentSource, setCurrentSource] = useState('years_at_medtronic');
+  const [currentSource, setCurrentSource] = useState('tenure_years');
   const [currentTarget, setCurrentTarget] = useState('learning_style');
   const [rotationAngle, setRotationAngle] = useState(0);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; content: React.ReactNode } | null>(null);
@@ -276,7 +276,7 @@ function TestChordDiagram() {
                     }}
                     className="custom-select"
                   >
-                    <option value="years_at_medtronic">Years at Medtronic</option>
+                    <option value="tenure_years">Tenure (years)</option>
                     <option value="learning_style">Learning Style</option>
                     <option value="shaped_by">Shaped By</option>
                     <option value="peak_performance">Peak Performance</option>
@@ -312,7 +312,7 @@ function TestChordDiagram() {
                     }}
                     className="custom-select"
                   >
-                    <option value="years_at_medtronic">Years at Medtronic</option>
+                    <option value="tenure_years">Tenure (years)</option>
                     <option value="learning_style">Learning Style</option>
                     <option value="shaped_by">Shaped By</option>
                     <option value="peak_performance">Peak Performance</option>

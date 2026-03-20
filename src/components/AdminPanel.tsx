@@ -46,7 +46,7 @@ const ALL_CATEGORIES = {
     'autonomy',
     'purpose'
   ],
-  'Years at Medtronic': [
+  'Tenure (years)': [
     '0-5',
     '6-10',
     '11-15',
@@ -254,7 +254,7 @@ export function AdminPanel() {
               </button>
             </div>
             <div className="mt-2 text-xs text-gray-500">
-              Example: "team", "success", "Extrovert, Evening"
+              Example: &quot;team&quot;, &quot;success&quot;, &quot;Extrovert, Evening&quot;
             </div>
           </div>
 

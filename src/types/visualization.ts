@@ -13,7 +13,7 @@ export interface NodeData {
     last_name: string | null;
     is_anonymous: boolean;
   };
-  years_at_medtronic: number;
+  tenure_years: number;
   yearsCategory: YearsCategory;
   learning_style: Database['public']['Tables']['survey_responses']['Row']['learning_style'];
   shaped_by: Database['public']['Tables']['survey_responses']['Row']['shaped_by'];

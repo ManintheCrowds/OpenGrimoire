@@ -60,7 +60,7 @@ const uniqueQualities = [
   "Despite my long tenure, I maintain a beginner's mindset that allows me to constantly question assumptions and find innovative approaches to longstanding challenges.",
   "My experience as a competitive athlete taught me how to rapidly adapt to changing circumstances and thrive under pressure, skills I bring to every project.",
   "I have a rare combination of technical expertise and communication skills that allows me to translate complex regulatory requirements into actionable engineering guidelines.",
-  "Having been a patient who used a Medtronic device before joining the company, I bring genuine empathy and firsthand experience to our patient-centered design discussions.",
+  "Having been a patient who used a medical device before joining the organization, I bring genuine empathy and firsthand experience to patient-centered design discussions.",
   "I excel at seeing connections between seemingly unrelated fields, which has led to several cross-functional innovations that merged technologies from different business units.",
   "My dual background in materials science and medicine gives me unique insights when troubleshooting biocompatibility issues in product development.",
   "I've developed a talent for spotting hidden talent in teams and creating opportunities for people to shine in ways they didn't know they could.",
@@ -71,13 +71,13 @@ const uniqueQualities = [
 ];
 
 function generateMockData(): SurveyData {
-  const medtronic_data = Array.from({ length: 300 }, (_, index) => {
+  const survey_data = Array.from({ length: 300 }, (_, index) => {
     const id = `user_${String(index + 1).padStart(3, '0')}`;
     const timestamp = new Date(2025, 6, 8, 9 + Math.floor(index / 20), (index % 20) * 3).toISOString();
     const location = locations[Math.floor(Math.random() * locations.length)];
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const isAnonymous = Math.random() < 0.1; // 10% chance of being anonymous
-    const yearsAtMedtronic = Math.floor(Math.random() * 25); // 0-24 years
+    const tenureYears = Math.floor(Math.random() * 25); // 0-24 years
 
     return {
       id,
@@ -87,7 +87,7 @@ function generateMockData(): SurveyData {
       is_anonymous: isAnonymous,
       location,
       responses: {
-        years_at_medtronic: yearsAtMedtronic,
+        tenure_years: tenureYears,
         learning_style: learningStyles[Math.floor(Math.random() * learningStyles.length)],
         shaped_by: shapedByOptions[Math.floor(Math.random() * shapedByOptions.length)],
         peak_performance: peakPerformanceOptions[Math.floor(Math.random() * peakPerformanceOptions.length)],
@@ -97,7 +97,7 @@ function generateMockData(): SurveyData {
     };
   });
 
-  return { medtronic_data };
+  return { survey_data };
 }
 
 // Generate and export the mock data

@@ -42,12 +42,15 @@ export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeSte
         <input
           type="text"
           id="first_name"
+          data-testid="name-input"
           value={formData.first_name}
           onChange={(e) => updateFormData({ first_name: e.target.value })}
           className="form-input"
+          aria-invalid={!!errors.first_name}
+          aria-describedby={errors.first_name ? 'first_name_error' : undefined}
         />
         {errors.first_name && (
-          <p className="mt-1 text-sm text-[var(--medtronic-error)]">{errors.first_name}</p>
+          <p id="first_name_error" className="mt-1 text-sm text-[var(--brand-error)]" role="alert">{errors.first_name}</p>
         )}
       </div>
 
@@ -77,11 +80,12 @@ export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeSte
         <input
           type="email"
           id="email"
+          data-testid="email-input"
           value={formData.email || ''}
           onChange={(e) => updateFormData({ email: e.target.value })}
           disabled={formData.is_anonymous}
           placeholder="Email (optional)"
-          className="form-input disabled:bg-[var(--medtronic-atmospheric-white)] placeholder-gray-400"
+          className="form-input disabled:bg-[var(--atlas-surface-muted)] placeholder-gray-400"
         />
       </div>
 
@@ -89,13 +93,14 @@ export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeSte
         <input
           type="checkbox"
           id="is_anonymous"
+          data-testid="anonymous-checkbox"
           checked={formData.is_anonymous}
           onChange={(e) => updateFormData({ is_anonymous: e.target.checked })}
-          className="h-4 w-4 rounded border-[var(--medtronic-secondary-text)] text-[var(--medtronic-electric-blue)] focus:ring-[var(--medtronic-electric-blue)]"
+          className="h-4 w-4 rounded border-[var(--brand-secondary-text)] text-[var(--brand-electric-blue)] focus:ring-[var(--brand-electric-blue)]"
         />
         <label
           htmlFor="is_anonymous"
-          className="ml-2 block text-sm text-[var(--medtronic-body-text)]"
+          className="ml-2 block text-sm text-[var(--brand-body-text)]"
         >
           Submit anonymously
         </label>
@@ -105,6 +110,7 @@ export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeSte
         <button
           type="submit"
           className="btn btn-primary"
+          data-testid="next-button"
         >
           Next
         </button>

@@ -58,9 +58,9 @@ export function MotivationStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
+      <div aria-invalid={!!error} aria-describedby={error ? 'motivation_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What motivates you most in your work at Medtronic?
+          What motivates you most in your work here?
         </label>
         <div className="grid grid-cols-1 gap-4">
           {motivationTypes.map((type) => (
@@ -85,7 +85,7 @@ export function MotivationStep({
             </button>
           ))}
         </div>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p id="motivation_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between">
@@ -93,12 +93,14 @@ export function MotivationStep({
           type="button"
           onClick={prevStep}
           className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          data-testid="prev-button"
         >
           Previous
         </button>
         <button
           type="submit"
           className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          data-testid="next-button"
         >
           Next
         </button>

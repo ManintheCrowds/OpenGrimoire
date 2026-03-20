@@ -3,6 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import AlluvialDiagram from './AlluvialDiagram';
 import ChordDiagram from './ChordDiagram';
 import { EnhancedVisualizationHeader } from './shared/EnhancedVisualizationHeader';
+import {
+  OPENATLAS_VIZ_MAIN_PANEL_ID,
+  OPENATLAS_VIZ_TAB_ALLUVIAL_ID,
+  OPENATLAS_VIZ_TAB_CHORD_ID,
+} from './shared/vizLayoutIds';
 import { useAppContext } from '@/lib/context/AppContext';
 
 type VisualizationType = 'alluvial' | 'chord';
@@ -74,27 +79,41 @@ export function DataVisualization() {
         onVisualizationTypeChange={setVisualizationType}
         isAutoPlay={settings.isAutoPlayEnabled}
         onAutoPlayToggle={toggleAutoPlay}
+        usageHint="Choose Alluvial or Chord layout; Play/Pause controls timed demo. Center shows approved participant quotes when available."
       />
 
       {/* Visualization Content - Scales to fill remaining space */}
-      <div 
-        className="flex-1 w-full h-full flex flex-col pb-4"
-        style={{ minHeight: 0 }}
-      >
-        {visualizationType === 'alluvial' ? (
-          <AlluvialDiagram 
-            width={visualizationWidth}
-            height={visualizationHeight}
-            autoPlay={settings.isAutoPlayEnabled}
-          />
-        ) : (
-          <ChordDiagram 
-            width={visualizationWidth}
-            height={visualizationHeight}
-            autoPlay={settings.isAutoPlayEnabled}
-            enableRotation={true}
-          />
-        )}
+      <div className="flex h-full w-full min-h-0 flex-1 flex-col pb-4">
+        <div
+          id={OPENATLAS_VIZ_MAIN_PANEL_ID}
+          role="tabpanel"
+          aria-labelledby={
+            visualizationType === 'alluvial'
+              ? OPENATLAS_VIZ_TAB_ALLUVIAL_ID
+              : OPENATLAS_VIZ_TAB_CHORD_ID
+          }
+          className="min-h-0 flex-1"
+          data-region="openatlas-viz-canvas"
+        >
+          {visualizationType === 'alluvial' ? (
+            <div data-testid="alluvial-diagram">
+              <AlluvialDiagram
+                width={visualizationWidth}
+                height={visualizationHeight}
+                autoPlay={settings.isAutoPlayEnabled}
+              />
+            </div>
+          ) : (
+            <div data-testid="chord-diagram">
+              <ChordDiagram
+                width={visualizationWidth}
+                height={visualizationHeight}
+                autoPlay={settings.isAutoPlayEnabled}
+                enableRotation={true}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Debug info - Disabled for production */}
         {false && (

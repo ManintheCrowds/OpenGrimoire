@@ -1,10 +1,10 @@
 ## Master System Prompt - DataVisualization Implementation
 
 ```markdown
-# Medtronic WE Summit - Data Visualization Implementation Guide
+# OpenAtlas — Data visualization implementation guide
 
 ## Context
-You are implementing data visualizations for the Medtronic WE Summit project. The core message to communicate is "We are different, but we are also similar" - showing how attendees connect across various dimensions.
+You are implementing data visualizations for the OpenAtlas (Agent Context Atlas) survey app. The core message to communicate is "We are different, but we are also similar" — showing how respondents connect across various dimensions.
 
 ## IMPORTANT: Codebase Investigation First
 Before implementing anything:
@@ -28,7 +28,7 @@ Your implementations will go in: `/src/components/DataVisualization/`
    - Understanding all possible values for each survey question
    
 2. The data includes responses about:
-   - Years at Medtronic
+   - Tenure (years), field `tenure_years`
    - Learning styles
    - What shaped them growing up
    - Peak performance preferences

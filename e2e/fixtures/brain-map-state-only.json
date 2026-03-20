@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "fixture-state-node",
+      "group": "memory",
+      "accessCount": 2,
+      "path": ".cursor/state/handoff_fixture.md",
+      "layer": "state"
+    }
+  ],
+  "edges": [],
+  "generated": "2026-03-19T00:00:00.000Z",
+  "sessionCount": 1
+}

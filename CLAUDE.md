@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Medtronic WE Summit Interactive Data Visualization project - a Next.js application that collects attendee survey responses and displays them in real-time visualizations for the "WE: Include, Inspire, Innovate" conference. The system features a mobile survey interface, real-time data visualization, and an admin panel for content moderation.
+**OpenAtlas / Agent Context Atlas** (repo folder `OpenAtlas` under portfolio-harness): a Next.js app that collects survey responses and renders real-time visualizations (chord, alluvial, constellation, etc.), with an admin panel for moderation. Product copy and branding target OpenAtlas, not a specific client event. The Git remote may still use the `Med-Vis` slug until the GitHub repo is renamed.
 
 ## Development Commands
 
@@ -18,7 +18,7 @@ This is the Medtronic WE Summit Interactive Data Visualization project - a Next.
 ### Tech Stack
 - **Frontend**: Next.js 14 (App Router) + React 18 + TypeScript
 - **Database**: Supabase (PostgreSQL with real-time subscriptions)
-- **Styling**: Tailwind CSS + custom Medtronic branding
+- **Styling**: Tailwind CSS + OpenAtlas (“atlas”) theme tokens
 - **Visualization**: D3.js for 2D charts, Three.js for 3D constellation views
 - **State Management**: React Context + Zustand stores
 - **Authentication**: Supabase Auth
@@ -70,7 +70,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ## Key Features to Understand
 
 ### Survey Questions Structure
-1. **Years at Medtronic** (determines visual string color) - Integer ranges (<3, 3-5, 5-10, 10-20, 20+)
+1. **Tenure (years)** (`tenure_years`, determines visual string color) — banded ranges (e.g. 0–5, 6–10, …)
 2. **Learning Style** - Visual, Auditory, Reading/Writing, Kinesthetic, Interactive/Collaborative
 3. **Shaped By** - Family, Community, Religion, Education, Sports/Arts, Challenges, Travel/Culture
 4. **Peak Performance** - Personality type × time preference (Introvert/Extrovert/Ambivert + Morning/Evening)
@@ -79,7 +79,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Visualization Concepts
 - **Connected Constellations**: Nodes represent attendees, connections show shared responses
-- **Color Coding**: Based on years at Medtronic (Q1)
+- **Color Coding**: Based on tenure band (`tenure_years`)
 - **Dynamic Filtering**: Can highlight different question dimensions
 - **Real-time Updates**: New submissions appear with animations
 
@@ -91,10 +91,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## Project Constraints
 
-- **Event Context**: Built for specific July 2025 Medtronic WE Summit conference
-- **Attendee Scale**: Designed for ~600 attendees over 2 days
-- **Display Requirements**: Must work on LED wall (16:9 ratio) and ballroom presentations
-- **Branding**: Follows Medtronic brand guidelines (see `/public/branding/` and `/src/branding/`)
+- **Deployment context**: Suitable for conference / wall displays (16:9) or general web; tune copy and scale per event
+- **Attendee scale**: Stress-test with mock generators as needed
+- **Branding**: OpenAtlas assets and tokens under `/public/branding/` and theme config
 - **Accessibility**: Mobile-first design for survey completion via QR codes
 
 ## Testing Data

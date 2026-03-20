@@ -33,7 +33,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'autonomy': '#fd79a8',
   'purpose': '#00cec9',
   
-  // Years at Medtronic
+  // Tenure (years) bands
   '0-5': '#74b9ff',
   '6-10': '#55a3ff',
   '11-15': '#3498db',

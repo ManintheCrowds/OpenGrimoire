@@ -15,7 +15,7 @@ type AppSurveyResponse = {
   id: string;
   created_at: string;
   name: string;
-  years_at_medtronic: string;
+  tenure_years: string;
   learning_style: LearningStyle;
   shaped_by: ShapedBy;
   peak_performance: PeakPerformanceType;
@@ -29,7 +29,7 @@ type JsonSurveyResponse = {
   first_name: string;
   location: string;
   responses: {
-    years_at_medtronic: number;
+    tenure_years: number;
     learning_style: string;
     shaped_by: string;
     peak_performance: string;
@@ -39,7 +39,7 @@ type JsonSurveyResponse = {
 };
 
 type JsonData = {
-  medtronic_data: JsonSurveyResponse[];
+  survey_data: JsonSurveyResponse[];
 };
 
 // Helper function to generate a last name based on first name and location
@@ -99,17 +99,12 @@ const normalizeShapedBy = (shaped: string): ShapedBy => {
 
 // Helper function to normalize peak performance
 const normalizePeakPerformance = (peak: string): PeakPerformanceType => {
-  const normalized = peak.toLowerCase().replace(/[^a-z]/g, '_');
-  switch (normalized) {
-    case 'individual':
-    case 'team':
-    case 'leadership':
-    case 'innovation':
-    case 'crisis':
-      return normalized as PeakPerformanceType;
-    default:
-      return 'team';
-  }
+  const valid: PeakPerformanceType[] = [
+    'Extrovert, Morning', 'Extrovert, Evening', 'Introvert, Morning',
+    'Introvert, Night', 'Ambivert, Morning', 'Ambivert, Night'
+  ];
+  const match = valid.find(v => v.toLowerCase().includes(peak.toLowerCase().slice(0, 4)));
+  return match ?? 'Extrovert, Morning';
 };
 
 // Helper function to normalize motivation
@@ -129,7 +124,7 @@ const normalizeMotivation = (motivation: string): MotivationType => {
 
 // Convert JSON format to application format
 export const convertJsonToAppResponse = (jsonData: JsonData): AppSurveyResponse[] => {
-  return jsonData.medtronic_data.map((item) => {
+  return jsonData.survey_data.map((item) => {
     const isAnonymous = shouldBeAnonymous(item.first_name, item.location);
     const lastName = isAnonymous ? null : generateLastName(item.first_name, item.location);
     const fullName = isAnonymous ? 'Anonymous' : `${item.first_name} ${lastName}`;
@@ -138,7 +133,7 @@ export const convertJsonToAppResponse = (jsonData: JsonData): AppSurveyResponse[
       id: item.id,
       created_at: item.timestamp,
       name: fullName,
-      years_at_medtronic: item.responses.years_at_medtronic.toString(),
+      tenure_years: item.responses.tenure_years.toString(),
       learning_style: normalizeLearningStyle(item.responses.learning_style),
       shaped_by: normalizeShapedBy(item.responses.shaped_by),
       peak_performance: normalizePeakPerformance(item.responses.peak_performance),
@@ -164,7 +159,7 @@ export const convertAppToDBResponse = (appResponse: AppSurveyResponse): DBSurvey
       last_name: isAnonymous ? null : lastName,
       is_anonymous: isAnonymous,
     },
-    years_at_medtronic: parseInt(appResponse.years_at_medtronic),
+    tenure_years: parseInt(appResponse.tenure_years),
     learning_style: appResponse.learning_style,
     shaped_by: appResponse.shaped_by,
     peak_performance: appResponse.peak_performance,
@@ -184,12 +179,12 @@ export const loadSurveyData = async (): Promise<AppSurveyResponse[]> => {
     }
     
     // Fallback to TypeScript data if JSON loading fails
-    const { mockSurveyResponses } = await import('@/data/mockSurveyResponses');
+    const { mockSurveyResponses } = await import('@/data/generateMockData');
     return mockSurveyResponses.map((dbResponse) => ({
       id: dbResponse.id,
       created_at: dbResponse.created_at,
       name: dbResponse.attendee.is_anonymous ? 'Anonymous' : `${dbResponse.attendee.first_name} ${dbResponse.attendee.last_name || ''}`,
-      years_at_medtronic: dbResponse.years_at_medtronic?.toString() || '0',
+      tenure_years: dbResponse.tenure_years?.toString() || '0',
       learning_style: dbResponse.learning_style || 'visual',
       shaped_by: dbResponse.shaped_by || 'other',
       peak_performance: dbResponse.peak_performance || 'team',
@@ -199,12 +194,12 @@ export const loadSurveyData = async (): Promise<AppSurveyResponse[]> => {
   } catch (error) {
     console.error('Error loading survey data:', error);
     // Fallback to TypeScript data
-    const { mockSurveyResponses } = await import('@/data/mockSurveyResponses');
+    const { mockSurveyResponses } = await import('@/data/generateMockData');
     return mockSurveyResponses.map((dbResponse) => ({
       id: dbResponse.id,
       created_at: dbResponse.created_at,
       name: dbResponse.attendee.is_anonymous ? 'Anonymous' : `${dbResponse.attendee.first_name} ${dbResponse.attendee.last_name || ''}`,
-      years_at_medtronic: dbResponse.years_at_medtronic?.toString() || '0',
+      tenure_years: dbResponse.tenure_years?.toString() || '0',
       learning_style: dbResponse.learning_style || 'visual',
       shaped_by: dbResponse.shaped_by || 'other',
       peak_performance: dbResponse.peak_performance || 'team',

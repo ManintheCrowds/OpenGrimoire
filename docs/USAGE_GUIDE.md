@@ -19,9 +19,9 @@
 
 #### Step 2: Complete Personal Information
 - **Name**: Enter your full name
-- **Email**: Use your Medtronic email address
+- **Email**: Use your work email address
 - **Department**: Select your department from the dropdown
-- **Years at Medtronic**: Enter the number of years you've been with the company
+- **Tenure (years)**: Enter how long you have been in your current context or organization
 
 #### Step 3: Answer Preference Questions
 - **Learning Style**: Choose how you prefer to learn new information
@@ -59,7 +59,7 @@
 #### Alluvial (Sankey) Diagrams
 - **Purpose**: Shows flow relationships between categories
 - **How to Read**: 
-  - Left side shows source categories (e.g., Years at Medtronic)
+  - Left side shows source categories (e.g., tenure bands)
   - Right side shows target categories (e.g., Learning Style)
   - Flowing lines show connections between categories
   - Thicker lines indicate more responses
@@ -112,7 +112,7 @@
    - Date range
    - Department
    - Learning style
-   - Years at Medtronic
+   - Tenure (years)
 3. Sort by any column by clicking the header
 
 #### Moderating Content
@@ -359,14 +359,16 @@ describe('/api/survey', () => {
 #### Docker Deployment
 ```bash
 # Build image
-docker build -t medtronic-we-summit .
+docker build -t openatlas .
 
-# Run container
+# Run container (paste values from Supabase Project Settings → API; never commit real keys)
 docker run -p 3000:3000 \
-  -e NEXT_PUBLIC_SUPABASE_URL=your-url \
-  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your-key \
-  medtronic-we-summit
+  -e NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key> \
+  openatlas
 ```
+
+See [docs/security/PUBLIC_SURFACE_AUDIT.md](security/PUBLIC_SURFACE_AUDIT.md).
 
 #### Production Environment
 ```bash
@@ -533,10 +535,7 @@ pm2 start ecosystem.config.js
 - **Community Forum**: Connect with other users
 
 ### Contact Information
-- **Technical Support**: tech-support@medtronic.com
-- **Survey Administration**: survey-admin@medtronic.com
-- **Training Requests**: training@medtronic.com
-- **General Questions**: we-summit@medtronic.com
+Configure support contacts per your deployment.
 
 ## Peak Performance Analysis
 

@@ -62,9 +62,9 @@ export function ShapedByStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
+      <div aria-invalid={!!error} aria-describedby={error ? 'shaped_by_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What has most significantly shaped your career journey at Medtronic?
+          What has most significantly shaped your career journey here?
         </label>
         <div className="grid grid-cols-1 gap-4">
           {shapedByOptions.map((option) => (
@@ -89,7 +89,7 @@ export function ShapedByStep({
             </button>
           ))}
         </div>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p id="shaped_by_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between">
@@ -97,12 +97,14 @@ export function ShapedByStep({
           type="button"
           onClick={prevStep}
           className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          data-testid="prev-button"
         >
           Previous
         </button>
         <button
           type="submit"
           className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          data-testid="next-button"
         >
           Next
         </button>

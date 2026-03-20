@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        medtronic: {
+        atlas: {
           blue: '#0070CD',
           navy: '#041E42',
           teal: '#00A3E0',

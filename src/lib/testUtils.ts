@@ -22,7 +22,7 @@ export const defaultConfig: TestEnvironmentConfig = {
 export const loadTestData = async (dataset: TestDataset): Promise<SurveyResponse[]> => {
   const response = await fetch(`/api/test-data/${dataset}`);
   const data = await response.json();
-  return data.medtronic_data;
+  return data.survey_data;
 };
 
 // Simulate time-based data accumulation
@@ -98,7 +98,7 @@ export const findRelatedResponses = (
     // Find responses with similar characteristics
     const sameLearningStyle = response.responses.learning_style === targetResponse.responses.learning_style;
     const samePeakPerformance = response.responses.peak_performance === targetResponse.responses.peak_performance;
-    const similarYears = Math.abs(response.responses.years_at_medtronic - targetResponse.responses.years_at_medtronic) <= 2;
+    const similarYears = Math.abs(response.responses.tenure_years - targetResponse.responses.tenure_years) <= 2;
     
     return (sameLearningStyle && samePeakPerformance) || similarYears;
   });

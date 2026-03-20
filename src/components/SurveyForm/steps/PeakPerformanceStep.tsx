@@ -63,9 +63,9 @@ export function PeakPerformanceStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
+      <div aria-invalid={!!error} aria-describedby={error ? 'peak_performance_error' : undefined}>
         <label className="form-label text-lg">
-          Based on your personality, when do you feel you're at your peak performance?
+          Based on your personality, when do you feel you&apos;re at your peak performance?
         </label>
         <div className="grid grid-cols-1 gap-4 mt-4">
           {performanceTypes.map((type) => (
@@ -85,12 +85,12 @@ export function PeakPerformanceStep({
                 }
               `}
             >
-              <div className="font-medium text-[var(--medtronic-navy-blue)]">{type.label}</div>
-              <div className="mt-1 text-sm text-[var(--medtronic-body-text)]">{type.description}</div>
+              <div className="font-medium text-[var(--brand-navy-blue)]">{type.label}</div>
+              <div className="mt-1 text-sm text-[var(--atlas-body-text)]">{type.description}</div>
             </button>
           ))}
         </div>
-        {error && <p className="mt-2 text-sm text-[var(--medtronic-error)]">{error}</p>}
+        {error && <p id="peak_performance_error" className="mt-2 text-sm text-[var(--brand-error)]" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between gap-4">
@@ -98,12 +98,14 @@ export function PeakPerformanceStep({
           type="button"
           onClick={prevStep}
           className="btn btn-secondary flex-1"
+          data-testid="prev-button"
         >
           Previous
         </button>
         <button
           type="submit"
           className="btn btn-primary flex-1"
+          data-testid="next-button"
         >
           Next
         </button>

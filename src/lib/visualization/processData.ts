@@ -65,8 +65,8 @@ const findConnections = (
     .map((other) => other.id);
 };
 
-function isValidNode(response: any): response is Omit<NodeData, 'position' | 'connections' | 'opacity' | 'scale'> & { years_at_medtronic: number, attendee: any } {
-  return typeof response.years_at_medtronic === 'number' && response.attendee;
+function isValidNode(response: any): response is Omit<NodeData, 'position' | 'connections' | 'opacity' | 'scale'> & { tenure_years: number, attendee: any } {
+  return typeof response.tenure_years === 'number' && response.attendee;
 }
 
 export const processVisualizationData = (
@@ -77,8 +77,8 @@ export const processVisualizationData = (
   let filteredData = data.filter((response) => {
     if (
       options.filters.yearsCategory &&
-      (typeof response.years_at_medtronic !== 'number' ||
-        getYearsCategory(response.years_at_medtronic as number) !== options.filters.yearsCategory)
+      (typeof response.tenure_years !== 'number' ||
+        getYearsCategory(response.tenure_years as number) !== options.filters.yearsCategory)
     ) {
       return false;
     }
@@ -100,8 +100,8 @@ export const processVisualizationData = (
   // Sort data if needed
   if (options.sortBy) {
     filteredData.sort((a, b) => {
-      const aValue = options.sortBy === 'years' ? (a.years_at_medtronic ?? 0) : findConnections(a, filteredData, options.mode).length;
-      const bValue = options.sortBy === 'years' ? (b.years_at_medtronic ?? 0) : findConnections(b, filteredData, options.mode).length;
+      const aValue = options.sortBy === 'years' ? (a.tenure_years ?? 0) : findConnections(a, filteredData, options.mode).length;
+      const bValue = options.sortBy === 'years' ? (b.tenure_years ?? 0) : findConnections(b, filteredData, options.mode).length;
       return options.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
     });
   }
@@ -109,8 +109,8 @@ export const processVisualizationData = (
   // Create nodes
   const validResponses = filteredData.filter(isValidNode);
   const nodes: NodeData[] = validResponses.map((response, index) => {
-    const years_at_medtronic = response.years_at_medtronic as number;
-    const yearsCategory = getYearsCategory(years_at_medtronic);
+    const tenure_years = response.tenure_years as number;
+    const yearsCategory = getYearsCategory(tenure_years);
     const connections = findConnections(
       filteredData.find(r => r.id === response.id)!,
       filteredData,
@@ -120,7 +120,7 @@ export const processVisualizationData = (
       id: response.id,
       position: calculateNodePosition(index, validResponses.length),
       attendee: response.attendee,
-      years_at_medtronic,
+      tenure_years,
       yearsCategory,
       learning_style: response.learning_style,
       shaped_by: response.shaped_by,
@@ -132,7 +132,7 @@ export const processVisualizationData = (
       scale: 1,
     };
   });
-  console.log('Filtered out nodes without attendee or years_at_medtronic:', filteredData.length - nodes.length);
+  console.log('Filtered out nodes without attendee or tenure_years:', filteredData.length - nodes.length);
 
   // Create edges
   const edges: EdgeData[] = [];

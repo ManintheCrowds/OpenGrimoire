@@ -9,6 +9,8 @@ export type PeakPerformanceType =
   | 'Ambivert, Night';
 export type MotivationType = 'impact' | 'growth' | 'recognition' | 'autonomy' | 'purpose';
 export type ModerationStatus = 'pending' | 'approved' | 'rejected';
+export type AlignmentContextSource = 'ui' | 'import' | 'api';
+export type AlignmentContextStatus = 'draft' | 'active' | 'archived';
 
 export interface Database {
   public: {
@@ -46,7 +48,7 @@ export interface Database {
         Row: {
           id: string;
           attendee_id: string;
-          years_at_medtronic: number | null;
+          tenure_years: number | null;
           learning_style: LearningStyle | null;
           shaped_by: ShapedBy | null;
           peak_performance: PeakPerformanceType | null;
@@ -58,7 +60,7 @@ export interface Database {
         Insert: {
           id?: string;
           attendee_id: string;
-          years_at_medtronic?: number | null;
+          tenure_years?: number | null;
           learning_style?: LearningStyle | null;
           shaped_by?: ShapedBy | null;
           peak_performance?: PeakPerformanceType | null;
@@ -70,7 +72,7 @@ export interface Database {
         Update: {
           id?: string;
           attendee_id?: string;
-          years_at_medtronic?: number | null;
+          tenure_years?: number | null;
           learning_style?: LearningStyle | null;
           shaped_by?: ShapedBy | null;
           peak_performance?: PeakPerformanceType | null;
@@ -134,6 +136,50 @@ export interface Database {
           status?: ModerationStatus;
           moderator_id?: string;
           notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      alignment_context_items: {
+        Row: {
+          id: string;
+          title: string;
+          body: string | null;
+          tags: string[];
+          priority: number | null;
+          status: AlignmentContextStatus;
+          linked_node_id: string | null;
+          attendee_id: string | null;
+          source: AlignmentContextSource;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body?: string | null;
+          tags?: string[];
+          priority?: number | null;
+          status?: AlignmentContextStatus;
+          linked_node_id?: string | null;
+          attendee_id?: string | null;
+          source: AlignmentContextSource;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          body?: string | null;
+          tags?: string[];
+          priority?: number | null;
+          status?: AlignmentContextStatus;
+          linked_node_id?: string | null;
+          attendee_id?: string | null;
+          source?: AlignmentContextSource;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };

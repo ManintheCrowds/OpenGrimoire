@@ -1,1 +1,19 @@
+# Dependencies
 node_modules
+
+# Environment and secrets
+.env
+.env.local
+.env*.local
+
+# Build and cache
+.next
+out
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log
+
+# Local / personal brain map (vault merges; not committed by default)
+public/brain-map-graph.local.json

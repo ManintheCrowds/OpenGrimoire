@@ -1,564 +1,89 @@
-# Medtronic WE Summit Interactive Visualization Platform
+# OpenAtlas
 
-[![Next.js](https://img.shields.io/badge/Next.js-14.0.4-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?style=flat-square&logo=supabase)](https://supabase.com/)
-[![D3.js](https://img.shields.io/badge/D3.js-7.8-orange?style=flat-square&logo=d3.js)](https://d3js.org/)
+Next.js app in **portfolio-harness** for an **operator context graph** (co-access across `.cursor/state` handoffs and daily notes) plus D3 visualization demos and a **legacy** multi-step intake form (portfolio sample, not medical use).
 
-A sophisticated real-time data visualization platform for the Medtronic WE Summit, featuring interactive surveys, dynamic data visualizations, and comprehensive analytics. Built with modern web technologies and designed for scalability and performance.
+**Package name:** `open-atlas`. App folder: `OpenAtlas` (renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical path.
 
-## 🌟 Features
+## Context graph (no Supabase required)
 
-### Core Functionality
-- **📊 Interactive Data Visualizations**
-  - Alluvial (Sankey) diagrams for flow analysis
-  - Chord diagrams for relationship mapping
-  - Constellation views for spatial data exploration
-  - Real-time animation and filtering capabilities
+- **Viewer:** `/context-atlas` (alias of the same UI as `/brain-map`).
+- **Data:** `GET /api/brain-map/graph` reads **`public/brain-map-graph.local.json` when that file exists** (personal / vault merges; gitignored), otherwise `public/brain-map-graph.json`.
+- **Regenerate** (from portfolio-harness root):
 
-- **📝 Multi-Step Survey System**
-  - Dynamic form validation with Pydantic-style schemas
-  - Progressive disclosure for better UX
-  - Real-time data collection and storage
-  - Mobile-responsive design
+  ```bash
+  python .cursor/scripts/build_brain_map.py
+  ```
 
-- **🔧 Admin Dashboard**
-  - Response moderation and filtering
-  - Data export functionality (CSV, JSON)
-  - Real-time analytics and insights
-  - User management and controls
+  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`).
 
-- **🎨 Advanced UI/UX**
-  - Dark/Light theme support
-  - Responsive design for all devices
-  - Accessibility compliance (WCAG 2.1)
-  - Smooth animations and transitions
+- **Optional auth:** set `BRAIN_MAP_SECRET` on the server. If the UI must send a header, `NEXT_PUBLIC_BRAIN_MAP_SECRET` is supported — **that value is embedded in the browser bundle** (obfuscation only, not a true secret). See [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
 
-### Technical Features
-- **⚡ Performance Optimized**
-  - Server-side rendering (SSR) with Next.js
-  - Efficient data caching with Redis
-  - Optimized D3.js rendering
-  - Lazy loading and code splitting
+Full JSON contract: [docs/BRAIN_MAP_SCHEMA.md](docs/BRAIN_MAP_SCHEMA.md). **Tools, APIs, and how this relates to OpenHarness:** [docs/OPENATLAS_SYSTEMS_INVENTORY.md](docs/OPENATLAS_SYSTEMS_INVENTORY.md).
 
-- **🔒 Security & Reliability**
-  - Row-level security (RLS) with Supabase
-  - Input validation and sanitization
-  - Error boundaries and graceful degradation
-  - Comprehensive logging and monitoring
+### Local-first notes
 
-- **🚀 Scalable Architecture**
-  - Modular component structure
-  - Clean separation of concerns
-  - Type-safe development with TypeScript
-  - Automated testing and CI/CD ready
+The graph path is **static JSON + optional secret**—you can run the viewer without configuring Supabase. For broader local-first patterns (sync, ownership, AI safety), see [Open Local First](https://openlocalfirst.org/) and optionally the sibling `local-first` workspace (`README.md`, `RESOURCES.md`, `AI_SECURITY.md`).
 
-## 🏗️ Architecture
+### Future ingest hooks
 
-### Technology Stack
+- **Watch:** debounced watcher on state markdown → rerun `build_brain_map.py`.
+- **SQLite:** optional merge/index step that still writes the same JSON shape for the UI.
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | Next.js 14 + TypeScript | React framework with App Router |
-| **Styling** | Tailwind CSS + Custom CSS | Utility-first styling with brand consistency |
-| **Database** | Supabase (PostgreSQL) | Real-time database with authentication |
-| **Visualization** | D3.js + Three.js | Advanced data visualization and 3D graphics |
-| **State Management** | React Context + SWR | Global state and data fetching |
-| **Deployment** | Docker + Proxmox VM | Containerized deployment on VM infrastructure |
+## Routes (App Router)
 
-### System Architecture
+| Path | Purpose |
+|------|---------|
+| `/` | Home |
+| `/context-atlas`, `/brain-map` | Context graph (same UI) |
+| `/operator-intake`, `/survey` | Legacy intake form (same UI) |
+| `/visualization` | D3 demos |
+| `/login`, `/admin/*` | Supabase-backed areas (require env) |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                          Frontend (Next.js)                     │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│
-│  │   Survey    │ │Visualization│ │    Admin    │ │   Layout    ││
-│  │ Components  │ │ Components  │ │ Components  │ │ Components  ││
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘│
-├─────────────────────────────────────────────────────────────────┤
-│                    State Management Layer                       │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│
-│  │   Context   │ │     SWR     │ │   Stores    │ │    Hooks    ││
-│  │  Providers  │ │   Caching   │ │  (Zustand)  │ │ (Custom)    ││
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘│
-├─────────────────────────────────────────────────────────────────┤
-│                       API Layer                                 │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│
-│  │   Supabase  │ │   REST API  │ │  Real-time  │ │    Auth     ││
-│  │   Client    │ │ Endpoints   │ │ Subscriptions│ │ Middleware  ││
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Supabase Backend                             │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│
-│  │ PostgreSQL  │ │   Auth      │ │  Real-time  │ │   Storage   ││
-│  │  Database   │ │  Service    │ │  Engine     │ │   Bucket    ││
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-```
+## Features (accurate)
 
-## 🚀 Quick Start
+- D3 / Three.js visualizations (Sankey, chord, constellation, etc.).
+- Context graph from handoff/daily/decision-log derived paths.
+- Multi-step form sample with Supabase submission when configured.
+- Admin / theme controls when Supabase is available.
 
-### Prerequisites
+### Agents and APIs
 
-Ensure you have the following installed:
-- **Node.js** 18.x or later
-- **npm** or **yarn**
-- **Git**
-- **Docker** (optional, for containerized deployment)
+- **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
+- **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
+- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENATLAS_BASE_URL` (local dev: `http://localhost:3001`) and `ALIGNMENT_CONTEXT_API_SECRET` when the server uses the shared secret.
+- **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENATLAS.md](docs/AGENT_NATIVE_AUDIT_OPENATLAS.md).
+- **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Installation
+## Quick start
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd medtronic-we-summit
-   ```
+**Prerequisites:** Node 18+, npm.
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Environment setup:**
-   Create a `.env.local` file in the root directory:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your-project-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   
-   # Application Configuration
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NODE_ENV=development
-   
-   # Optional: Redis for caching
-   REDIS_URL=redis://localhost:6379
-   
-   # Optional: Monitoring
-   GRAFANA_URL=http://localhost:3000
-   PROMETHEUS_URL=http://localhost:9090
-   ```
-
-4. **Database setup:**
-   ```bash
-   # Initialize Supabase locally (optional)
-   npx supabase init
-   npx supabase start
-   
-   # Or use hosted Supabase and run migrations
-   npx supabase db push
-   ```
-
-5. **Start development server:**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-6. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📁 Project Structure
-
-```
-medtronic-we-summit/
-├── 📁 src/
-│   ├── 📁 app/                    # Next.js App Router pages
-│   │   ├── 📁 admin/              # Admin dashboard pages
-│   │   ├── 📁 api/                # API route handlers
-│   │   ├── 📁 survey/             # Survey form pages
-│   │   ├── 📁 visualization/      # Data visualization pages
-│   │   ├── layout.tsx             # Root layout component
-│   │   └── page.tsx               # Home page
-│   ├── 📁 components/             # Reusable React components
-│   │   ├── 📁 admin/              # Admin-specific components
-│   │   ├── 📁 DataVisualization/  # Visualization components
-│   │   │   ├── AlluvialDiagram.tsx    # Sankey flow diagrams
-│   │   │   ├── ChordDiagram.tsx       # Relationship chord diagrams
-│   │   │   ├── Constellation/         # 3D constellation views
-│   │   │   └── 📁 shared/             # Shared visualization utilities
-│   │   ├── 📁 form/               # Survey form components
-│   │   ├── 📁 Layout/             # Layout components
-│   │   └── 📁 ui/                 # Base UI components
-│   ├── 📁 lib/                    # Utility functions and configurations
-│   │   ├── 📁 context/            # React Context providers
-│   │   ├── 📁 hooks/              # Custom React hooks
-│   │   ├── 📁 supabase/           # Supabase client and utilities
-│   │   ├── 📁 utils/              # Helper functions
-│   │   └── 📁 visualization/      # Data processing utilities
-│   ├── 📁 styles/                 # Global styles and themes
-│   ├── 📁 types/                  # TypeScript type definitions
-│   └── 📁 data/                   # Mock data and generators
-├── 📁 public/                     # Static assets
-│   └── 📁 branding/               # Medtronic brand assets
-├── 📁 supabase/                   # Database schema and migrations
-│   └── 📁 migrations/             # SQL migration files
-├── 📁 docs/                       # Additional documentation
-├── 🐳 Dockerfile                  # Docker configuration
-├── 📦 package.json                # Node.js dependencies
-├── 🔧 next.config.js              # Next.js configuration
-├── 🎨 tailwind.config.js          # Tailwind CSS configuration
-└── 📋 tsconfig.json               # TypeScript configuration
-```
-
-## 🎯 Usage Guide
-
-### For End Users
-
-#### Taking a Survey
-1. Navigate to `/survey`
-2. Complete the multi-step form
-3. Submit your responses
-4. View your contribution in real-time visualizations
-
-#### Exploring Visualizations
-1. Go to `/visualization`
-2. Choose from available visualization types:
-   - **Alluvial Diagrams**: Flow relationships between categories
-   - **Chord Diagrams**: Circular relationship mapping
-   - **Constellation Views**: 3D spatial data exploration
-3. Use interactive controls to filter and explore data
-
-### For Administrators
-
-#### Accessing Admin Panel
-1. Navigate to `/admin`
-2. Authenticate with admin credentials
-3. Access moderation and analytics tools
-
-#### Managing Responses
-- **View**: Browse all survey responses
-- **Moderate**: Flag or approve responses
-- **Export**: Download data in CSV/JSON format
-- **Analytics**: View real-time insights and trends
-
-### For Developers
-
-#### Adding New Visualizations
-1. Create a new component in `src/components/DataVisualization/`
-2. Follow the existing pattern:
-   ```typescript
-   interface YourVisualizationProps {
-     width?: number;
-     height?: number;
-     data?: any[];
-   }
-   
-   export default function YourVisualization({ width, height, data }: YourVisualizationProps) {
-     // Implementation
-   }
-   ```
-3. Add to the visualization index file
-4. Update routing in `src/app/visualization/`
-
-#### Customizing Themes
-1. Edit `src/styles/brand.css` for brand colors
-2. Update `tailwind.config.js` for utility classes
-3. Modify theme context in `src/lib/context/AppContext.tsx`
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes | - |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes | - |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Yes | - |
-| `NEXT_PUBLIC_APP_URL` | Application base URL | Yes | http://localhost:3000 |
-| `NODE_ENV` | Environment mode | No | development |
-| `REDIS_URL` | Redis connection string | No | - |
-
-### Customization Options
-
-#### Visualization Settings
-```typescript
-// src/lib/context/AppContext.tsx
-interface VisualizationSettings {
-  autoPlaySpeed: number;        // Animation speed (ms)
-  isAutoPlayEnabled: boolean;   // Enable/disable auto-play
-  isDarkMode: boolean;          // Theme preference
-  useTestData: boolean;         // Show test data
-  categoryColors: Record<string, string>; // Custom color mapping
-}
-```
-
-#### Survey Configuration
-```typescript
-// src/types/survey.ts
-interface SurveyStep {
-  id: string;
-  title: string;
-  description?: string;
-  fields: FormField[];
-  validation?: ValidationSchema;
-}
-```
-
-## 🧪 Testing
-
-### Running Tests
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run E2E tests
-npm run test:e2e
+cd OpenAtlas   # path under portfolio-harness
+npm install
+cp .env.example .env.local   # if present; add Supabase keys only if you need auth/survey persistence
+npm run dev
 ```
 
-### Test Structure
-```
-tests/
-├── unit/                 # Unit tests
-├── integration/          # Integration tests
-├── e2e/                  # End-to-end tests
-└── __mocks__/           # Mock data and utilities
-```
+**Windows (PowerShell):** Use `;` not `&&` to chain commands, e.g. `Set-Location OpenAtlas; npm run dev`.
 
-## 🚀 Deployment
+Open [http://localhost:3001](http://localhost:3001). Visit `/context-atlas` after generating `public/brain-map-graph.json`.
 
-### Docker Deployment (Recommended)
+## Scripts
 
-1. **Build the Docker image:**
-   ```bash
-   docker build -t medtronic-we-summit .
-   ```
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Development server (port 3001) |
+| `npm run clean` | Remove `.next` and `node_modules/.cache` (fixes chunk errors) |
+| `npm run dev:clean` | Clean then start dev server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run type-check` | `tsc --noEmit` |
+| `npm run test` | Placeholder (exits 0 until unit tests exist) |
+| `npm run verify` | **CI / agents:** `lint` + `type-check` + `test` (single pass/fail). **Note:** `type-check` may fail until known TS issues in `src/app/test-chord/`, `test-context/`, `dataAdapter`, etc. are cleared—run `npm run lint` alone if you only need ESLint. |
+| `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
+| `npm run test:e2e` | Playwright |
 
-2. **Run the container:**
-   ```bash
-   docker run -p 3000:3000 \
-     -e NEXT_PUBLIC_SUPABASE_URL=your-url \
-     -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your-key \
-     medtronic-we-summit
-   ```
+## License / attribution
 
-### Proxmox VM Deployment
-
-1. **Prepare the VM:**
-   ```bash
-   # Update system
-   sudo apt update && sudo apt upgrade -y
-   
-   # Install Node.js
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   
-   # Install Docker
-   sudo apt-get install -y docker.io docker-compose
-   ```
-
-2. **Deploy with Docker Compose:**
-   ```yaml
-   # docker-compose.yml
-   version: '3.8'
-   services:
-     app:
-       build: .
-       ports:
-         - "3000:3000"
-       environment:
-         - NODE_ENV=production
-         - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
-         - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-       restart: unless-stopped
-   ```
-
-3. **Set up HTTPS with Let's Encrypt:**
-   ```bash
-   # Install Certbot
-   sudo apt install certbot python3-certbot-nginx
-   
-   # Obtain SSL certificate
-   sudo certbot --nginx -d your-domain.com
-   ```
-
-### Vercel Deployment
-
-1. **Connect your repository to Vercel**
-2. **Configure environment variables**
-3. **Deploy automatically on push**
-
-## 📊 Monitoring & Analytics
-
-### Grafana Dashboard
-- **Metrics**: Response rates, user engagement, performance
-- **Alerts**: Error rates, response times
-- **Visualizations**: Real-time charts and graphs
-
-### Prometheus Metrics
-- Application performance metrics
-- Database query performance
-- User interaction tracking
-
-### Logging
-- Structured logging with Winston
-- Error tracking with Sentry
-- Performance monitoring with Web Vitals
-
-## 🤝 Contributing
-
-### Development Workflow
-
-1. **Fork the repository**
-2. **Create a feature branch:**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Make your changes**
-4. **Run tests:**
-   ```bash
-   npm test
-   npm run lint
-   npm run type-check
-   ```
-5. **Commit with conventional commits:**
-   ```bash
-   git commit -m "feat: add new visualization component"
-   ```
-6. **Push and create a pull request**
-
-### Code Style
-
-- **ESLint**: Enforced code quality rules
-- **Prettier**: Consistent code formatting
-- **TypeScript**: Strict type checking
-- **Conventional Commits**: Standardized commit messages
-
-### Pull Request Guidelines
-
-- Include a clear description of changes
-- Add tests for new functionality
-- Update documentation as needed
-- Ensure all CI checks pass
-
-## 📚 API Reference
-
-### Survey API
-
-#### Submit Survey Response
-```typescript
-POST /api/survey
-Content-Type: application/json
-
-{
-  "attendeeId": "string",
-  "responses": {
-    "years_at_medtronic": number,
-    "learning_style": "string",
-    "motivation": "string",
-    // ... other fields
-  }
-}
-```
-
-#### Get Survey Responses
-```typescript
-GET /api/survey?limit=50&offset=0
-Authorization: Bearer <token>
-
-Response: {
-  "data": SurveyResponse[],
-  "count": number,
-  "hasMore": boolean
-}
-```
-
-### Visualization API
-
-#### Get Processed Data
-```typescript
-GET /api/visualization/data?type=alluvial&source=years_at_medtronic&target=learning_style
-
-Response: {
-  "nodes": Node[],
-  "links": Link[],
-  "insights": Insight[]
-}
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-#### "Cannot access 'margin' before initialization"
-**Solution**: Ensure margin calculations are moved before usage in component lifecycle.
-
-#### "Module parse failed: Identifier 'React' has already been declared"
-**Solution**: Remove duplicate React imports in component files.
-
-#### "Cannot read properties of undefined (reading 'map')"
-**Solution**: Add proper null checks and default values for props.
-
-### Debug Mode
-
-Enable debug logging:
-```typescript
-// Add to .env.local
-DEBUG=true
-NEXT_PUBLIC_DEBUG=true
-```
-
-### Performance Issues
-
-1. **Check bundle size:**
-   ```bash
-   npm run analyze
-   ```
-
-2. **Monitor memory usage:**
-   ```bash
-   npm run dev -- --inspect
-   ```
-
-3. **Profile React components:**
-   Use React DevTools Profiler
-
-## 📄 License
-
-This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited. 
-
-**© 2024 Medtronic. All rights reserved.**
-
-## 🙏 Acknowledgments
-
-- **Medtronic WE Summit Team** - Project vision and requirements
-- **D3.js Community** - Visualization techniques and examples
-- **Next.js Team** - Framework and best practices
-- **Supabase Team** - Backend-as-a-Service platform
-
----
-
-## 📞 Support
-
-For technical support or questions:
-- **Email**: [technical-support@medtronic.com](mailto:technical-support@medtronic.com)
-- **Internal Wiki**: [confluence.medtronic.com/we-summit](https://confluence.medtronic.com/we-summit)
-- **Slack**: #we-summit-tech
-
----
-
-**Built with ❤️ for the Medtronic WE Summit** 
-
-## Features
-
-- **Interactive Data Visualizations**: Chord diagrams, alluvial diagrams, and constellation views
-- **Admin-Driven Color Configuration**: Centralized color management through `/admin/controls`
-- **Peak Performance Analysis**: Track personality types and optimal performance times
-- **Real-time Data Updates**: Live data synchronization with Supabase
-- **Responsive Design**: Works on desktop and mobile devices
-- **Dark/Light Theme Support**: Automatic theme switching with custom colors
-- **Export Capabilities**: Download visualizations as images or data
-- **Survey Management**: Complete survey response tracking and analysis 
+Portfolio-derived sample; anonymized from earlier client work. Not a medical product.

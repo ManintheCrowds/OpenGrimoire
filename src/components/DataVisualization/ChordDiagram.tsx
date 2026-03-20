@@ -121,7 +121,7 @@ function ChordDiagramInternal({
 
   // Define available fields for the selector
   const availableFields = [
-    { value: 'years_at_medtronic', label: 'Years at Medtronic' },
+    { value: 'tenure_years', label: 'Tenure (years)' },
     { value: 'peak_performance', label: 'Peak Performance' },
     { value: 'learning_style', label: 'Learning Style' },
     { value: 'motivation', label: 'Motivation' },
@@ -151,7 +151,7 @@ function ChordDiagramInternal({
       ? data 
       : data.filter(item => !(item as any).test_data);
 
-    // Get all data for secondary chord (Years at Medtronic vs Peak Performance categories)
+    // Get all data for secondary chord (tenure vs peak performance categories)
     const secondaryData = filteredData.filter(d => (d as any).peak_performance);
     
     if (secondaryData.length < 5) return;
@@ -184,7 +184,7 @@ function ChordDiagramInternal({
         const perfCat = sourceIsYears ? targetCategory : sourceCategory;
         
         return secondaryData.filter(d => {
-          const years = getYearsCategory(d.years_at_medtronic || 0);
+          const years = getYearsCategory(d.tenure_years || 0);
           const perf = (d as any).peak_performance;
           return years === yearsCat && perf === perfCat;
         }).length;
@@ -237,7 +237,7 @@ function ChordDiagramInternal({
           content: (
             <div>
               <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{allCategories[d.index]?.toString().replace(/_/g, ' ') || ''}</div>
-              <div>{d.index < yearsCategories.length ? 'Years at Medtronic' : 'Peak Performance Type'}</div>
+              <div>{d.index < yearsCategories.length ? 'Tenure (years)' : 'Peak Performance Type'}</div>
               <div>Value: {d.value}</div>
             </div>
           )
@@ -418,7 +418,7 @@ function ChordDiagramInternal({
           content: (
             <div>
               <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{fullText}</div>
-              <div>{d.index < yearsCategories.length ? 'Years at Medtronic' : 'Peak Performance Type'}</div>
+              <div>{d.index < yearsCategories.length ? 'Tenure (years)' : 'Peak Performance Type'}</div>
             </div>
           )
         });
@@ -500,7 +500,7 @@ function ChordDiagramInternal({
       
       // Define all possible categories for each field (not just those with data)
       const allCategories = {
-        years_at_medtronic: ['0-5', '6-10', '11-15', '16-20', '20+'],
+        tenure_years: ['0-5', '6-10', '11-15', '16-20', '20+'],
         learning_style: ['visual', 'auditory', 'kinesthetic', 'reading_writing'],
         shaped_by: ['mentor', 'challenge', 'failure', 'success', 'team', 'other'],
         peak_performance: ['Extrovert, Morning', 'Extrovert, Evening', 'Introvert, Morning', 'Introvert, Night', 'Ambivert, Morning', 'Ambivert, Night'],
@@ -531,13 +531,13 @@ function ChordDiagramInternal({
       // Check if this category has data
       const hasData = filteredData.some(d => {
         if (animationRef.current.currentSide === 'left') {
-          if (currentSource === 'years_at_medtronic') {
-            return getYearsCategory(d.years_at_medtronic || 0) === highlightedCategory;
+          if (currentSource === 'tenure_years') {
+            return getYearsCategory(d.tenure_years || 0) === highlightedCategory;
           }
           return (d as any)[currentSource] === highlightedCategory;
         } else {
-          if (currentTarget === 'years_at_medtronic') {
-            return getYearsCategory(d.years_at_medtronic || 0) === highlightedCategory;
+          if (currentTarget === 'tenure_years') {
+            return getYearsCategory(d.tenure_years || 0) === highlightedCategory;
           }
           return (d as any)[currentTarget] === highlightedCategory;
         }
@@ -654,7 +654,7 @@ function ChordDiagramInternal({
           
           // Define all possible categories for each field (not just those with data)
           const allCategories = {
-            years_at_medtronic: ['0-5', '6-10', '11-15', '16-20', '20+'],
+            tenure_years: ['0-5', '6-10', '11-15', '16-20', '20+'],
             learning_style: ['visual', 'auditory', 'kinesthetic', 'reading_writing'],
             shaped_by: ['mentor', 'challenge', 'failure', 'success', 'team', 'other'],
             peak_performance: ['Extrovert, Morning', 'Extrovert, Evening', 'Introvert, Morning', 'Introvert, Night', 'Ambivert, Morning', 'Ambivert, Night'],
@@ -685,13 +685,13 @@ function ChordDiagramInternal({
           // Check if this category has data
           const hasData = filteredData.some(d => {
             if (animationRef.current.currentSide === 'left') {
-              if (currentSource === 'years_at_medtronic') {
-                return getYearsCategory(d.years_at_medtronic || 0) === highlightedCategory;
+              if (currentSource === 'tenure_years') {
+                return getYearsCategory(d.tenure_years || 0) === highlightedCategory;
               }
               return (d as any)[currentSource] === highlightedCategory;
             } else {
-              if (currentTarget === 'years_at_medtronic') {
-                return getYearsCategory(d.years_at_medtronic || 0) === highlightedCategory;
+              if (currentTarget === 'tenure_years') {
+                return getYearsCategory(d.tenure_years || 0) === highlightedCategory;
               }
               return (d as any)[currentTarget] === highlightedCategory;
             }
@@ -1115,14 +1115,14 @@ function ChordDiagramInternal({
     // Create definitions for gradients
     const defs = svg.append('defs');
 
-    // Define fixed order for years at Medtronic
+    // Define fixed order for tenure bands
     const YEARS_GROUPS = ['0-5', '6-10', '11-15', '16-20', '20+'];
 
     // Get unique values for left and right sides, using fixed order for years
-    const leftValues = currentSource === 'years_at_medtronic'
+    const leftValues = currentSource === 'tenure_years'
       ? YEARS_GROUPS
       : Array.from(new Set(filteredData.map(d => (d as any)[currentSource]))).filter(Boolean);
-    const rightValues = currentTarget === 'years_at_medtronic'
+    const rightValues = currentTarget === 'tenure_years'
       ? YEARS_GROUPS
       : Array.from(new Set(filteredData.map(d => (d as any)[currentTarget]))).filter(Boolean);
 
@@ -1134,14 +1134,14 @@ function ChordDiagramInternal({
     const targetCategories = new Set<string>();
     
     filteredData.forEach((d: any) => {
-      if (currentSource === 'years_at_medtronic') {
-        sourceCategories.add(getYearsCategory(d.years_at_medtronic || 0));
+      if (currentSource === 'tenure_years') {
+        sourceCategories.add(getYearsCategory(d.tenure_years || 0));
       } else {
         sourceCategories.add(d[currentSource] || 'Unknown');
       }
       
-      if (currentTarget === 'years_at_medtronic') {
-        targetCategories.add(getYearsCategory(d.years_at_medtronic || 0));
+      if (currentTarget === 'tenure_years') {
+        targetCategories.add(getYearsCategory(d.tenure_years || 0));
       } else {
         targetCategories.add(d[currentTarget] || 'Unknown');
       }
@@ -1154,8 +1154,8 @@ function ChordDiagramInternal({
     // Calculate totals for each category
     const leftTotals = sourceArray.map(cat => 
       filteredData.filter((d: any) => {
-        const value = currentSource === 'years_at_medtronic' 
-          ? getYearsCategory(d.years_at_medtronic || 0) 
+        const value = currentSource === 'tenure_years' 
+          ? getYearsCategory(d.tenure_years || 0) 
           : d[currentSource];
         return value === cat;
       }).length
@@ -1163,8 +1163,8 @@ function ChordDiagramInternal({
     
     const rightTotals = targetArray.map(cat => 
       filteredData.filter((d: any) => {
-        const value = currentTarget === 'years_at_medtronic' 
-          ? getYearsCategory(d.years_at_medtronic || 0) 
+        const value = currentTarget === 'tenure_years' 
+          ? getYearsCategory(d.tenure_years || 0) 
           : d[currentTarget];
         return value === cat;
       }).length
@@ -1177,11 +1177,11 @@ function ChordDiagramInternal({
     const connectionMatrix = sourceArray.map(sourceCat => 
       targetArray.map(targetCat => {
         return filteredData.filter((d: any) => {
-          const source = currentSource === 'years_at_medtronic' 
-            ? getYearsCategory(d.years_at_medtronic || 0) 
+          const source = currentSource === 'tenure_years' 
+            ? getYearsCategory(d.tenure_years || 0) 
             : d[currentSource];
-          const target = currentTarget === 'years_at_medtronic' 
-            ? getYearsCategory(d.years_at_medtronic || 0) 
+          const target = currentTarget === 'tenure_years' 
+            ? getYearsCategory(d.tenure_years || 0) 
             : d[currentTarget];
           return source === sourceCat && target === targetCat;
         }).length;
@@ -1214,14 +1214,14 @@ function ChordDiagramInternal({
     let leftAngle = leftStart;
     const leftArcs = leftValues.map((value, i) => {
       const count = filteredData.filter(d =>
-        currentSource === 'years_at_medtronic'
-          ? getYearsCategory(d.years_at_medtronic || 0) === value
+        currentSource === 'tenure_years'
+          ? getYearsCategory(d.tenure_years || 0) === value
           : (d as any)[currentSource] === value
       ).length;
       
       // Calculate arc span with spacing consideration
       const availableSpan = leftArcSpan - (minArcSpacing * (leftValues.length - 1));
-      const arcSpan = currentSource === 'years_at_medtronic'
+      const arcSpan = currentSource === 'tenure_years'
         ? availableSpan / leftValues.length
         : Math.max(minArcSpacing, availableSpan * (count / (leftTotalSum || 1)));
       
@@ -1238,14 +1238,14 @@ function ChordDiagramInternal({
     let rightAngle = rightStart;
     const rightArcs = rightValues.map((value, i) => {
       const count = filteredData.filter(d =>
-        currentTarget === 'years_at_medtronic'
-          ? getYearsCategory(d.years_at_medtronic || 0) === value
+        currentTarget === 'tenure_years'
+          ? getYearsCategory(d.tenure_years || 0) === value
           : (d as any)[currentTarget] === value
       ).length;
       
       // Calculate arc span with spacing consideration
       const availableSpan = rightArcSpan - (minArcSpacing * (rightValues.length - 1));
-      const arcSpan = currentTarget === 'years_at_medtronic'
+      const arcSpan = currentTarget === 'tenure_years'
         ? availableSpan / rightValues.length
         : Math.max(minArcSpacing, availableSpan * (count / (rightTotalSum || 1)));
       

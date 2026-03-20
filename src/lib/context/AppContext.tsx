@@ -33,7 +33,7 @@ export interface VisualizationSettings {
 
 // Default light mode colors
 const defaultLightColors: CategoryColors = {
-  years_at_medtronic: {
+  tenure_years: {
     '0-5': '#74b9ff',
     '6-10': '#55a3ff',
     '11-15': '#3498db',
@@ -73,7 +73,7 @@ const defaultLightColors: CategoryColors = {
 
 // Default dark mode colors - enhanced versions with better contrast
 const defaultDarkColors: CategoryColors = {
-  years_at_medtronic: {
+  tenure_years: {
     '0-5': '#8ac4ff',
     '6-10': '#75b3ff',
     '11-15': '#5aa8eb',

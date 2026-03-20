@@ -1,4 +1,5 @@
 {
-  "/admin/controls/page": "app/admin/controls/page.js",
-  "/visualization/page": "app/visualization/page.js"
+  "/page": "app/page.js",
+  "/context-atlas/page": "app/context-atlas/page.js",
+  "/api/brain-map/graph/route": "app/api/brain-map/graph/route.js"
 }

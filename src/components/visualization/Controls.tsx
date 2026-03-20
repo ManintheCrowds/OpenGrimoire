@@ -44,7 +44,7 @@ export const Controls: React.FC<ControlsProps> = ({ className = '' }) => {
         <h3 className="text-lg font-semibold">Filters</h3>
         <div className="flex flex-col gap-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Years at Medtronic</label>
+            <label className="block text-sm font-medium text-gray-700">Tenure (years)</label>
             <select
               value={filters.yearsCategory || ''}
               onChange={(e) => handleFilterChange('yearsCategory', e.target.value)}

@@ -41,28 +41,28 @@ export const cyclingModes = [
     focus: 'years-learning', 
     duration: 4000, 
     description: 'Experience & Learning Styles',
-    source: 'years_at_medtronic',
+    source: 'tenure_years',
     target: 'learning_style'
   },
   { 
     focus: 'years-shaped', 
     duration: 4000, 
     description: 'Experience & Formative Influences',
-    source: 'years_at_medtronic',
+    source: 'tenure_years',
     target: 'shaped_by'
   },
   { 
     focus: 'years-performance', 
     duration: 4000, 
     description: 'Experience & Peak Performance',
-    source: 'years_at_medtronic',
+    source: 'tenure_years',
     target: 'peak_performance'
   },
   { 
     focus: 'years-motivation', 
     duration: 4000, 
     description: 'Experience & Current Motivation',
-    source: 'years_at_medtronic',
+    source: 'tenure_years',
     target: 'motivation'
   },
   { 
@@ -83,7 +83,7 @@ export const cyclingModes = [
 
 // Color scales for chord arcs (reuse from alluvial)
 export const chordColorScales = {
-  years_at_medtronic: scaleOrdinal<YearsCategory, string>()
+  tenure_years: scaleOrdinal<YearsCategory, string>()
     .domain(['0-5' as YearsCategory, '6-10' as YearsCategory, '11-15' as YearsCategory, '16-20' as YearsCategory, '20+' as YearsCategory])
     .range([
       interpolateRgb('#0077CC', '#00A3E0')(0.2),
@@ -172,7 +172,7 @@ export function getYearsCategory(years: number): YearsCategory {
 
 // Helper to normalize category names for color lookup
 export function normalizeCategory(category: string, question: string) {
-  if (question === 'years_at_medtronic') return getYearsCategory(Number(category));
+  if (question === 'tenure_years') return getYearsCategory(Number(category));
   return category;
 }
 
@@ -182,21 +182,21 @@ export function processChordData(
   data: any[],
   sourceField: string,
   targetField: string,
-  categoryColors: any // Pass the admin-driven color map here
+  categoryColors: any = {} // Pass the admin-driven color map here; default for test pages
 ): ChordMatrix {
   // Get unique categories for source and target
   const sourceCategories = new Set<string>();
   const targetCategories = new Set<string>();
   
   data.forEach(d => {
-    if (sourceField === 'years_at_medtronic') {
-      sourceCategories.add(getYearsCategory(d.years_at_medtronic || 0));
+    if (sourceField === 'tenure_years') {
+      sourceCategories.add(getYearsCategory(d.tenure_years || 0));
     } else {
       sourceCategories.add(d[sourceField]);
     }
     
-    if (targetField === 'years_at_medtronic') {
-      targetCategories.add(getYearsCategory(d.years_at_medtronic || 0));
+    if (targetField === 'tenure_years') {
+      targetCategories.add(getYearsCategory(d.tenure_years || 0));
     } else {
       targetCategories.add(d[targetField]);
     }
@@ -211,11 +211,11 @@ export function processChordData(
   
   // Fill matrix with relationships
   data.forEach(d => {
-    const source = sourceField === 'years_at_medtronic' 
-      ? getYearsCategory(d.years_at_medtronic || 0)
+    const source = sourceField === 'tenure_years' 
+      ? getYearsCategory(d.tenure_years || 0)
       : d[sourceField];
-    const target = targetField === 'years_at_medtronic'
-      ? getYearsCategory(d.years_at_medtronic || 0)
+    const target = targetField === 'tenure_years'
+      ? getYearsCategory(d.tenure_years || 0)
       : d[targetField];
     
     const sourceIndex = allCategories.indexOf(source);

@@ -11,7 +11,7 @@ type Motivation = Database['public']['Tables']['survey_responses']['Row']['motiv
 
 // Light theme colors
 export const lightTheme = {
-  primary: '#0077CC', // Medtronic blue
+  primary: '#0077CC', // Atlas primary blue
   secondary: '#00A3E0',
   accent: '#FF6B6B',
   background: '#FFFFFF',

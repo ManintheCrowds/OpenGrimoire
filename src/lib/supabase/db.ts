@@ -5,6 +5,7 @@ export type Attendee = Database['public']['Tables']['attendees']['Row'];
 export type SurveyResponse = Database['public']['Tables']['survey_responses']['Row'];
 export type PeakPerformanceDefinition = Database['public']['Tables']['peak_performance_definitions']['Row'];
 export type Moderation = Database['public']['Tables']['moderation']['Row'];
+export type AlignmentContextItem = Database['public']['Tables']['alignment_context_items']['Row'];
 
 export async function createAttendee(data: {
   first_name: string;
@@ -51,7 +52,7 @@ export async function createAttendee(data: {
 
 export async function createSurveyResponse(data: {
   attendee_id: string;
-  years_at_medtronic?: number;
+  tenure_years?: number;
   learning_style?: Database['public']['Tables']['survey_responses']['Row']['learning_style'];
   shaped_by?: Database['public']['Tables']['survey_responses']['Row']['shaped_by'];
   peak_performance?: Database['public']['Tables']['survey_responses']['Row']['peak_performance'];

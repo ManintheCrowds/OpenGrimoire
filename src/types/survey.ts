@@ -39,7 +39,7 @@ export interface SurveyResponse {
   is_anonymous: boolean;
   location: string;
   responses: {
-    years_at_medtronic: number;
+    tenure_years: number;
     learning_style: LearningStyle;
     shaped_by: ShapedBy;
     peak_performance: PeakPerformance;
@@ -49,5 +49,5 @@ export interface SurveyResponse {
 }
 
 export interface SurveyData {
-  medtronic_data: SurveyResponse[];
+  survey_data: SurveyResponse[];
 } 

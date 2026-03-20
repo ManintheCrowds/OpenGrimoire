@@ -45,7 +45,7 @@ export function useSurveyForm() {
       // Create survey response
       await createSurveyResponse({
         attendee_id: attendee.id,
-        years_at_medtronic: formData.years_at_medtronic,
+        tenure_years: formData.tenure_years,
         learning_style: formData.learning_style,
         shaped_by: formData.shaped_by,
         peak_performance: formData.peak_performance,

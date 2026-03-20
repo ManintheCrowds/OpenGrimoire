@@ -47,6 +47,7 @@ export function UniqueQualityStep({
         <div className="mt-2">
           <textarea
             id="unique_quality"
+            data-testid="unique-quality-input"
             rows={4}
             value={formData.unique_quality || ''}
             onChange={(e) => {
@@ -55,8 +56,10 @@ export function UniqueQualityStep({
             }}
             placeholder="Share your thoughts..."
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'unique_quality_error' : undefined}
           />
-          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          {error && <p id="unique_quality_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
         </div>
         <p className="mt-2 text-sm text-gray-500">
           This response will be reviewed before being included in the visualization.
@@ -69,12 +72,14 @@ export function UniqueQualityStep({
           type="button"
           onClick={prevStep}
           className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          data-testid="prev-button"
         >
           Previous
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
+          data-testid={isLastStep ? 'submit-button' : 'next-button'}
           className={`
             inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
             ${

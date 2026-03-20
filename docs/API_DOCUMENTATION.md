@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Medtronic WE Summit Visualization Platform provides a RESTful API for managing survey data, user authentication, and data visualization. All API endpoints follow REST conventions and return JSON responses.
+The Event Visualization Platform provides a RESTful API for managing survey data, user authentication, and data visualization. All API endpoints follow REST conventions and return JSON responses.
 
 ## Base URL
 
@@ -63,7 +63,7 @@ POST /api/survey
 ```json
 {
   "attendeeId": "uuid",
-  "years_at_medtronic": 5,
+  "tenure_years": 5,
   "learning_style": "visual",
   "motivation": "impact",
   "peak_performance": "Extrovert, Morning",
@@ -80,7 +80,7 @@ POST /api/survey
   "data": {
     "id": "uuid",
     "attendeeId": "uuid",
-    "years_at_medtronic": 5,
+    "tenure_years": 5,
     "learning_style": "visual",
     "motivation": "impact",
     "peak_performance": "Extrovert, Morning",
@@ -95,7 +95,7 @@ POST /api/survey
 **Validation Rules:**
 
 - `attendeeId`: Required UUID
-- `years_at_medtronic`: Integer between 0 and 50
+- `tenure_years`: Integer between 0 and 50
 - `learning_style`: One of ["visual", "auditory", "kinesthetic", "reading_writing"]
 - `motivation`: One of ["impact", "growth", "recognition", "autonomy", "purpose"]
 - `peak_performance`: One of ["Extrovert, Morning", "Extrovert, Evening", "Introvert, Morning", "Introvert, Night", "Ambivert, Morning", "Ambivert, Night"]
@@ -136,7 +136,7 @@ GET /api/survey?limit=25&offset=0&learningStyle=visual&sortBy=created_at&sortOrd
     {
       "id": "uuid",
       "attendeeId": "uuid",
-      "years_at_medtronic": 5,
+      "tenure_years": 5,
       "learning_style": "visual",
       "motivation": "impact",
       "peak_performance": "Extrovert, Morning",
@@ -147,7 +147,7 @@ GET /api/survey?limit=25&offset=0&learningStyle=visual&sortBy=created_at&sortOrd
       "attendee": {
         "id": "uuid",
         "name": "John Doe",
-        "email": "john.doe@medtronic.com",
+        "email": "john.doe@example.com",
         "department": "Engineering",
         "role": "user"
       }
@@ -178,7 +178,7 @@ GET /api/survey/{id}
   "data": {
     "id": "uuid",
     "attendeeId": "uuid",
-    "years_at_medtronic": 5,
+    "tenure_years": 5,
     "learning_style": "visual",
     "motivation": "impact",
     "peak_performance": "Extrovert, Morning",
@@ -189,7 +189,7 @@ GET /api/survey/{id}
     "attendee": {
       "id": "uuid",
       "name": "John Doe",
-      "email": "john.doe@medtronic.com",
+      "email": "john.doe@example.com",
       "department": "Engineering",
       "role": "user"
     }
@@ -209,7 +209,7 @@ PUT /api/survey/{id}
 
 ```json
 {
-  "years_at_medtronic": 6,
+  "tenure_years": 6,
   "learning_style": "auditory",
   "motivation": "growth"
 }
@@ -223,7 +223,7 @@ PUT /api/survey/{id}
   "data": {
     "id": "uuid",
     "attendeeId": "uuid",
-    "years_at_medtronic": 6,
+    "tenure_years": 6,
     "learning_style": "auditory",
     "motivation": "growth",
     "peak_performance": "Extrovert, Morning",
@@ -267,7 +267,7 @@ GET /api/visualization/data
 | Parameter | Type | Description | Default |
 |-----------|------|-------------|---------|
 | `type` | string | Visualization type ("alluvial", "chord", "constellation") | "alluvial" |
-| `source` | string | Source category field | "years_at_medtronic" |
+| `source` | string | Source category field | "tenure_years" |
 | `target` | string | Target category field | "learning_style" |
 | `includeTestData` | boolean | Include test data | false |
 | `aggregation` | string | Aggregation method ("count", "average") | "count" |
@@ -275,7 +275,7 @@ GET /api/visualization/data
 **Example Request:**
 
 ```http
-GET /api/visualization/data?type=alluvial&source=years_at_medtronic&target=learning_style&includeTestData=false
+GET /api/visualization/data?type=alluvial&source=tenure_years&target=learning_style&includeTestData=false
 ```
 
 **Response:**
@@ -286,9 +286,9 @@ GET /api/visualization/data?type=alluvial&source=years_at_medtronic&target=learn
   "data": {
     "nodes": [
       {
-        "id": "years_at_medtronic:0-5",
+        "id": "tenure_years:0-5",
         "name": "0-5",
-        "category": "years_at_medtronic",
+        "category": "tenure_years",
         "value": 45,
         "color": "#4F46E5"
       },
@@ -302,7 +302,7 @@ GET /api/visualization/data?type=alluvial&source=years_at_medtronic&target=learn
     ],
     "links": [
       {
-        "source": "years_at_medtronic:0-5",
+        "source": "tenure_years:0-5",
         "target": "learning_style:visual",
         "value": 15,
         "percentage": 33.3
@@ -358,7 +358,7 @@ GET /api/visualization/analytics
       "averageCompletionTime": 180
     },
     "distributions": {
-      "years_at_medtronic": {
+      "tenure_years": {
         "0-5": 45,
         "6-10": 38,
         "11-15": 32,
@@ -408,7 +408,7 @@ GET /api/user/me
   "success": true,
   "data": {
     "id": "uuid",
-    "email": "john.doe@medtronic.com",
+    "email": "john.doe@example.com",
     "name": "John Doe",
     "department": "Engineering",
     "role": "user",
@@ -450,7 +450,7 @@ PUT /api/user/me
   "success": true,
   "data": {
     "id": "uuid",
-    "email": "john.doe@medtronic.com",
+    "email": "john.doe@example.com",
     "name": "John Smith",
     "department": "Product Management",
     "role": "user",
@@ -492,7 +492,7 @@ GET /api/admin/users
   "data": [
     {
       "id": "uuid",
-      "email": "john.doe@medtronic.com",
+      "email": "john.doe@example.com",
       "name": "John Doe",
       "department": "Engineering",
       "role": "user",
@@ -575,7 +575,7 @@ GET /api/admin/export?format=csv&includeTestData=false&dateFrom=2024-01-01&dateT
 Content-Type: text/csv
 Content-Disposition: attachment; filename="survey_responses_2024-01-15.csv"
 
-id,attendee_name,years_at_medtronic,learning_style,motivation,created_at
+id,attendee_name,tenure_years,learning_style,motivation,created_at
 uuid,John Doe,5,visual,impact,2024-01-15T10:30:00Z
 ```
 
@@ -596,7 +596,7 @@ POST /api/test-data/generate
   "count": 100,
   "seed": 12345,
   "distributions": {
-    "years_at_medtronic": {
+    "tenure_years": {
       "0-5": 0.4,
       "6-10": 0.3,
       "11-15": 0.2,
@@ -648,7 +648,7 @@ DELETE /api/test-data/clear
 interface SurveyResponse {
   id: string;
   attendeeId: string;
-  years_at_medtronic: number;
+  tenure_years: number;
   learning_style: 'visual' | 'auditory' | 'kinesthetic' | 'reading_writing';
   motivation: 'impact' | 'growth' | 'recognition' | 'autonomy' | 'purpose';
   peak_performance: 'Extrovert, Morning' | 'Extrovert, Evening' | 'Introvert, Morning' | 'Introvert, Night' | 'Ambivert, Morning' | 'Ambivert, Night';
@@ -770,53 +770,46 @@ Triggered when a response is moderated by an admin.
 ### JavaScript/TypeScript
 
 ```typescript
-import { MedtronicAPI } from '@medtronic/we-summit-sdk';
-
-const api = new MedtronicAPI({
-  baseURL: 'https://api.medtronic-we-summit.com',
-  apiKey: 'your-api-key'
-});
+const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 // Submit survey response
-const response = await api.survey.submit({
-  attendeeId: 'uuid',
-  years_at_medtronic: 5,
-  learning_style: 'visual',
-  motivation: 'impact'
+const response = await fetch(`${baseURL}/api/survey`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    attendeeId: 'uuid',
+    tenure_years: 5,
+    learning_style: 'visual',
+    motivation: 'impact'
+  })
 });
 
 // Get visualization data
-const vizData = await api.visualization.getData({
-  type: 'alluvial',
-  source: 'years_at_medtronic',
-  target: 'learning_style'
-});
+const vizData = await fetch(
+  `${baseURL}/api/visualization/data?type=alluvial&source=tenure_years&target=learning_style`
+).then(r => r.json());
 ```
 
 ### Python
 
 ```python
-from medtronic_we_summit import MedtronicAPI
+import requests
 
-api = MedtronicAPI(
-    base_url='https://api.medtronic-we-summit.com',
-    api_key='your-api-key'
-)
+base_url = 'http://localhost:3000'
 
 # Submit survey response
-response = api.survey.submit({
+response = requests.post(f'{base_url}/api/survey', json={
     'attendeeId': 'uuid',
-    'years_at_medtronic': 5,
+    'tenure_years': 5,
     'learning_style': 'visual',
     'motivation': 'impact'
 })
 
 # Get visualization data
-viz_data = api.visualization.get_data(
-    type='alluvial',
-    source='years_at_medtronic',
-    target='learning_style'
-)
+viz_data = requests.get(
+    f'{base_url}/api/visualization/data',
+    params={'type': 'alluvial', 'source': 'tenure_years', 'target': 'learning_style'}
+).json()
 ```
 
 ## Error Handling
@@ -839,7 +832,7 @@ viz_data = api.visualization.get_data(
   "error": "Validation failed",
   "code": "VALIDATION_ERROR",
   "details": {
-    "years_at_medtronic": "Must be between 0 and 50",
+    "tenure_years": "Must be between 0 and 50",
     "learning_style": "Must be one of: visual, auditory, kinesthetic, reading_writing"
   },
   "timestamp": "2024-01-15T10:30:00Z",

@@ -30,8 +30,8 @@ Force-directed layout with boundaries to keep nodes on screen
 Nodes should have enough space to not feel cramped but close enough to see Scene 1: Constellation View - Implementation Prompt 1
 patterns
 ### Node Design
-Size: Base size + slight variation based on years at Medtronic
-Color: Mapped to years_at_medtronic (use existing color scheme if found)
+Size: Base size + slight variation based on tenure (years)
+Color: Mapped to tenure_years (use existing color scheme if found)
 Border: Subtle glow effect on hover
 Opacity: Full opacity for active nodes, reduced for non-selected in interactive mode
 ### Connection Lines

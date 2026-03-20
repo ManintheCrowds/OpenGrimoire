@@ -11,7 +11,7 @@
  * - Theme-aware styling (dark/light mode)
  * - Accessibility features and error handling
  * 
- * @author Medtronic WE Summit Team
+ * @author Event Visualization Platform
  * @version 2.0.0
  * @since 1.0.0
  */
@@ -131,7 +131,7 @@ interface TooltipState {
  * Available survey fields for visualization
  */
 const availableFields = [
-  { value: 'years_at_medtronic', label: 'Years at Medtronic' },
+  { value: 'tenure_years', label: 'Years of experience' },
   { value: 'learning_style', label: 'Learning Style' },
   { value: 'shaped_by', label: 'Shaped By' },
   { value: 'peak_performance', label: 'Peak Performance' },
@@ -140,13 +140,13 @@ const availableFields = [
 ];
 
 /**
- * Years at Medtronic category definitions
+ * Years-of-experience category definitions
  */
 const YEARS_CATEGORIES = ['0-5', '6-10', '11-15', '16-20', '20+'];
 
 /**
  * Converts numeric years to category string with validation
- * @param years - Number of years at Medtronic
+ * @param years - Number of years of experience
  * @returns Category string
  */
 const getValidYearsCategory = (years: number): string => {
@@ -253,7 +253,7 @@ export default function AlluvialDiagram({
   const svgRef = useRef<SVGSVGElement>(null);
   const { data, isLoading, error } = useVisualizationData();
   const { settings, getCurrentThemeColors } = useAppContext();
-  const [currentSource, setCurrentSource] = useState('years_at_medtronic');
+  const [currentSource, setCurrentSource] = useState('tenure_years');
   const [currentTarget, setCurrentTarget] = useState('learning_style');
 
   // Filter data based on test data setting
@@ -265,9 +265,9 @@ export default function AlluvialDiagram({
   // Compute sources and targets with validation
   const sources: string[] = useMemo(() => {
     if (!Array.isArray(filteredData) || !filteredData.length) return [];
-    if (currentSource === 'years_at_medtronic') {
+    if (currentSource === 'tenure_years') {
       return YEARS_CATEGORIES.filter(cat => 
-        filteredData.some(d => getValidYearsCategory(d.years_at_medtronic || 0) === cat)
+        filteredData.some(d => getValidYearsCategory(d.tenure_years || 0) === cat)
       );
     } else {
       return Array.from(new Set(
@@ -280,16 +280,16 @@ export default function AlluvialDiagram({
 
   const targets: string[] = useMemo(() => {
     if (!Array.isArray(filteredData) || !filteredData.length) return [];
-    if (currentTarget === 'years_at_medtronic') {
+    if (currentTarget === 'tenure_years') {
       return YEARS_CATEGORIES.filter(cat => 
-        filteredData.some(d => getValidYearsCategory(d.years_at_medtronic || 0) === cat)
+        filteredData.some(d => getValidYearsCategory(d.tenure_years || 0) === cat)
       );
     } else {
       // Sort target nodes consistently to maintain fixed positions
       return Array.from(new Set(
         filteredData.map((d: SurveyResponse) => 
-        currentTarget === 'years_at_medtronic' 
-            ? getValidYearsCategory(d.years_at_medtronic || 0)
+        currentTarget === 'tenure_years' 
+            ? getValidYearsCategory(d.tenure_years || 0)
             : d[currentTarget as keyof SurveyResponse]
         )
       )).filter((value): value is string => 
@@ -461,7 +461,7 @@ export default function AlluvialDiagram({
     if (!filteredData.length || !chartHeight || !chartHeight) return sources;
 
     const sourcesForNodes = [...sources];
-    if (currentSource === 'years_at_medtronic') {
+    if (currentSource === 'tenure_years') {
       sourcesForNodes.sort((a, b) => YEARS_CATEGORIES.indexOf(a) - YEARS_CATEGORIES.indexOf(b));
     } else {
       sourcesForNodes.sort();
@@ -475,11 +475,11 @@ export default function AlluvialDiagram({
 
     const linksMap = new Map<string, { source: string; target: string; value: number }>(); 
     filteredData.forEach((d) => {
-      const source = currentSource === 'years_at_medtronic' 
-        ? getValidYearsCategory(d.years_at_medtronic || 0) 
+      const source = currentSource === 'tenure_years' 
+        ? getValidYearsCategory(d.tenure_years || 0) 
         : (d as any)[currentSource];
-      const target = currentTarget === 'years_at_medtronic'
-        ? getValidYearsCategory(d.years_at_medtronic || 0)
+      const target = currentTarget === 'tenure_years'
+        ? getValidYearsCategory(d.tenure_years || 0)
         : (d as any)[currentTarget];
       
       if (!sourcesForNodes.includes(source) || !targets.includes(target)) return;
@@ -663,7 +663,7 @@ export default function AlluvialDiagram({
             
             console.log('🎯 🆕 NEW SOURCE CATEGORY:', nextSource, '- Starting fresh cycle with all targets');
             
-            // Calculate target options for the NEW source (including years_at_medtronic)
+            // Calculate target options for the NEW source (including tenure_years)
             const newTargetOptions = availableFields
               .filter(f => f.value !== nextSource)
               .map(f => f.value);
@@ -833,14 +833,14 @@ export default function AlluvialDiagram({
     // --- Sankey node/link creation and vertical centering (deduplicated) ---
     // Sort source nodes to maintain a fixed order (same as animation)
     const sortedSources = [...sources];
-    if (currentSource === 'years_at_medtronic') {
+    if (currentSource === 'tenure_years') {
       sortedSources.sort((a, b) => YEARS_CATEGORIES.indexOf(a) - YEARS_CATEGORIES.indexOf(b));
     } else {
       sortedSources.sort();
     }
     // Sort target nodes to maintain a fixed order
     const sortedTargets = [...targets];
-    if (currentTarget === 'years_at_medtronic') {
+    if (currentTarget === 'tenure_years') {
       sortedTargets.sort((a, b) => YEARS_CATEGORIES.indexOf(a) - YEARS_CATEGORIES.indexOf(b));
     } else {
       sortedTargets.sort();
@@ -848,18 +848,18 @@ export default function AlluvialDiagram({
 
     // Sankey transformation accessors
     const sourceAccessor = (d: any) =>
-      currentSource === 'years_at_medtronic'
-        ? getYearsCategory(d.years_at_medtronic || 0)
+      currentSource === 'tenure_years'
+        ? getYearsCategory(d.tenure_years || 0)
         : (d as any)[currentSource];
     const targetAccessor = (d: any) =>
-      currentTarget === 'years_at_medtronic'
-        ? getYearsCategory(d.years_at_medtronic || 0)
+      currentTarget === 'tenure_years'
+        ? getYearsCategory(d.tenure_years || 0)
         : (d as any)[currentTarget];
 
     // Filter data to only include valid values
     const validData = filteredData.filter(d =>
-      (currentSource !== 'years_at_medtronic' || d.years_at_medtronic !== null) &&
-      (currentTarget !== 'years_at_medtronic' || d.years_at_medtronic !== null)
+      (currentSource !== 'tenure_years' || d.tenure_years !== null) &&
+      (currentTarget !== 'tenure_years' || d.tenure_years !== null)
     );
 
     // Debug data
@@ -1471,7 +1471,7 @@ export default function AlluvialDiagram({
   // Create sorted targets for consistent highlighting
   const sortedTargetsForHighlight = useMemo(() => {
     const sorted = [...targets];
-    if (currentTarget === 'years_at_medtronic') {
+    if (currentTarget === 'tenure_years') {
       // Sort years in chronological order
       sorted.sort((a, b) => YEARS_CATEGORIES.indexOf(a) - YEARS_CATEGORIES.indexOf(b));
     } else if (currentTarget === 'learning_style') {
@@ -1656,7 +1656,7 @@ export default function AlluvialDiagram({
     let visualOrder: string[] = [];
     if (filteredData.length && chartHeight > 0 && chartHeight > 0) {
       const sourcesForNodes = [...sources];
-  if (currentSource === 'years_at_medtronic') {
+  if (currentSource === 'tenure_years') {
         sourcesForNodes.sort((a, b) => YEARS_CATEGORIES.indexOf(a) - YEARS_CATEGORIES.indexOf(b));
   } else {
         sourcesForNodes.sort();
@@ -1667,8 +1667,8 @@ export default function AlluvialDiagram({
       ];
       const linksMap = new Map<string, { source: string; target: string; value: number, isDummy?: boolean }>();
       filteredData.forEach((d) => {
-        const source = currentSource === 'years_at_medtronic' ? getYearsCategory(d.years_at_medtronic || 0) : (d as any)[currentSource];
-        const target = currentTarget === 'years_at_medtronic' ? getYearsCategory(d.years_at_medtronic || 0) : (d as any)[currentTarget];
+        const source = currentSource === 'tenure_years' ? getYearsCategory(d.tenure_years || 0) : (d as any)[currentSource];
+        const target = currentTarget === 'tenure_years' ? getYearsCategory(d.tenure_years || 0) : (d as any)[currentTarget];
         const sourceId = `${currentSource}:${source}`;
         const targetId = `${currentTarget}:${target}`;
         if (!sourcesForNodes.includes(source) || !targets.includes(target)) return;

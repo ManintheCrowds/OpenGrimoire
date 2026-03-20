@@ -22,7 +22,7 @@ export function VisualizationHeader({
     >
       <img
         src={logoSrc}
-        alt="Medtronic Logo"
+        alt=""
         style={{ height: 96, width: 'auto', flexShrink: 0 }}
         className="mr-6"
       />

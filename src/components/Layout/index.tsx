@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/" className="text-xl font-bold text-blue-600">
-                  Medtronic WE Summit
+                  Event Visualization Platform
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -49,7 +49,7 @@ export function Layout({ children }: LayoutProps) {
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} Medtronic. All rights reserved.
+            © {new Date().getFullYear()} Event Visualization Platform
           </p>
         </div>
       </footer>

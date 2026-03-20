@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Medtronic WE Summit Visualization Platform is built using a modern, scalable architecture that prioritizes performance, maintainability, and user experience. This document provides a comprehensive overview of the system architecture, design patterns, and technical decisions.
+The OpenAtlas (Agent Context Atlas) visualization platform is built using a modern, scalable architecture that prioritizes performance, maintainability, and user experience. This document provides a comprehensive overview of the system architecture, design patterns, and technical decisions.
 
 ## High-Level Architecture
 
@@ -209,7 +209,7 @@ Database Change → Supabase Realtime → WebSocket → Client Update → UI Ref
 CREATE TABLE survey_responses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   attendee_id UUID REFERENCES attendees(id),
-  years_at_medtronic INTEGER,
+  tenure_years INTEGER,
   learning_style TEXT,
   motivation TEXT,
   peak_performance TEXT,
@@ -302,7 +302,7 @@ CREATE MATERIALIZED VIEW survey_analytics AS
 SELECT 
   learning_style,
   COUNT(*) as response_count,
-  AVG(years_at_medtronic) as avg_years
+  AVG(tenure_years) as avg_years
 FROM survey_responses
 WHERE test_data = FALSE
 GROUP BY learning_style;
@@ -424,14 +424,14 @@ class ErrorBoundary extends React.Component {
 
 ## Conclusion
 
-This architecture provides a solid foundation for the Medtronic WE Summit Visualization Platform, balancing performance, maintainability, and scalability. The modular design allows for easy extension and modification while maintaining code quality and user experience standards.
+This architecture provides a solid foundation for OpenAtlas, balancing performance, maintainability, and scalability. The modular design allows for easy extension and modification while maintaining code quality and user experience standards.
 
 ### Survey Response Data Model
 ```typescript
 interface SurveyResponse {
   id: string;
   attendeeId: string;
-  years_at_medtronic: number;
+  tenure_years: number;
   learning_style: 'visual' | 'auditory' | 'kinesthetic' | 'reading_writing';
   motivation: 'impact' | 'growth' | 'recognition' | 'autonomy' | 'purpose';
   peak_performance: 'Extrovert, Morning' | 'Extrovert, Evening' | 'Introvert, Morning' | 'Introvert, Night' | 'Ambivert, Morning' | 'Ambivert, Night';

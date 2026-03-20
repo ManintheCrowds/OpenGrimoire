@@ -246,36 +246,36 @@
     <script>
         // Full dataset from JSON
         const attendeeData = [
-            {"id": "001", "attendee": {"first_name": "Alex", "last_name": "Johnson", "is_anonymous": false}, "years_at_medtronic": 3, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Introvert, Morning", "motivation": "growth", "connections": ["002", "015", "023"]},
-            {"id": "002", "attendee": {"first_name": "Sarah", "last_name": "Chen", "is_anonymous": false}, "years_at_medtronic": 7, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Extrovert, Morning", "motivation": "impact", "connections": ["001", "004", "018"]},
-            {"id": "003", "attendee": {"first_name": "Marcus", "last_name": "Williams", "is_anonymous": false}, "years_at_medtronic": 12, "learning_style": "auditory", "shaped_by": "team", "peak_performance": "Ambivert, Morning", "motivation": "purpose", "connections": ["008", "012", "025"]},
-            {"id": "004", "attendee": {"first_name": "Emily", "last_name": "Rodriguez", "is_anonymous": false}, "years_at_medtronic": 15, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Introvert, Night", "motivation": "autonomy", "connections": ["002", "009", "016"]},
-            {"id": "005", "attendee": {"first_name": "James", "last_name": "Thompson", "is_anonymous": false}, "years_at_medtronic": 22, "learning_style": "visual", "shaped_by": "failure", "peak_performance": "Extrovert, Evening", "motivation": "recognition", "connections": ["007", "013", "020"]},
-            {"id": "006", "attendee": {"first_name": "Lisa", "last_name": "Park", "is_anonymous": false}, "years_at_medtronic": 4, "learning_style": "kinesthetic", "shaped_by": "mentor", "peak_performance": "Ambivert, Night", "motivation": "growth", "connections": ["010", "014", "027"]},
-            {"id": "007", "attendee": {"first_name": "David", "last_name": "Kumar", "is_anonymous": false}, "years_at_medtronic": 9, "learning_style": "auditory", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "impact", "connections": ["005", "011", "019"]},
-            {"id": "008", "attendee": {"first_name": "Maria", "last_name": "Garcia", "is_anonymous": false}, "years_at_medtronic": 6, "learning_style": "reading_writing", "shaped_by": "team", "peak_performance": "Extrovert, Morning", "motivation": "purpose", "connections": ["003", "017", "024"]},
-            {"id": "009", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "years_at_medtronic": 11, "learning_style": "visual", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "autonomy", "connections": ["004", "021", "028"]},
-            {"id": "010", "attendee": {"first_name": "Robert", "last_name": "Miller", "is_anonymous": false}, "years_at_medtronic": 18, "learning_style": "kinesthetic", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "recognition", "connections": ["006", "022", "029"]},
-            {"id": "011", "attendee": {"first_name": "Jennifer", "last_name": "Lee", "is_anonymous": false}, "years_at_medtronic": 2, "learning_style": "auditory", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "growth", "connections": ["007", "026", "030"]},
-            {"id": "012", "attendee": {"first_name": "Michael", "last_name": "Brown", "is_anonymous": false}, "years_at_medtronic": 14, "learning_style": "reading_writing", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "purpose", "connections": ["003", "015", "021"]},
-            {"id": "013", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "years_at_medtronic": 25, "learning_style": "visual", "shaped_by": "failure", "peak_performance": "Ambivert, Night", "motivation": "impact", "connections": ["005", "018", "027"]},
-            {"id": "014", "attendee": {"first_name": "Amanda", "last_name": "Wilson", "is_anonymous": false}, "years_at_medtronic": 5, "learning_style": "kinesthetic", "shaped_by": "team", "peak_performance": "Extrovert, Morning", "motivation": "autonomy", "connections": ["006", "019", "025"]},
-            {"id": "015", "attendee": {"first_name": "Christopher", "last_name": "Davis", "is_anonymous": false}, "years_at_medtronic": 8, "learning_style": "auditory", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "recognition", "connections": ["001", "012", "023"]},
-            {"id": "016", "attendee": {"first_name": "Jessica", "last_name": "Martinez", "is_anonymous": false}, "years_at_medtronic": 13, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "growth", "connections": ["004", "020", "028"]},
-            {"id": "017", "attendee": {"first_name": "Kevin", "last_name": "Anderson", "is_anonymous": false}, "years_at_medtronic": 1, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "purpose", "connections": ["008", "024", "030"]},
-            {"id": "018", "attendee": {"first_name": "Rachel", "last_name": "Taylor", "is_anonymous": false}, "years_at_medtronic": 10, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "impact", "connections": ["002", "013", "026"]},
-            {"id": "019", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "years_at_medtronic": 7, "learning_style": "auditory", "shaped_by": "team", "peak_performance": "Ambivert, Night", "motivation": "autonomy", "connections": ["007", "014", "022"]},
-            {"id": "020", "attendee": {"first_name": "Brandon", "last_name": "White", "is_anonymous": false}, "years_at_medtronic": 16, "learning_style": "reading_writing", "shaped_by": "failure", "peak_performance": "Extrovert, Morning", "motivation": "recognition", "connections": ["005", "016", "029"]},
-            {"id": "021", "attendee": {"first_name": "Stephanie", "last_name": "Jackson", "is_anonymous": false}, "years_at_medtronic": 4, "learning_style": "visual", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "growth", "connections": ["009", "012", "027"]},
-            {"id": "022", "attendee": {"first_name": "Daniel", "last_name": "Thomas", "is_anonymous": false}, "years_at_medtronic": 23, "learning_style": "kinesthetic", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "purpose", "connections": ["010", "019", "025"]},
-            {"id": "023", "attendee": {"first_name": "Nicole", "last_name": "Moore", "is_anonymous": false}, "years_at_medtronic": 6, "learning_style": "auditory", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "impact", "connections": ["001", "015", "024"]},
-            {"id": "024", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "years_at_medtronic": 9, "learning_style": "reading_writing", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "autonomy", "connections": ["008", "017", "023"]},
-            {"id": "025", "attendee": {"first_name": "Ryan", "last_name": "Harris", "is_anonymous": false}, "years_at_medtronic": 12, "learning_style": "visual", "shaped_by": "team", "peak_performance": "Ambivert, Night", "motivation": "recognition", "connections": ["003", "014", "022"]},
-            {"id": "026", "attendee": {"first_name": "Melissa", "last_name": "Clark", "is_anonymous": false}, "years_at_medtronic": 2, "learning_style": "kinesthetic", "shaped_by": "failure", "peak_performance": "Extrovert, Morning", "motivation": "growth", "connections": ["011", "018", "030"]},
-            {"id": "027", "attendee": {"first_name": "Gregory", "last_name": "Lewis", "is_anonymous": false}, "years_at_medtronic": 19, "learning_style": "auditory", "shaped_by": "other", "peak_performance": "Introvert, Evening", "motivation": "purpose", "connections": ["006", "013", "021"]},
-            {"id": "028", "attendee": {"first_name": "Samantha", "last_name": "Walker", "is_anonymous": false}, "years_at_medtronic": 8, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "impact", "connections": ["009", "016", "029"]},
-            {"id": "029", "attendee": {"first_name": "Jonathan", "last_name": "Hall", "is_anonymous": false}, "years_at_medtronic": 21, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Extrovert, Night", "motivation": "autonomy", "connections": ["010", "020", "028"]},
-            {"id": "030", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "years_at_medtronic": 5, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Introvert, Night", "motivation": "recognition", "connections": ["011", "017", "026"]}
+            {"id": "001", "attendee": {"first_name": "Alex", "last_name": "Johnson", "is_anonymous": false}, "tenure_years": 3, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Introvert, Morning", "motivation": "growth", "connections": ["002", "015", "023"]},
+            {"id": "002", "attendee": {"first_name": "Sarah", "last_name": "Chen", "is_anonymous": false}, "tenure_years": 7, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Extrovert, Morning", "motivation": "impact", "connections": ["001", "004", "018"]},
+            {"id": "003", "attendee": {"first_name": "Marcus", "last_name": "Williams", "is_anonymous": false}, "tenure_years": 12, "learning_style": "auditory", "shaped_by": "team", "peak_performance": "Ambivert, Morning", "motivation": "purpose", "connections": ["008", "012", "025"]},
+            {"id": "004", "attendee": {"first_name": "Emily", "last_name": "Rodriguez", "is_anonymous": false}, "tenure_years": 15, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Introvert, Night", "motivation": "autonomy", "connections": ["002", "009", "016"]},
+            {"id": "005", "attendee": {"first_name": "James", "last_name": "Thompson", "is_anonymous": false}, "tenure_years": 22, "learning_style": "visual", "shaped_by": "failure", "peak_performance": "Extrovert, Evening", "motivation": "recognition", "connections": ["007", "013", "020"]},
+            {"id": "006", "attendee": {"first_name": "Lisa", "last_name": "Park", "is_anonymous": false}, "tenure_years": 4, "learning_style": "kinesthetic", "shaped_by": "mentor", "peak_performance": "Ambivert, Night", "motivation": "growth", "connections": ["010", "014", "027"]},
+            {"id": "007", "attendee": {"first_name": "David", "last_name": "Kumar", "is_anonymous": false}, "tenure_years": 9, "learning_style": "auditory", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "impact", "connections": ["005", "011", "019"]},
+            {"id": "008", "attendee": {"first_name": "Maria", "last_name": "Garcia", "is_anonymous": false}, "tenure_years": 6, "learning_style": "reading_writing", "shaped_by": "team", "peak_performance": "Extrovert, Morning", "motivation": "purpose", "connections": ["003", "017", "024"]},
+            {"id": "009", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "tenure_years": 11, "learning_style": "visual", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "autonomy", "connections": ["004", "021", "028"]},
+            {"id": "010", "attendee": {"first_name": "Robert", "last_name": "Miller", "is_anonymous": false}, "tenure_years": 18, "learning_style": "kinesthetic", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "recognition", "connections": ["006", "022", "029"]},
+            {"id": "011", "attendee": {"first_name": "Jennifer", "last_name": "Lee", "is_anonymous": false}, "tenure_years": 2, "learning_style": "auditory", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "growth", "connections": ["007", "026", "030"]},
+            {"id": "012", "attendee": {"first_name": "Michael", "last_name": "Brown", "is_anonymous": false}, "tenure_years": 14, "learning_style": "reading_writing", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "purpose", "connections": ["003", "015", "021"]},
+            {"id": "013", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "tenure_years": 25, "learning_style": "visual", "shaped_by": "failure", "peak_performance": "Ambivert, Night", "motivation": "impact", "connections": ["005", "018", "027"]},
+            {"id": "014", "attendee": {"first_name": "Amanda", "last_name": "Wilson", "is_anonymous": false}, "tenure_years": 5, "learning_style": "kinesthetic", "shaped_by": "team", "peak_performance": "Extrovert, Morning", "motivation": "autonomy", "connections": ["006", "019", "025"]},
+            {"id": "015", "attendee": {"first_name": "Christopher", "last_name": "Davis", "is_anonymous": false}, "tenure_years": 8, "learning_style": "auditory", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "recognition", "connections": ["001", "012", "023"]},
+            {"id": "016", "attendee": {"first_name": "Jessica", "last_name": "Martinez", "is_anonymous": false}, "tenure_years": 13, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "growth", "connections": ["004", "020", "028"]},
+            {"id": "017", "attendee": {"first_name": "Kevin", "last_name": "Anderson", "is_anonymous": false}, "tenure_years": 1, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "purpose", "connections": ["008", "024", "030"]},
+            {"id": "018", "attendee": {"first_name": "Rachel", "last_name": "Taylor", "is_anonymous": false}, "tenure_years": 10, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "impact", "connections": ["002", "013", "026"]},
+            {"id": "019", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "tenure_years": 7, "learning_style": "auditory", "shaped_by": "team", "peak_performance": "Ambivert, Night", "motivation": "autonomy", "connections": ["007", "014", "022"]},
+            {"id": "020", "attendee": {"first_name": "Brandon", "last_name": "White", "is_anonymous": false}, "tenure_years": 16, "learning_style": "reading_writing", "shaped_by": "failure", "peak_performance": "Extrovert, Morning", "motivation": "recognition", "connections": ["005", "016", "029"]},
+            {"id": "021", "attendee": {"first_name": "Stephanie", "last_name": "Jackson", "is_anonymous": false}, "tenure_years": 4, "learning_style": "visual", "shaped_by": "other", "peak_performance": "Introvert, Night", "motivation": "growth", "connections": ["009", "012", "027"]},
+            {"id": "022", "attendee": {"first_name": "Daniel", "last_name": "Thomas", "is_anonymous": false}, "tenure_years": 23, "learning_style": "kinesthetic", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "purpose", "connections": ["010", "019", "025"]},
+            {"id": "023", "attendee": {"first_name": "Nicole", "last_name": "Moore", "is_anonymous": false}, "tenure_years": 6, "learning_style": "auditory", "shaped_by": "mentor", "peak_performance": "Extrovert, Evening", "motivation": "impact", "connections": ["001", "015", "024"]},
+            {"id": "024", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "tenure_years": 9, "learning_style": "reading_writing", "shaped_by": "challenge", "peak_performance": "Introvert, Morning", "motivation": "autonomy", "connections": ["008", "017", "023"]},
+            {"id": "025", "attendee": {"first_name": "Ryan", "last_name": "Harris", "is_anonymous": false}, "tenure_years": 12, "learning_style": "visual", "shaped_by": "team", "peak_performance": "Ambivert, Night", "motivation": "recognition", "connections": ["003", "014", "022"]},
+            {"id": "026", "attendee": {"first_name": "Melissa", "last_name": "Clark", "is_anonymous": false}, "tenure_years": 2, "learning_style": "kinesthetic", "shaped_by": "failure", "peak_performance": "Extrovert, Morning", "motivation": "growth", "connections": ["011", "018", "030"]},
+            {"id": "027", "attendee": {"first_name": "Gregory", "last_name": "Lewis", "is_anonymous": false}, "tenure_years": 19, "learning_style": "auditory", "shaped_by": "other", "peak_performance": "Introvert, Evening", "motivation": "purpose", "connections": ["006", "013", "021"]},
+            {"id": "028", "attendee": {"first_name": "Samantha", "last_name": "Walker", "is_anonymous": false}, "tenure_years": 8, "learning_style": "reading_writing", "shaped_by": "success", "peak_performance": "Ambivert, Morning", "motivation": "impact", "connections": ["009", "016", "029"]},
+            {"id": "029", "attendee": {"first_name": "Jonathan", "last_name": "Hall", "is_anonymous": false}, "tenure_years": 21, "learning_style": "visual", "shaped_by": "mentor", "peak_performance": "Extrovert, Night", "motivation": "autonomy", "connections": ["010", "020", "028"]},
+            {"id": "030", "attendee": {"first_name": "Anonymous", "last_name": null, "is_anonymous": true}, "tenure_years": 5, "learning_style": "kinesthetic", "shaped_by": "challenge", "peak_performance": "Introvert, Night", "motivation": "recognition", "connections": ["011", "017", "026"]}
         ];
         
         // Color schemes
@@ -319,7 +319,7 @@
         
         // Helper function for node radius
         function getRadius(d) {
-            return 8 + Math.sqrt(d.years_at_medtronic) * 2.5;
+            return 8 + Math.sqrt(d.tenure_years) * 2.5;
         }
         
         // Initialize positions
@@ -369,7 +369,7 @@
                 .style('top', (event.pageY - 10) + 'px')
                 .html(`
                     <strong>${name}</strong><br>
-                    ${d.years_at_medtronic} years at Medtronic<br>
+                    ${d.tenure_years} years tenure<br>
                     ${d.learning_style.replace('_', '/')} learner<br>
                     Motivated by ${d.motivation}
                 `);
@@ -486,11 +486,11 @@
                     
                     // Highlight veterans
                     nodes.select('.highlight-ring')
-                        .filter(d => d.years_at_medtronic >= 15)
+                        .filter(d => d.tenure_years >= 15)
                         .style('opacity', 1)
                         .style('animation', 'pulse 2s ease-in-out infinite');
                     
-                    const veterans = attendeeData.filter(d => d.years_at_medtronic >= 15).length;
+                    const veterans = attendeeData.filter(d => d.tenure_years >= 15).length;
                     d3.select('.insight-number').text(veterans);
                     d3.select('.insight-text').text('Veterans ready to mentor');
                 }

@@ -1,4 +1,4 @@
-# Medtronic Survey & Moderation MVP - Deployment Guide
+# OpenAtlas — survey & moderation — deployment guide
 
 ## 🎯 MVP Focus: Survey & Moderation Only
 
@@ -16,7 +16,7 @@ This deployment guide focuses on the two essential features:
 ### Step 1: Clone Repository
 ```bash
 git clone <your-repo-url>
-cd medtronic-we-summit
+cd OpenAtlas
 ```
 
 ### Step 2: Environment Setup
@@ -29,14 +29,21 @@ cp .env.example .env.local
 nano .env.local
 ```
 
-Required environment variables:
+Required environment variables (use **your** values from Supabase **Project Settings → API** — do not paste real keys into git or tickets):
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key>
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 NODE_ENV=production
+# Required in production: GET /api/alignment-context returns 503 Misconfigured if missing/blank.
+ALIGNMENT_CONTEXT_API_SECRET=<long-random-secret>
 ```
+
+Callers (agents, cron, internal tools) must send header `x-alignment-context-key: <same value>` on each request to that route.
+
+See [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md) for what must never be committed or logged.
 
 ### Step 3: Database Setup
 1. Go to your Supabase project SQL editor
@@ -49,7 +56,7 @@ NODE_ENV=production
 docker-compose up -d
 
 # Check logs
-docker-compose logs -f medtronic-survey
+docker-compose logs -f openatlas-survey
 ```
 
 ### Step 5: Create Admin User
@@ -70,7 +77,7 @@ In Supabase Auth dashboard:
 
 Essential files you need:
 ```
-MEDTRONIC/
+OpenAtlas/
 ├── src/
 │   ├── app/
 │   │   ├── api/survey/route.ts           # Survey submission API
@@ -131,9 +138,12 @@ sudo systemctl enable certbot.timer
 ## 🛡️ Security Considerations
 
 1. **Environment Variables**: Never commit `.env.local` to version control
-2. **Database RLS**: Policies are configured for user data protection
-3. **Admin Access**: Only users with `role: "admin"` can access moderation
-4. **HTTPS**: Always use SSL/TLS in production
+2. **Docs placeholders**: Use opaque placeholders in examples only — see [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md)
+3. **Brain map header**: `NEXT_PUBLIC_BRAIN_MAP_SECRET` is visible in the browser bundle (gate token, not a true secret). Prefer server-only `BRAIN_MAP_SECRET` verification; details in [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md)
+4. **Database RLS**: Policies are configured for user data protection
+5. **Admin Access**: Only users with `role: "admin"` can access moderation
+6. **Alignment context API**: With `NODE_ENV=production`, `ALIGNMENT_CONTEXT_API_SECRET` must be set (non-empty). The route uses the service role server-side; without the secret the app refuses to serve reads (503). See API table in [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md).
+7. **HTTPS**: Always use SSL/TLS in production
 
 ## 🔍 Monitoring & Maintenance
 
@@ -146,7 +156,7 @@ curl -f http://localhost:3000/
 docker-compose ps
 
 # View logs
-docker-compose logs --tail=100 medtronic-survey
+docker-compose logs --tail=100 openatlas-survey
 ```
 
 ### Database Backup

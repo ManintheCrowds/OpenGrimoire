@@ -60,6 +60,11 @@ export default function AdminPage() {
             Review and moderate survey responses to ensure appropriate content for
             visualization.
           </p>
+          <p className="mt-3 text-sm text-gray-500">
+            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/alignment">
+              Alignment context (operator CRUD)
+            </a>
+          </p>
         </div>
 
         <AdminPanel />

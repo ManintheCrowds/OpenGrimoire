@@ -27,7 +27,7 @@ export const Legend: React.FC<LegendProps> = ({ className = '' }) => {
 
   return (
     <div className={`flex flex-col gap-2 p-4 bg-white rounded-lg shadow ${className}`}>
-      <h3 className="text-lg font-semibold">Years at Medtronic</h3>
+      <h3 className="text-lg font-semibold">Tenure (years)</h3>
       <div className="flex flex-col gap-2">
         {categories.map((category) => (
           <div key={category} className="flex items-center gap-2">

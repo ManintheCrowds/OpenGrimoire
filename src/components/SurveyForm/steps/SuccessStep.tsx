@@ -8,7 +8,7 @@ interface SuccessStepProps {
 
 export function SuccessStep({ formData }: SuccessStepProps) {
   return (
-    <div className="text-center">
+    <div className="text-center" data-testid="success-step">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
         <svg
           className="h-6 w-6 text-green-600"
@@ -34,7 +34,7 @@ export function SuccessStep({ formData }: SuccessStepProps) {
       </p>
       <p className="mt-4 text-sm text-gray-500">
         Your insights will help us better understand and visualize the diverse
-        perspectives and experiences within our Medtronic community.
+        perspectives and experiences within our community.
       </p>
       {formData.unique_quality && (
         <div className="mt-8 rounded-lg bg-gray-50 p-4">
@@ -43,7 +43,7 @@ export function SuccessStep({ formData }: SuccessStepProps) {
             included in the visualization:
           </p>
           <p className="mt-2 text-sm italic text-gray-800">
-            "{formData.unique_quality}"
+            &quot;{formData.unique_quality}&quot;
           </p>
         </div>
       )}

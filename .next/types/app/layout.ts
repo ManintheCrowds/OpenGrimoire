@@ -1,4 +1,4 @@
-// File: C:\Users\artin\Downloads\MEDTRONIC\MEDTRONIC\src\app\layout.tsx
+// File: D:\portfolio-harness\OpenAtlas\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

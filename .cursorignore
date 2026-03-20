@@ -1,0 +1,5 @@
+﻿# Playwright and build
+playwright-report/
+node_modules/
+.next/
+out/

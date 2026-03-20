@@ -14,7 +14,7 @@ export function YearsStep({ formData, updateFormData, nextStep, prevStep }: Year
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.years_at_medtronic === undefined) {
+    if (formData.tenure_years === undefined) {
       setError('Please select the number of years');
       return;
     }
@@ -32,9 +32,9 @@ export function YearsStep({ formData, updateFormData, nextStep, prevStep }: Year
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
+      <div aria-invalid={!!error} aria-describedby={error ? 'years_error' : undefined}>
         <label className="form-label text-lg">
-          How long have you been at Medtronic?
+          How long have you been here?
         </label>
         <div className="grid grid-cols-2 gap-4 mt-4">
           {yearOptions.map((option) => (
@@ -43,22 +43,22 @@ export function YearsStep({ formData, updateFormData, nextStep, prevStep }: Year
               type="button"
               onClick={() => {
                 setError(null);
-                updateFormData({ years_at_medtronic: option.value });
+                updateFormData({ tenure_years: option.value });
               }}
               className={`
                 p-4 text-left rounded-lg border-2 transition-colors
                 ${
-                  formData.years_at_medtronic === option.value
+                  formData.tenure_years === option.value
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-200'
                 }
               `}
             >
-              <div className="font-medium text-[var(--medtronic-navy-blue)]">{option.label}</div>
+              <div className="font-medium text-[var(--brand-navy-blue)]">{option.label}</div>
             </button>
           ))}
         </div>
-        {error && <p className="mt-2 text-sm text-[var(--medtronic-error)]">{error}</p>}
+        {error && <p id="years_error" className="mt-2 text-sm text-[var(--brand-error)]" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between gap-4">
@@ -66,12 +66,14 @@ export function YearsStep({ formData, updateFormData, nextStep, prevStep }: Year
           type="button"
           onClick={prevStep}
           className="btn btn-secondary flex-1"
+          data-testid="prev-button"
         >
           Previous
         </button>
         <button
           type="submit"
           className="btn btn-primary flex-1"
+          data-testid="next-button"
         >
           Next
         </button>

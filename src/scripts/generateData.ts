@@ -42,7 +42,7 @@ interface SurveyResponse {
   is_anonymous: boolean;
   location: string;
   responses: {
-    years_at_medtronic: number;
+    tenure_years: number;
     learning_style: LearningStyle;
     shaped_by: ShapedBy;
     peak_performance: PeakPerformance;
@@ -52,7 +52,7 @@ interface SurveyResponse {
 }
 
 interface SurveyData {
-  medtronic_data: SurveyResponse[];
+  survey_data: SurveyResponse[];
 }
 
 const locations = [
@@ -115,7 +115,7 @@ const uniqueQualities = [
   "Despite my long tenure, I maintain a beginner's mindset that allows me to constantly question assumptions and find innovative approaches to longstanding challenges.",
   "My experience as a competitive athlete taught me how to rapidly adapt to changing circumstances and thrive under pressure, skills I bring to every project.",
   "I have a rare combination of technical expertise and communication skills that allows me to translate complex regulatory requirements into actionable engineering guidelines.",
-  "Having been a patient who used a Medtronic device before joining the company, I bring genuine empathy and firsthand experience to our patient-centered design discussions.",
+  "Having been a patient who used a medical device before joining the organization, I bring genuine empathy and firsthand experience to patient-centered design discussions.",
   "I excel at seeing connections between seemingly unrelated fields, which has led to several cross-functional innovations that merged technologies from different business units.",
   "My dual background in materials science and medicine gives me unique insights when troubleshooting biocompatibility issues in product development.",
   "I've developed a talent for spotting hidden talent in teams and creating opportunities for people to shine in ways they didn't know they could.",
@@ -130,7 +130,7 @@ function getRandomElement<T>(array: T[]): T {
 }
 
 function generateMockData(): SurveyData {
-  const medtronic_data: SurveyResponse[] = Array.from({ length: 300 }, (_, index) => {
+  const survey_data: SurveyResponse[] = Array.from({ length: 300 }, (_, index) => {
     const id = `user_${String(index + 1).padStart(3, '0')}`;
     const baseDate = new Date('2025-07-08T09:00:00Z');
     const timestamp = new Date(baseDate.getTime() + index * 3 * 60000).toISOString();
@@ -146,7 +146,7 @@ function generateMockData(): SurveyData {
       is_anonymous: isAnonymous,
       location,
       responses: {
-        years_at_medtronic: Math.floor(Math.random() * 25),
+        tenure_years: Math.floor(Math.random() * 25),
         learning_style: getRandomElement(learningStyles),
         shaped_by: getRandomElement(shapedByOptions),
         peak_performance: getRandomElement(peakPerformanceOptions),
@@ -156,7 +156,7 @@ function generateMockData(): SurveyData {
     };
   });
 
-  return { medtronic_data };
+  return { survey_data };
 }
 
 const mockData = generateMockData();

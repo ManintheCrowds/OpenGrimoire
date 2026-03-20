@@ -6,7 +6,7 @@
       "last_name": "Johnson",
       "is_anonymous": false
     },
-    "years_at_medtronic": 3,
+    "tenure_years": 3,
     "yearsCategory": "0-5",
     "learning_style": "visual",
     "shaped_by": "mentor",
@@ -22,7 +22,7 @@
       "last_name": "Chen",
       "is_anonymous": false
     },
-    "years_at_medtronic": 7,
+    "tenure_years": 7,
     "yearsCategory": "6-10", 
     "learning_style": "kinesthetic",
     "shaped_by": "challenge",
@@ -38,7 +38,7 @@
       "last_name": "Williams",
       "is_anonymous": false
     },
-    "years_at_medtronic": 12,
+    "tenure_years": 12,
     "yearsCategory": "11-15",
     "learning_style": "auditory",
     "shaped_by": "team",
@@ -54,7 +54,7 @@
       "last_name": "Rodriguez",
       "is_anonymous": false
     },
-    "years_at_medtronic": 15,
+    "tenure_years": 15,
     "yearsCategory": "11-15",
     "learning_style": "reading_writing",
     "shaped_by": "success",
@@ -70,7 +70,7 @@
       "last_name": "Thompson",
       "is_anonymous": false
     },
-    "years_at_medtronic": 22,
+    "tenure_years": 22,
     "yearsCategory": "20+",
     "learning_style": "visual",
     "shaped_by": "failure", 
@@ -86,7 +86,7 @@
       "last_name": "Park",
       "is_anonymous": false
     },
-    "years_at_medtronic": 4,
+    "tenure_years": 4,
     "yearsCategory": "0-5",
     "learning_style": "kinesthetic",
     "shaped_by": "mentor",
@@ -102,7 +102,7 @@
       "last_name": "Kumar",
       "is_anonymous": false
     },
-    "years_at_medtronic": 9,
+    "tenure_years": 9,
     "yearsCategory": "6-10",
     "learning_style": "auditory",
     "shaped_by": "challenge",
@@ -118,7 +118,7 @@
       "last_name": "Garcia",
       "is_anonymous": false
     },
-    "years_at_medtronic": 6,
+    "tenure_years": 6,
     "yearsCategory": "6-10",
     "learning_style": "reading_writing",
     "shaped_by": "team",
@@ -134,7 +134,7 @@
       "last_name": null,
       "is_anonymous": true
     },
-    "years_at_medtronic": 11,
+    "tenure_years": 11,
     "yearsCategory": "11-15",
     "learning_style": "visual",
     "shaped_by": "other",
@@ -150,7 +150,7 @@
       "last_name": "Miller",
       "is_anonymous": false
     },
-    "years_at_medtronic": 18,
+    "tenure_years": 18,
     "yearsCategory": "11-15",
     "learning_style": "kinesthetic",
     "shaped_by": "success",
@@ -166,7 +166,7 @@
       "last_name": "Lee",
       "is_anonymous": false
     },
-    "years_at_medtronic": 2,
+    "tenure_years": 2,
     "yearsCategory": "0-5",
     "learning_style": "auditory",
     "shaped_by": "mentor",
@@ -182,7 +182,7 @@
       "last_name": "Brown",
       "is_anonymous": false
     },
-    "years_at_medtronic": 14,
+    "tenure_years": 14,
     "yearsCategory": "11-15",
     "learning_style": "reading_writing",
     "shaped_by": "challenge",
@@ -198,7 +198,7 @@
       "last_name": null,
       "is_anonymous": true
     },
-    "years_at_medtronic": 25,
+    "tenure_years": 25,
     "yearsCategory": "20+",
     "learning_style": "visual",
     "shaped_by": "failure",
@@ -214,7 +214,7 @@
       "last_name": "Wilson",
       "is_anonymous": false
     },
-    "years_at_medtronic": 5,
+    "tenure_years": 5,
     "yearsCategory": "0-5",
     "learning_style": "kinesthetic",
     "shaped_by": "team",
@@ -230,7 +230,7 @@
       "last_name": "Davis",
       "is_anonymous": false
     },
-    "years_at_medtronic": 8,
+    "tenure_years": 8,
     "yearsCategory": "6-10",
     "learning_style": "auditory",
     "shaped_by": "other",
@@ -246,7 +246,7 @@
       "last_name": "Martinez",
       "is_anonymous": false
     },
-    "years_at_medtronic": 13,
+    "tenure_years": 13,
     "yearsCategory": "11-15",
     "learning_style": "reading_writing",
     "shaped_by": "success",
@@ -262,7 +262,7 @@
       "last_name": "Anderson",
       "is_anonymous": false
     },
-    "years_at_medtronic": 1,
+    "tenure_years": 1,
     "yearsCategory": "0-5",
     "learning_style": "visual",
     "shaped_by": "mentor",
@@ -278,7 +278,7 @@
       "last_name": "Taylor",
       "is_anonymous": false
     },
-    "years_at_medtronic": 10,
+    "tenure_years": 10,
     "yearsCategory": "6-10",
     "learning_style": "kinesthetic",
     "shaped_by": "challenge",
@@ -294,7 +294,7 @@
       "last_name": null,
       "is_anonymous": true
     },
-    "years_at_medtronic": 7,
+    "tenure_years": 7,
     "yearsCategory": "6-10",
     "learning_style": "auditory",
     "shaped_by": "team",
@@ -310,7 +310,7 @@
       "last_name": "White",
       "is_anonymous": false
     },
-    "years_at_medtronic": 16,
+    "tenure_years": 16,
     "yearsCategory": "11-15",
     "learning_style": "reading_writing",
     "shaped_by": "failure",
@@ -326,7 +326,7 @@
       "last_name": "Jackson",
       "is_anonymous": false
     },
-    "years_at_medtronic": 4,
+    "tenure_years": 4,
     "yearsCategory": "0-5",
     "learning_style": "visual",
     "shaped_by": "other",
@@ -342,7 +342,7 @@
       "last_name": "Thomas",
       "is_anonymous": false
     },
-    "years_at_medtronic": 23,
+    "tenure_years": 23,
     "yearsCategory": "20+",
     "learning_style": "kinesthetic",
     "shaped_by": "success",
@@ -358,7 +358,7 @@
       "last_name": "Moore",
       "is_anonymous": false
     },
-    "years_at_medtronic": 6,
+    "tenure_years": 6,
     "yearsCategory": "6-10",
     "learning_style": "auditory",
     "shaped_by": "mentor",
@@ -374,7 +374,7 @@
       "last_name": null,
       "is_anonymous": true
     },
-    "years_at_medtronic": 9,
+    "tenure_years": 9,
     "yearsCategory": "6-10",
     "learning_style": "reading_writing",
     "shaped_by": "challenge",
@@ -390,7 +390,7 @@
       "last_name": "Harris",
       "is_anonymous": false
     },
-    "years_at_medtronic": 12,
+    "tenure_years": 12,
     "yearsCategory": "11-15",
     "learning_style": "visual",
     "shaped_by": "team",
@@ -406,7 +406,7 @@
       "last_name": "Clark",
       "is_anonymous": false
     },
-    "years_at_medtronic": 2,
+    "tenure_years": 2,
     "yearsCategory": "0-5",
     "learning_style": "kinesthetic",
     "shaped_by": "failure",
@@ -422,7 +422,7 @@
       "last_name": "Lewis",
       "is_anonymous": false
     },
-    "years_at_medtronic": 19,
+    "tenure_years": 19,
     "yearsCategory": "11-15",
     "learning_style": "auditory",
     "shaped_by": "other",
@@ -438,7 +438,7 @@
       "last_name": "Walker",
       "is_anonymous": false
     },
-    "years_at_medtronic": 8,
+    "tenure_years": 8,
     "yearsCategory": "6-10",
     "learning_style": "reading_writing",
     "shaped_by": "success",
@@ -454,7 +454,7 @@
       "last_name": "Hall",
       "is_anonymous": false
     },
-    "years_at_medtronic": 21,
+    "tenure_years": 21,
     "yearsCategory": "20+",
     "learning_style": "visual",
     "shaped_by": "mentor",
@@ -470,7 +470,7 @@
       "last_name": null,
       "is_anonymous": true
     },
-    "years_at_medtronic": 5,
+    "tenure_years": 5,
     "yearsCategory": "0-5",
     "learning_style": "kinesthetic",
     "shaped_by": "challenge",

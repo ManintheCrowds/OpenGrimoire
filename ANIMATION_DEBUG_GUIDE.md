@@ -66,7 +66,7 @@ Open browser dev tools and look for these debug messages:
 ```
 🎵 ChordDiagram animation useEffect: { autoPlay: true, isAutoPlayEnabled: true, ... }
 ✅ ChordDiagram starting animation cycle
-🔄 ChordDiagram cycling to: { from: "years_at_medtronic → learning_style", to: "..." }
+🔄 ChordDiagram cycling to: { from: "tenure_years → learning_style", to: "..." }
 ```
 
 ### **Step 2: Common Issues & Solutions**

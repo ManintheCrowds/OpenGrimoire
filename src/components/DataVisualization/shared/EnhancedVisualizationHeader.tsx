@@ -1,77 +1,114 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { useApprovedQuotes } from './useApprovedQuotes';
+import {
+  OPENATLAS_VIZ_MAIN_PANEL_ID,
+  OPENATLAS_VIZ_TAB_ALLUVIAL_ID,
+  OPENATLAS_VIZ_TAB_CHORD_ID,
+} from './vizLayoutIds';
 
 interface EnhancedVisualizationHeaderProps {
   visualizationType: 'alluvial' | 'chord';
   onVisualizationTypeChange: (type: 'alluvial' | 'chord') => void;
   isAutoPlay: boolean;
   onAutoPlayToggle: () => void;
+  /** Optional hint for agent-driven UIs / docs (A2UI-style declarative field). */
+  usageHint?: string;
 }
 
+/**
+ * Header for OpenAtlas data visualization (alluvial / chord).
+ * Regions: `data-region` attributes for agent or test selectors.
+ */
 export function EnhancedVisualizationHeader({
   visualizationType,
   onVisualizationTypeChange,
   isAutoPlay,
   onAutoPlayToggle,
+  usageHint,
 }: EnhancedVisualizationHeaderProps) {
   const { currentQuote, isLoading, hasQuotes } = useApprovedQuotes();
+  const alluvialTabRef = useRef<HTMLButtonElement>(null);
+  const chordTabRef = useRef<HTMLButtonElement>(null);
 
-  // Font size logic - simplified to prevent strobing
-  const quoteTextRef = useRef<HTMLSpanElement>(null);
+  const onTabListKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      if (visualizationType === 'alluvial' && e.key === 'ArrowDown') {
+        onVisualizationTypeChange('chord');
+        requestAnimationFrame(() => chordTabRef.current?.focus());
+        return;
+      }
+      if (visualizationType === 'chord' && e.key === 'ArrowUp') {
+        onVisualizationTypeChange('alluvial');
+        requestAnimationFrame(() => alluvialTabRef.current?.focus());
+      }
+    },
+    [visualizationType, onVisualizationTypeChange]
+  );
 
-  // Helper to get author name or 'Anonymous'
   const getAuthor = (author: string | undefined) => {
     if (!author || author.trim().toLowerCase() === 'anonymous') return 'Anonymous';
     return author;
   };
 
+  const headerFont = { fontFamily: 'var(--openatlas-viz-header-font)' } as const;
+
   return (
     <header
-      className="w-full flex flex-row items-center justify-between py-6 px-8"
-      style={{ 
-        minHeight: 120, 
-        background: '#170F5F', 
-        alignItems: 'center', 
-        display: 'flex' 
+      className="flex w-full flex-row items-center justify-between px-8 py-4"
+      style={{
+        minHeight: hasQuotes && currentQuote ? 120 : 88,
+        background: 'var(--openatlas-viz-header-bg)',
+        alignItems: 'center',
+        display: 'flex',
       }}
+      data-region="openatlas-viz-header"
+      {...(usageHint ? { 'data-usage-hint': usageHint } : {})}
     >
-      {/* Logo and Title - row, left-aligned */}
-      <div className="flex-shrink-0 flex flex-row items-center justify-start" style={{ minWidth: 220 }}>
-        <img
-          src="/branding/art-logo-all/art-logo-w/art-logo-en-rgb-w.png"
-          alt="Medtronic Logo"
-          style={{ height: 90, width: 'auto', marginRight: 16 }}
-        />
-        <div 
-          className="text-white font-bold whitespace-nowrap"
-          style={{ 
-            fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, \"SF Pro\", \"Roboto\", sans-serif',
-            fontSize: '1.35rem',
-            letterSpacing: 0.5,
-            textAlign: 'left',
-            lineHeight: 1.1,
-            marginTop: 0
-          }}
+      <div
+        className="flex flex-shrink-0 flex-row items-center justify-start gap-3"
+        style={{ minWidth: 220 }}
+        data-region="openatlas-viz-wordmark"
+      >
+        <div
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg font-bold text-white"
+          aria-hidden
         >
-          WE Summit Insights
+          OA
+        </div>
+        <div className="flex flex-col text-left">
+          <span
+            className="font-bold leading-tight text-white"
+            style={{ ...headerFont, fontSize: '1.35rem', letterSpacing: 0.5 }}
+          >
+            OpenAtlas
+          </span>
+          <span className="mt-0.5 text-sm font-medium text-white/80" style={headerFont}>
+            Agent Context Atlas
+          </span>
         </div>
       </div>
 
-      {/* Centered Quote */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+      <div
+        className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 text-center"
+        data-region="openatlas-viz-quote-slot"
+      >
         {isLoading ? (
-          <div className="text-white text-lg">Loading quotes...</div>
+          <span className="text-xs text-white/40" aria-live="polite">
+            Loading…
+          </span>
         ) : hasQuotes && currentQuote ? (
-          <div className="space-y-2 w-full flex flex-col items-center">
-            <div 
-              className="text-white font-bold italic px-6 rounded-lg border border-white/30 bg-white/5 backdrop-blur-sm shadow-lg mx-auto"
-              style={{ 
-                fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif',
-                fontSize: 'clamp(0.7rem, 1.8vw, 1.2rem)', // Smaller font size
-                lineHeight: '1.3',
+          <div className="flex w-full max-w-[700px] flex-col items-center space-y-2">
+            <div
+              className="mx-auto rounded-lg border border-white/30 bg-white/5 px-6 font-bold italic text-white shadow-lg backdrop-blur-sm"
+              style={{
+                ...headerFont,
+                fontSize: 'clamp(0.7rem, 1.8vw, 1.2rem)',
+                lineHeight: 1.3,
                 wordBreak: 'break-word',
                 whiteSpace: 'pre-line',
                 minHeight: 0,
@@ -88,9 +125,10 @@ export function EnhancedVisualizationHeader({
                 textOverflow: 'ellipsis',
               }}
             >
-              <span style={{ fontSize: '1.4rem', fontWeight: 900, marginRight: 6, verticalAlign: 'top' }}>&ldquo;</span>
+              <span className="text-[1.4rem] font-black" style={{ marginRight: 6, verticalAlign: 'top' }}>
+                &ldquo;
+              </span>
               <span
-                ref={quoteTextRef}
                 style={{
                   flex: 1,
                   overflow: 'hidden',
@@ -104,73 +142,84 @@ export function EnhancedVisualizationHeader({
               >
                 {currentQuote.text}
               </span>
-              <span style={{ fontSize: '1.4rem', fontWeight: 900, marginLeft: 6, verticalAlign: 'bottom' }}>&rdquo;</span>
+              <span className="text-[1.4rem] font-black" style={{ marginLeft: 6, verticalAlign: 'bottom' }}>
+                &rdquo;
+              </span>
             </div>
-            {/* Author line positioned just under the quote box */}
-            <div 
-              className="text-white text-sm font-medium"
-              style={{ 
-                fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif',
-                opacity: 0.9,
-                marginTop: '4px'
-              }}
-            >
+            <div className="text-sm font-medium text-white" style={{ ...headerFont, opacity: 0.9, marginTop: 4 }}>
               — {getAuthor(currentQuote.author)}
             </div>
           </div>
-        ) : (
-          <div 
-            className="text-white text-lg opacity-80 px-6 py-4 rounded-lg border border-white/20 bg-white/5"
-            style={{ 
-              fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif'
-            }}
-          >
-            "Share your unique qualities and they may appear here"
-          </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Controls - stacked vertically and centered */}
-      <div className="flex-shrink-0 flex flex-col items-center justify-center" style={{ minWidth: 90, height: 100, justifyContent: 'center' }}>
-        <button
-          onClick={() => onVisualizationTypeChange('alluvial')}
-          className={`w-20 h-10 mb-2 rounded-lg font-semibold transition-colors text-base border border-gray-400 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white ${visualizationType === 'alluvial' ? 'ring-2 ring-blue-400' : ''}`}
-          style={{ 
-            fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif',
-            fontSize: '0.95rem',
-            width: 80
-          }}
+      <div
+        className="flex flex-shrink-0 flex-col items-center justify-center"
+        style={{ minWidth: 90, height: 100, justifyContent: 'center' }}
+        data-region="openatlas-viz-controls"
+        role="toolbar"
+        aria-label="Visualization type and playback"
+      >
+        <div
+          role="tablist"
+          aria-label="Chart type"
+          className="mb-2 flex flex-col items-center"
+          onKeyDown={onTabListKeyDown}
         >
-          Alluvial
-        </button>
+          <button
+            ref={alluvialTabRef}
+            type="button"
+            role="tab"
+            id={OPENATLAS_VIZ_TAB_ALLUVIAL_ID}
+            aria-selected={visualizationType === 'alluvial'}
+            aria-controls={OPENATLAS_VIZ_MAIN_PANEL_ID}
+            tabIndex={visualizationType === 'alluvial' ? 0 : -1}
+            onClick={() => onVisualizationTypeChange('alluvial')}
+            className={`mb-2 h-10 w-20 rounded-lg border border-gray-400 bg-white/10 text-base font-semibold text-white/80 transition-colors hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+              visualizationType === 'alluvial' ? 'ring-2 ring-blue-400' : ''
+            }`}
+            style={{ ...headerFont, fontSize: '0.95rem', width: 80 }}
+          >
+            Alluvial
+          </button>
+          <button
+            ref={chordTabRef}
+            type="button"
+            role="tab"
+            id={OPENATLAS_VIZ_TAB_CHORD_ID}
+            aria-selected={visualizationType === 'chord'}
+            aria-controls={OPENATLAS_VIZ_MAIN_PANEL_ID}
+            tabIndex={visualizationType === 'chord' ? 0 : -1}
+            onClick={() => onVisualizationTypeChange('chord')}
+            className={`h-10 w-20 rounded-lg border border-gray-400 bg-white/10 text-base font-semibold text-white/80 transition-colors hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+              visualizationType === 'chord' ? 'ring-2 ring-blue-400' : ''
+            }`}
+            style={{ ...headerFont, fontSize: '0.95rem', width: 80 }}
+          >
+            Chord
+          </button>
+        </div>
         <button
-          onClick={() => onVisualizationTypeChange('chord')}
-          className={`w-20 h-10 mb-2 rounded-lg font-semibold transition-colors text-base border border-gray-400 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white ${visualizationType === 'chord' ? 'ring-2 ring-blue-400' : ''}`}
-          style={{ 
-            fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif',
-            fontSize: '0.95rem',
-            width: 80
-          }}
-        >
-          Chord
-        </button>
-        <button
+          type="button"
           onClick={onAutoPlayToggle}
-          className="w-20 h-10 rounded-lg font-semibold transition-colors text-base border border-gray-400 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
-          style={{
-            fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, "SF Pro", "Roboto", sans-serif',
-            fontSize: '0.95rem',
-            width: 80
-          }}
+          aria-label={isAutoPlay ? 'Pause automatic playback' : 'Start automatic playback'}
+          className="h-10 w-20 rounded-lg border border-gray-400 bg-white/10 text-base font-semibold text-white/80 transition-colors hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          style={{ ...headerFont, fontSize: '0.95rem', width: 80 }}
           title={isAutoPlay ? 'Switch to interactive mode' : 'Switch to auto-play mode'}
         >
           {isAutoPlay ? (
-            <span className="flex items-center justify-center"><Pause className="h-4 w-4 mr-1" />Pause</span>
+            <span className="flex items-center justify-center">
+              <Pause className="mr-1 h-4 w-4" aria-hidden />
+              Pause
+            </span>
           ) : (
-            <span className="flex items-center justify-center"><Play className="h-4 w-4 mr-1" />Play</span>
+            <span className="flex items-center justify-center">
+              <Play className="mr-1 h-4 w-4" aria-hidden />
+              Play
+            </span>
           )}
         </button>
       </div>
     </header>
   );
-} 
+}

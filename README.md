@@ -1,8 +1,17 @@
-# OpenAtlas
+# OpenAtlas — Operator context graph and brain-map visualization
 
-Next.js app in **portfolio-harness** for an **operator context graph** (co-access across `.cursor/state` handoffs and daily notes) plus D3 visualization demos and a **legacy** multi-step intake form (portfolio sample, not medical use).
+Next.js app for co-access across `.cursor/state` handoffs and daily notes; D3/Three.js; static JSON graph, no Supabase required. Part of portfolio-harness **Build** (see Guard–Guide–Build taxonomy).
 
 **Package name:** `open-atlas`. App folder: `OpenAtlas` (renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical path.
+
+## Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Context graph** | Co-access visualization across handoffs, daily notes, and decision-log derived paths |
+| **Brain-map** | D3/Three.js visualization of operator context; nodes from `.cursor/state` markdown |
+| **Handoff-derived nodes** | Graph nodes extracted from handoff files and daily notes via `build_brain_map.py` |
+| **Static JSON contract** | Graph data as JSON file (`brain-map-graph.json`); no database required |
 
 ## Context graph (no Supabase required)
 
@@ -14,7 +23,7 @@ Next.js app in **portfolio-harness** for an **operator context graph** (co-acces
   python .cursor/scripts/build_brain_map.py
   ```
 
-  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`).
+  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`). Copy-paste paths for **openharness + software state + openharness/docs**: see [`../.cursor/brain-map.env.example`](../.cursor/brain-map.env.example) (set vars then run the same `python` command).
 
 - **Optional auth:** set `BRAIN_MAP_SECRET` on the server. If the UI must send a header, `NEXT_PUBLIC_BRAIN_MAP_SECRET` is supported — **that value is embedded in the browser bundle** (obfuscation only, not a true secret). See [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
 

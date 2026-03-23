@@ -13,8 +13,10 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "test": "echo \"No tests configured yet\" && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "verify": "npm run lint && npm run type-check && npm run test",
+    "verify:capabilities": "node scripts/verify-capabilities-routes.mjs",
     "verify:e2e": "npm run verify && npm run test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -68,6 +70,7 @@
     "eslint-config-next": "14.0.4",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.0"
   }
 }

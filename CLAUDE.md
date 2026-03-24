@@ -1,110 +1,62 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for AI assistants working in this repository.
 
-## Project Overview
+## Project overview
 
-**OpenAtlas / Agent Context Atlas** (repo folder `OpenAtlas` under portfolio-harness): a Next.js app that collects survey responses and renders real-time visualizations (chord, alluvial, constellation, etc.), with an admin panel for moderation. Product copy and branding target OpenAtlas, not a specific client event. The Git remote may still use the `Med-Vis` slug until the GitHub repo is renamed.
+**OpenAtlas / Agent Context Atlas** (folder `OpenAtlas`): a Next.js app with a **local-first context graph** (brain map) plus **legacy** survey/visualization paths that can use Supabase when configured. Product copy targets OpenAtlas, not a specific client event. The Git remote may still use the `Med-Vis` slug until renamed.
 
-## Development Commands
+**Canonical persistence story:** See [README.md](README.md). **Route × persistence × tools** inventory: [docs/OPENATLAS_SYSTEMS_INVENTORY.md](docs/OPENATLAS_SYSTEMS_INVENTORY.md).
 
-- `npm run dev` - Start development server (http://localhost:3000)
-- `npm run build` - Build for production
-- `npm run start` - Start production server  
-- `npm run lint` - Run ESLint linting
+## Local-first path (primary)
 
-## Architecture Overview
+- **Routes:** `/context-atlas` and `/brain-map` (same UI).
+- **Data:** Static JSON — `public/brain-map-graph.json`, or gitignored `public/brain-map-graph.local.json` when present.
+- **API:** `GET /api/brain-map/graph` serves the graph. **No Supabase required** for this path.
+- **Regeneration:** From portfolio-harness (or repo root with scripts), run `python .cursor/scripts/build_brain_map.py` with `CURSOR_STATE_DIR` / `CURSOR_STATE_DIRS` as documented in README.
 
-### Tech Stack
-- **Frontend**: Next.js 14 (App Router) + React 18 + TypeScript
-- **Database**: Supabase (PostgreSQL with real-time subscriptions)
-- **Styling**: Tailwind CSS + OpenAtlas (“atlas”) theme tokens
-- **Visualization**: D3.js for 2D charts, Three.js for 3D constellation views
-- **State Management**: React Context + Zustand stores
-- **Authentication**: Supabase Auth
+## Optional legacy Supabase path
 
-### Key Application Flow
-1. **Survey Collection**: Multi-step form (`/src/components/SurveyForm/`) collects 5 categorical questions + 1 open-ended question
-2. **Data Processing**: Responses stored in Supabase with moderation workflow for open-ended content
-3. **Visualization**: Real-time constellation/network visualizations showing connections between attendees
-4. **Admin Panel**: Content moderation interface for reviewing open-ended responses
+- **Routes:** `/operator-intake`, `/survey`, `/login`, `/admin/*`, and some visualization data loaders still use `src/lib/supabase/` when env vars are set.
+- **When to configure:** Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` only if you need those features.
+- **Schema / RLS:** Migrations under `supabase/migrations/` apply when using hosted Supabase.
 
-### Database Schema
-- `attendees` - Basic attendee information (name, email, anonymous flag)
-- `survey_responses` - Survey answers with foreign key to attendees
-- `moderation` - Moderation workflow for open-ended responses
-- `peak_performance_definitions` - Lookup table for performance types
+## Development commands
 
-Key enum types: `learning_style`, `shaped_by`, `peak_performance_type`, `motivation_type`, `moderation_status`
+- `npm run dev` — Dev server at **http://localhost:3001** (see `package.json` `next dev -p 3001`).
+- `npm run build` / `npm run start` — Production build and server.
+- `npm run lint` — ESLint.
+- `npm run type-check` — `tsc --noEmit` (may fail until known issues in test pages and `dataAdapter` are cleared; see README `verify` note).
+- `npm run test` — Vitest.
+- `npm run verify` — `lint` + `type-check` + `test`.
 
-## Important File Locations
+## Architecture (tech stack)
 
-### Core Application Structure
-- `src/app/` - Next.js App Router pages and API routes
-- `src/app/api/survey/route.ts` - Main survey submission endpoint
-- `src/app/visualization/page.tsx` - Main visualization display page
-- `src/app/admin/page.tsx` - Admin moderation interface
+- **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Tailwind, OpenAtlas theme tokens.
+- **Visualization:** D3.js (2D), Three.js (3D constellation).
+- **State:** React Context, Zustand.
+- **Optional backend:** Supabase (PostgreSQL, Auth) for legacy survey/admin flows only.
 
-### Component Architecture
-- `src/components/SurveyForm/` - Multi-step survey form with individual step components
-- `src/components/DataVisualization/` - Visualization components (D3.js charts, Three.js 3D views)
-- `src/components/AdminPanel/` - Admin interface for content moderation
-- `src/components/shared/` - Reusable UI components
+## Environment setup (`.env.local`)
 
-### Data Layer
-- `src/lib/supabase/` - Database client, types, and query functions
-- `src/lib/context/AppContext.tsx` - Global app state management
-- `src/store/` - Zustand stores for visualization state
-- `src/types/` - TypeScript type definitions
+- **Brain-map only:** Optional `BRAIN_MAP_SECRET` / `NEXT_PUBLIC_BRAIN_MAP_SECRET` (see [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md)).
+- **Alignment API:** Optional `ALIGNMENT_CONTEXT_API_SECRET` when using `/api/alignment-context`.
+- **App URL:** `NEXT_PUBLIC_APP_URL=http://localhost:3001` for local dev.
+- **Supabase:** Only if using legacy routes — see `.env.example` for variable names.
 
-## Environment Setup
+## Important locations
 
-Required environment variables (`.env.local`):
-```
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+- `src/app/` — App Router pages and API routes.
+- `src/components/BrainMap/` — Context graph UI.
+- `src/lib/supabase/` — Client, types, DB helpers (legacy / optional).
+- `public/brain-map-graph.json` — Default graph data for the viewer.
 
-## Key Features to Understand
+## Constraints
 
-### Survey Questions Structure
-1. **Tenure (years)** (`tenure_years`, determines visual string color) — banded ranges (e.g. 0–5, 6–10, …)
-2. **Learning Style** - Visual, Auditory, Reading/Writing, Kinesthetic, Interactive/Collaborative
-3. **Shaped By** - Family, Community, Religion, Education, Sports/Arts, Challenges, Travel/Culture
-4. **Peak Performance** - Personality type × time preference (Introvert/Extrovert/Ambivert + Morning/Evening)
-5. **Motivation** - Making difference, Personal goals, Learning, Relationships, Leading, Balance, Exploring
-6. **Unique Quality** - Open-ended text requiring moderation
+- Three.js and heavy D3 views are client-side where applicable (`'use client'`).
+- Custom fonts under `/public/branding/`.
 
-### Visualization Concepts
-- **Connected Constellations**: Nodes represent attendees, connections show shared responses
-- **Color Coding**: Based on tenure band (`tenure_years`)
-- **Dynamic Filtering**: Can highlight different question dimensions
-- **Real-time Updates**: New submissions appear with animations
+## Testing / verification
 
-### Content Moderation Workflow
-- Open-ended responses start with `pending` status
-- Admin can approve/reject content via admin panel
-- Only approved content appears in visualizations
-- Moderation history tracked in database
-
-## Project Constraints
-
-- **Deployment context**: Suitable for conference / wall displays (16:9) or general web; tune copy and scale per event
-- **Attendee scale**: Stress-test with mock generators as needed
-- **Branding**: OpenAtlas assets and tokens under `/public/branding/` and theme config
-- **Accessibility**: Mobile-first design for survey completion via QR codes
-
-## Testing Data
-
-- `sample-survey-data.json` - Sample survey responses for development
-- `generate_mock_data.py` - Python script for generating test data
-- `src/data/mockSurveyResponses3.json` - Mock data for testing visualizations
-
-## Important Notes
-
-- The project uses Supabase Row Level Security (RLS) policies for data access control
-- Three.js integration requires client-side rendering - use `'use client'` directive
-- Database migrations are in `supabase/migrations/` directory
-- Custom fonts (Avenir Next World) are loaded from `/public/branding/coll-avenir-next-world-font/`
+- Sample/mock data: `src/data/`, `sample-survey-data.json`, etc.
+- E2E: Playwright (`npm run test:e2e`); see `playwright.config.ts`.

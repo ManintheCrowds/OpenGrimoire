@@ -335,7 +335,7 @@ export default function BrainMapGraph() {
     });
 
     return () => tooltip.remove();
-  }, [filteredData, layerFilter]);
+  }, [filteredData]);
 
   useEffect(() => {
     renderGraph();

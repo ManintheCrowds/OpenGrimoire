@@ -88,7 +88,7 @@ Use this table to drive follow-on work without re-scoring until changes ship. **
 
 | Item | Evidence |
 |------|----------|
-| Optional OpenGrimoire fields not in Table | [`BrainMapGraph.tsx`](../../src/components/BrainMap/BrainMapGraph.tsx) L436–476 — columns Path, Group, Access count, Layer, Provenance only |
+| Optional OpenGrimoire fields in Table (when present on nodes) | [`BrainMapGraph.tsx`](../../src/components/BrainMap/BrainMapGraph.tsx) — conditional columns Trust score, Compass axis, Grimoire tags, Insight level; core columns unchanged |
 | Schema documents | [BRAIN_MAP_SCHEMA.md](../BRAIN_MAP_SCHEMA.md) — `trust_score`, `grimoire_tags`, `compass_axis`, `insight_level` |
 
 **P0 (closed):** AC2 met via conditional Table columns for `trust_score`, `compass_axis`, `grimoire_tags`, `insight_level` when any visible node carries the field ([BrainMapGraph.tsx](../../src/components/BrainMap/BrainMapGraph.tsx) Table + [scope](../scope_opengrimoire_mvp_agent_native.md) AC2).

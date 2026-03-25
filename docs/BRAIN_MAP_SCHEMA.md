@@ -25,6 +25,10 @@ This document describes the payload returned by `GET /api/brain-map/graph`. The 
 | `provenance` | string | no | Provenance: `handoff`, `vault`, or `git` (field name avoids clashing with edge `source` id) |
 | `risk_tier` | string | no | `low`, `medium`, `high`, `critical` (aligns with harness risk tiers) |
 | `review_status` | string | no | `draft`, `reviewed`, `stale` |
+| `trust_score` | number | no | Optional trust confidence score (0..1 recommended) for TrustGraph/OpenGrimoire overlays |
+| `compass_axis` | string | no | Optional orientation axis label from OpenCompass-style context models |
+| `grimoire_tags` | string[] | no | Optional OpenGrimoire tags for operator wisdom grouping |
+| `insight_level` | string | no | Optional qualitative insight level (`raw`, `curated`, `validated`) |
 
 The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenance`**, and vault-specific `id`/`path` prefixes (`vault/<label>/...`). Optional fields such as `constraint` / `risk_tier` are for forward-compatible enrichments.
 
@@ -42,11 +46,16 @@ The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenan
 | `layer` | string | no | `state` or `vault`; aligns with endpoint nodes. Omitted in legacy files (**treated as `state`** in the UI). |
 | `risk_tier` | string | no | Optional |
 | `review_status` | string | no | Optional |
+| `trust_score` | number | no | Optional trust confidence score for overlays |
+| `compass_axis` | string | no | Optional orientation axis label |
+| `grimoire_tags` | string[] | no | Optional OpenGrimoire tags |
+| `insight_level` | string | no | Optional insight level marker |
 
 ## API behavior
 
 - Route: [`src/app/api/brain-map/graph/route.ts`](../src/app/api/brain-map/graph/route.ts)
 - Reads **`public/brain-map-graph.local.json` first** if present, else `public/brain-map-graph.json`.
+- **Do not** load graph JSON from static URLs `/brain-map-graph.json` or `/brain-map-graph.local.json` — middleware returns **404**; use **`GET /api/brain-map/graph`** only (see [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md)).
 - If `BRAIN_MAP_SECRET` is set, clients must send header `x-brain-map-key` with that value; otherwise 401.
 - The UI may read a matching value from `NEXT_PUBLIC_BRAIN_MAP_SECRET`, which is **exposed in the browser bundle** — see [security/NEXT_PUBLIC_AND_SECRETS.md](./security/NEXT_PUBLIC_AND_SECRETS.md).
 - Response `Cache-Control: no-store`.
@@ -71,6 +80,22 @@ When `BRAIN_MAP_VAULT_ROOTS` (or `--vault-root`) is set, the builder walks `*.md
 - **PDF → graph (future):** If PDFs are ever ingested into a knowledge or brain-map pipeline, use the same **SCP + provenance** pattern as other untrusted text (file hash, parser version, no trust in extracted text without screening). See portfolio-harness [`docs/integrations/OPENDATALOADER_PDF.md`](../../docs/integrations/OPENDATALOADER_PDF.md); no product code until scope exists.
 
 Local-first framing: [Open Local First](https://openlocalfirst.org/); if you keep a checkout of the author’s `local-first` notes next to this repo, see `../local-first/README.md`, `RESOURCES.md`, and `AI_SECURITY.md` for sync engines, data ownership, traceability, and HITL patterns when aggregating operator context.
+
+## OpenGrimoire import (OpenCompass CSV) — file merge, no API
+
+This is the **OpenGrimoire** offline pipeline: it ingests **OpenCompass** default summarizer output; OpenCompass remains the upstream eval framework (see `opencompass/summarizers/default.py`).
+
+There is **no** `POST` / patch API for the graph today. `GET /api/brain-map/graph` reads **`public/brain-map-graph.local.json`** when that file exists (see route above). To add OpenCompass evaluation rows as nodes:
+
+1. After an OpenCompass run, take the default summarizer CSV: `{work_dir}/summary/summary_{YYYYMMDD_HHMMSS}.csv` (see upstream `opencompass/summarizers/default.py`).
+2. From the MiscRepos **trustgraph-local-repo** checkout, generate a stub JSON (stdout):  
+   `python scripts/opencompass_summary_to_brain_map_stub.py path/to/summary_*.csv > oc_stub.json`
+3. Merge into your OpenAtlas graph file (run from OpenAtlas repo root, paths adjusted):  
+   `python /path/to/trustgraph-local-repo/scripts/merge_brain_map_stub.py --base public/brain-map-graph.local.json --stub oc_stub.json --out public/brain-map-graph.local.json`  
+   The merge script reads stub JSON as **utf-8-sig**, so stubs saved with a UTF-8 **BOM** (e.g. PowerShell `Set-Content -Encoding utf8`) still work.
+4. Reload the app (or refresh the brain-map view). Unknown top-level fields on the JSON (e.g. stub `meta`) are ignored by the viewer; only `nodes` / `edges` / `generated` / `sessionCount` / `sourceRoots` are part of the stable contract.
+
+**Contract and field mapping** (canonical artifact, `context_entity` mapping, optional MCP notes): see the interop doc in `trustgraph-local-repo`: `interop/OPENCOMPASS_OPENATLAS_INTEROP.md` (sibling workspace to this repo in the portfolio layout). OpenGrimoire naming vs upstream OpenCompass: [`docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md`](./OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md).
 
 ## Backlog (not implemented)
 

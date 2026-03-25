@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { Database } from '@/lib/supabase/types';
 import type { SurveyPostBody } from './schemas';
 
@@ -57,7 +59,7 @@ export function mapAnswersToSurveyResponsePayload(
 
   const out: SurveyResponseFields = {};
 
-  for (const [questionId, raw] of byId) {
+  for (const [questionId, raw] of Array.from(byId.entries())) {
     if (!KNOWN_QUESTION_IDS.has(questionId)) {
       return {
         ok: false,

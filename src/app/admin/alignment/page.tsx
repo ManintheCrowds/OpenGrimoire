@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Layout from '@/components/Layout';
+import { isOpenAtlasAdminUser } from '@/lib/openatlas-admin';
 
 type AlignmentItem = {
   id: string;
@@ -38,7 +39,7 @@ export default function AdminAlignmentPage() {
         const {
           data: { user: u },
         } = await supabase.auth.getUser();
-        if (!u || u.user_metadata?.role !== 'admin') {
+        if (!u || !isOpenAtlasAdminUser(u)) {
           router.replace('/login');
           return;
         }
@@ -69,6 +70,20 @@ export default function AdminAlignmentPage() {
     if (user) {
       void refresh();
     }
+  }, [user, refresh]);
+
+  useEffect(() => {
+    if (!user) return;
+    const onFocus = () => void refresh();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [user, refresh]);
 
   const createItem = async () => {

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AdminPanel } from '@/components/AdminPanel/index';
 import Layout from '@/components/Layout';
+import { isOpenAtlasAdminUser } from '@/lib/openatlas-admin';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function AdminPage() {
           return;
         }
         
-        if (!user.user_metadata || user.user_metadata.role !== 'admin') {
+        if (!isOpenAtlasAdminUser(user)) {
           console.log('User is not admin, redirecting to login');
           router.replace('/login');
           return;
@@ -45,7 +46,7 @@ export default function AdminPage() {
     return <div className="flex items-center justify-center h-96">Loading...</div>;
   }
 
-  if (!user || !user.user_metadata || user.user_metadata.role !== 'admin') {
+  if (!user || !isOpenAtlasAdminUser(user)) {
     return <div className="flex items-center justify-center h-96">Access denied</div>;
   }
 

@@ -9,6 +9,8 @@
 
 The API route compares the `x-brain-map-key` header to **`BRAIN_MAP_SECRET`** (server-only).
 
+**Static bypass:** Files may still exist under `public/` for the server route to read, but **direct** requests to `/brain-map-graph.json` and `/brain-map-graph.local.json` are **blocked** (404) so clients must use `GET /api/brain-map/graph` with your chosen auth posture.
+
 The UI may set that header from **`NEXT_PUBLIC_BRAIN_MAP_SECRET`** so the same value can be configured for static builds. **Important:** any `NEXT_PUBLIC_*` value is readable from the client JavaScript bundle. A motivated user can extract it and call the API with the same header.
 
 **Implications:**

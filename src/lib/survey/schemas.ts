@@ -19,7 +19,7 @@ export const surveyPostBodySchema = z
     answers: z.array(surveyAnswerRowSchema).min(1, 'At least one answer is required'),
   })
   .strict()
-  .superrefine((data, ctx) => {
+  .superRefine((data, ctx) => {
     const empty = data.email === undefined || data.email === '';
     if (!data.isAnonymous && empty) {
       ctx.addIssue({

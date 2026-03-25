@@ -1,5 +1,7 @@
 # OpenAtlas — agent and harness integration paths
 
+**Single entry (operators + agents):** [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) — base URL, headers, CLI, brain-map policy.
+
 **Purpose:** Recommended stack for **action parity** without inventing parallel business layers. There is **no** OpenAtlas-branded MCP server in this repo; parity is **API-shaped** first.
 
 **Normative contract:** [ARCHITECTURE_REST_CONTRACT.md](../ARCHITECTURE_REST_CONTRACT.md).

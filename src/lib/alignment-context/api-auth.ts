@@ -6,16 +6,33 @@ export type AlignmentContextGateResult =
   | { ok: false; response: NextResponse };
 
 /**
- * Production: require non-empty ALIGNMENT_CONTEXT_API_SECRET (503 if missing).
- * When secret is set: require matching x-alignment-context-key (401 if wrong).
- * Development with no secret: open (use localhost / VPN only).
+ * When `ALIGNMENT_CONTEXT_API_SECRET` is set: require matching `x-alignment-context-key` (401 if wrong).
+ * When unset: require `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for open access (local dev only).
+ * Never use the insecure flag on public deployments — set a real secret instead.
  */
 export function checkAlignmentContextApiGate(request: Request): AlignmentContextGateResult {
   const secretRaw = process.env.ALIGNMENT_CONTEXT_API_SECRET;
   const secret = typeof secretRaw === 'string' ? secretRaw.trim() : '';
+  const allowInsecureLocal =
+    process.env.ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL === 'true';
   const isProduction = process.env.NODE_ENV === 'production';
 
-  if (isProduction && !secret) {
+  if (secret) {
+    const key = request.headers.get('x-alignment-context-key');
+    if (key !== secret) {
+      return {
+        ok: false,
+        response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+      };
+    }
+    return { ok: true };
+  }
+
+  if (allowInsecureLocal && !isProduction) {
+    return { ok: true };
+  }
+
+  if (isProduction) {
     return {
       ok: false,
       response: NextResponse.json(
@@ -29,15 +46,15 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
     };
   }
 
-  if (secret) {
-    const key = request.headers.get('x-alignment-context-key');
-    if (key !== secret) {
-      return {
-        ok: false,
-        response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
-      };
-    }
-  }
-
-  return { ok: true };
+  return {
+    ok: false,
+    response: NextResponse.json(
+      {
+        error: 'Misconfigured',
+        detail:
+          'Set ALIGNMENT_CONTEXT_API_SECRET (recommended) or ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true for trusted local development only. See docs/AGENT_INTEGRATION.md.',
+      },
+      { status: 503 }
+    ),
+  };
 }

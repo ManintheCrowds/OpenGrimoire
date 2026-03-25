@@ -45,9 +45,13 @@ Maintenance: update this table when adding or changing routes under `src/app/api
 | Alignment context (public API) | yes (`/api/alignment-context`) | yes | yes (`/api/alignment-context/:id`) | yes | Header `x-alignment-context-key` when `ALIGNMENT_CONTEXT_API_SECRET` is set | [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md) |
 | Alignment context (admin BFF) | yes | yes | yes | yes | Supabase session cookie; `user_metadata.role === 'admin'` | No shared-secret header |
 | Brain-map graph | yes (`/api/brain-map/graph`) | — | — | — | Optional `BRAIN_MAP_SECRET`; client sends `x-brain-map-key` when configured | Serves `public/brain-map-graph.local.json` or `.json` |
-| Survey submissions | — | yes (`/api/survey`) | — | — | Server uses Supabase service client; not the alignment shared-secret pattern | Creates `attendees` + `responses` |
+| Survey submissions | — | yes (`/api/survey`) | — | — | Server uses Supabase service client; not the alignment shared-secret pattern | Creates `attendees` + `responses`; **429** if rate-limited — see [Survey POST rate limiting](#survey-post-rate-limiting) |
 | Test data (stub) | yes (`/api/test-data/:dataset`) | — | — | — | None in stub | Placeholder JSON for tests/dev |
-| Capabilities manifest | yes (`/api/capabilities`) | — | — | — | None (public JSON index) | Hand-maintained; update with API PRs |
+| Capabilities manifest | yes (`/api/capabilities`) | — | — | — | None (public JSON index) | Hand-maintained; update with API PRs. May include `workflows[]` and extra `documentation.*` keys for operator pipelines (e.g. OpenGrimoire pipeline: OpenCompass `summary_*.csv` → brain-map JSON). |
+
+### Survey POST rate limiting
+
+`POST /api/survey` is limited in **root `middleware.ts`**: in-memory counter per client IP, **30 requests per 60s** sliding window, response **429** with `Retry-After`. This applies **per Node process** only (not shared across serverless replicas or multiple instances); for production scale-out, replace with a shared store (e.g. Redis / edge KV) and keep this contract’s **429** semantics.
 
 ---
 
@@ -58,7 +62,7 @@ Maintenance: update this table when adding or changing routes under `src/app/api
 **Tiered approach (documented norm):**
 
 1. **Minimum — same app session:** Prefer **client cache + invalidation** (e.g. React Query or SWR) on admin and any screen that reads alignment data, so mutations performed **through the same app** refetch or update cache immediately.
-2. **Cross-client (CLI/agent changed data, browser already open):** Still requires **manual refresh**, **polling** (e.g. on window focus or interval; `GET /api/alignment-context` uses `Cache-Control: private, no-store`), or a future push channel.
+2. **Cross-client (CLI/agent changed data, browser already open):** Still requires **manual refresh**, **polling** (e.g. on window focus or interval; `GET /api/alignment-context` uses `Cache-Control: private, no-store`), or a future push channel. The **`/admin/alignment`** page refetches when the window regains focus or visibility so external API/CLI changes show after tabbing back.
 3. **Heavy — multi-tab live ops:** **SSE** or **WebSocket** only if product requirements justify the complexity.
 
 Until tier 2/3 are implemented, treat “live co-editing across CLI and browser” as **best-effort**, not guaranteed.

@@ -7,7 +7,7 @@ interface ControlsProps {
 }
 
 export const Controls: React.FC<ControlsProps> = ({ className = '' }) => {
-  const { mode, setMode, filters, setFilters, resetFilters } = useVisualizationStore();
+  const { mode, setMode, filters, setFilter, resetFilters } = useVisualizationStore();
 
   const modes: VisualizationMode[] = ['learning_style', 'shaped_by', 'peak_performance', 'motivation'];
 
@@ -15,8 +15,8 @@ export const Controls: React.FC<ControlsProps> = ({ className = '' }) => {
     setMode(newMode);
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters({ ...filters, [key]: value });
+  const handleFilterChange = (key: 'yearsCategory' | 'learningStyle', value: string) => {
+    setFilter(key, value === '' ? null : value);
   };
 
   return (

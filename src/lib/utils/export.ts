@@ -13,7 +13,7 @@ export async function exportSurveyData() {
     if (error) throw error;
 
     // Transform data for export
-    const exportData = responses.map(response => ({
+    const exportData = responses.map((response) => ({
       'First Name': response.attendee.first_name,
       'Last Name': response.attendee.last_name,
       'Email': response.attendee.email,
@@ -22,15 +22,15 @@ export async function exportSurveyData() {
       'Created At': new Date(response.created_at).toLocaleString(),
     }));
 
+    type ExportRow = (typeof exportData)[number];
+    const headers = Object.keys(exportData[0]) as (keyof ExportRow)[];
+
     // Convert to CSV
-    const headers = Object.keys(exportData[0]);
     const csvContent = [
       headers.join(','),
-      ...exportData.map(row => 
-        headers.map(header => 
-          JSON.stringify(row[header])
-        ).join(',')
-      )
+      ...exportData.map((row) =>
+        headers.map((header) => JSON.stringify(row[header])).join(',')
+      ),
     ].join('\n');
 
     // Create and download file

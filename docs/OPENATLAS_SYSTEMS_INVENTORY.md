@@ -61,7 +61,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | Route | `/operator-intake`, `/survey` | Legacy sample form |
 | Static data | `public/brain-map-graph.json` | Served to viewer; regenerate via build script |
 | API | `GET /api/brain-map/graph` | Serves graph JSON |
-| API | Alignment context | See [`docs/agent/ALIGNMENT_CONTEXT_API.md`](./agent/ALIGNMENT_CONTEXT_API.md) (`GET`/`POST`/`PATCH` `/api/alignment-context`, secret header when configured) |
+| API | Alignment context | See [`docs/agent/ALIGNMENT_CONTEXT_API.md`](./agent/ALIGNMENT_CONTEXT_API.md) (`GET`/`POST`/`PATCH` `/api/alignment-context`, secret header when configured). **Requires Supabase** (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`); if unset, routes return **503** (local-first / post-migration: use brain-map file pipeline instead). |
 | API | `GET /api/capabilities` | Hand-maintained JSON index of public API surface (agents); see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) |
 | Auth (optional) | `BRAIN_MAP_SECRET` / `NEXT_PUBLIC_BRAIN_MAP_SECRET` | See [`docs/security/NEXT_PUBLIC_AND_SECRETS.md`](./security/NEXT_PUBLIC_AND_SECRETS.md) |
 
@@ -93,6 +93,7 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 |-----|--------|
 | `README.md` | Quick start, routes, brain map regen, agent entry |
 | `CONTRIBUTING.md` | API changes; matrix maintenance |
+| `docs/AGENT_INTEGRATION.md` | Single entry for agents: base URL, headers, CLI, alignment env |
 | `docs/ARCHITECTURE_REST_CONTRACT.md` | Strict REST rule, entity matrix, non-goals, Cluster C norms |
 | `docs/ARCHITECTURE.md` | App structure |
 | `docs/BRAIN_MAP_SCHEMA.md` | Graph JSON contract |
@@ -101,6 +102,7 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 | `docs/agent/*` | Alignment operator + machine API, integration paths |
 | `docs/security/*` | Public surface, secrets |
 | `docs/AGENT_NATIVE_AUDIT_OPENATLAS.md` | Agent-native gap report vs contract |
+| `docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md` | OpenGrimoire trust/context local-first integration blueprint |
 | `DEPLOYMENT.md` | Deploy notes |
 
 ---

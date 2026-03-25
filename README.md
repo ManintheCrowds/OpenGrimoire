@@ -57,10 +57,13 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 
 ### Agents and APIs
 
+- **Start here:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) — base URL, headers, brain-map policy, alignment env, CLI.
 - **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
 - **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
-- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENATLAS_BASE_URL` (local dev: `http://localhost:3001`) and `ALIGNMENT_CONTEXT_API_SECRET` when the server uses the shared secret.
+- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENATLAS_BASE_URL` (local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
 - **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENATLAS.md](docs/AGENT_NATIVE_AUDIT_OPENATLAS.md).
+- **OpenGrimoire MVP (scope + audit + pack):** [docs/scope_opengrimoire_mvp_agent_native.md](docs/scope_opengrimoire_mvp_agent_native.md), [docs/audit/agent_native_opengrimoire_2026-03-24.md](docs/audit/agent_native_opengrimoire_2026-03-24.md), [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md).
+- **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENATLAS.md](docs/MONITORING_OPENATLAS.md).
 - **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Quick start
@@ -70,7 +73,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 ```bash
 cd OpenAtlas   # path under portfolio-harness
 npm install
-cp .env.example .env.local   # if present; add Supabase keys only if you need auth/survey persistence
+cp .env.example .env.local   # if present; add Supabase keys only if you need auth/survey persistence. For alignment API without a shared secret in local dev, set ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true (see docs/AGENT_INTEGRATION.md).
 npm run dev
 ```
 

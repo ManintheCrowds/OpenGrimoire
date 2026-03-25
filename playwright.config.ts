@@ -18,5 +18,13 @@ export default defineConfig({
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      ...process.env,
+      ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL: 'true',
+      // Placeholders so SSR routes that import Supabase client do not throw (E2E does not call a real project).
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://e2e-placeholder.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiJ9.e30.e2e-placeholder-anon-key',
+    },
   },
 });

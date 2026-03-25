@@ -8,6 +8,7 @@ const navItems = [
   { href: '/', label: 'Home' },
   { href: '/context-atlas', label: 'Context graph' },
   { href: '/visualization', label: 'Visualization' },
+  { href: '/capabilities', label: 'Capabilities' },
   { href: '/admin/controls', label: 'Admin' },
 ];
 

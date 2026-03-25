@@ -4,15 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { chord as d3Chord, ribbon } from 'd3-chord';
 import { arc } from 'd3-shape';
-import { 
-  processChordData, 
-  chordConfig, 
-  cyclingModes, 
+import {
+  processChordData,
+  chordConfig,
+  cyclingModes,
   getChordColor,
   chordAnimations,
-  type ChordMatrix,
-  type ChordGroup,
-  type ChordLink
 } from '@/components/DataVisualization/shared/chordUtils';
 
 // Mock data for testing
@@ -85,14 +82,12 @@ function TestChordDiagram() {
     const matrix = chordData.matrix;
     const chordResult = chordLayout(matrix);
 
-    // Create arc generator
-    const arcGenerator = arc<ChordGroup>()
+    // Arc / ribbon: use untyped d3 generators so layout output matches d3-chord (not chordUtils domain types).
+    const arcGenerator = arc()
       .innerRadius(radius * chordConfig.innerRadius)
       .outerRadius(radius * chordConfig.outerRadius);
 
-    // Create ribbon generator
-    const ribbonGenerator = ribbon<ChordLink>()
-      .radius(radius * chordConfig.innerRadius);
+    const ribbonGenerator = ribbon().radius(radius * chordConfig.innerRadius);
 
     // Create main group
     const g = svg
@@ -124,7 +119,7 @@ function TestChordDiagram() {
       .enter()
       .append('path')
       .attr('class', 'chord')
-      .attr('d', ribbonGenerator)
+      .attr('d', (d) => (ribbonGenerator as (datum: unknown) => string)(d))
       .attr('fill', (d, i) => `url(#chord-gradient-${i})`)
       .attr('opacity', chordConfig.chordOpacity)
       .attr('stroke', '#0A0A0F')
@@ -163,7 +158,7 @@ function TestChordDiagram() {
       .enter()
       .append('path')
       .attr('class', 'arc')
-      .attr('d', arcGenerator)
+      .attr('d', (d) => (arcGenerator as (datum: unknown) => string)(d))
       .attr('fill', (d, i) => chordData.groups[i].color)
       .attr('opacity', chordConfig.arcOpacity)
       .attr('stroke', '#0A0A0F')
@@ -200,7 +195,7 @@ function TestChordDiagram() {
       .attr('class', 'label')
       .each(function(d) {
         const group = chordData.groups[d.index];
-        const centroid = arcGenerator.centroid(d);
+        const centroid = arcGenerator.centroid(d as never);
         const angle = (d.startAngle + d.endAngle) / 2;
         
         d3.select(this)

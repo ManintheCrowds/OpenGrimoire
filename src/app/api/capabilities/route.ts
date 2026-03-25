@@ -11,7 +11,22 @@ const CAPABILITIES = {
   documentation: {
     contract: '/docs/ARCHITECTURE_REST_CONTRACT.md (repo)',
     alignment_api: '/docs/agent/ALIGNMENT_CONTEXT_API.md (repo)',
+    opencompass_brain_map_interop:
+      'Portfolio: MiscRepos/trustgraph-local-repo/interop/OPENCOMPASS_OPENATLAS_INTEROP.md',
   },
+  workflows: [
+    {
+      id: 'opencompass_brain_map',
+      summary:
+        'OpenGrimoire offline pipeline: ingest OpenCompass summary_*.csv and merge into public/brain-map-graph.local.json via trustgraph-local-repo scripts; no POST API on OpenAtlas for this.',
+      ui_path: '/brain-map',
+      api: 'GET /api/brain-map/graph',
+      data_source: 'public/brain-map-graph.local.json',
+      refresh: 'manual_after_merge',
+      reference_note:
+        'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE).',
+    },
+  ],
   auth_env_hints: [
     'ALIGNMENT_CONTEXT_API_SECRET + header x-alignment-context-key',
     'BRAIN_MAP_SECRET + header x-brain-map-key',

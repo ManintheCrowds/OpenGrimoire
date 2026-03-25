@@ -1,0 +1,26 @@
+{
+  "artifact": "docs/audit/agent_native_opengrimoire_2026-03-24.md",
+  "domain": "docs",
+  "rubric": {
+    "intent_alignment": 5,
+    "safety": 5,
+    "correctness": 5,
+    "completeness": 4,
+    "minimality": 4
+  },
+  "total": 23,
+  "threshold": 18,
+  "pass": true,
+  "weighted_rule": "safety>=4 and correctness>=4 and total>=threshold",
+  "issues": [
+    {
+      "id": "C1",
+      "severity": "low",
+      "evidence": "Part B OpenHarness scores use qualitative fractions without always citing file paths",
+      "fix": "Linked HANDOFF_FLOW and skills in audit body; executive pack lists follow-up"
+    }
+  ],
+  "summary": "Pass: scores meet threshold; safety/correctness at 5. Completeness 4: multi-repo OpenHarness section is inherently thinner than OpenAtlas. Minimality 4: audit repeats some themes from AGENT_NATIVE_AUDIT_OPENATLAS.md by reference—acceptable cross-link.",
+  "revised_artifact": null,
+  "revision_note": "No revision required: first draft meets bar. Optional future revision if AC2 implementation changes UI."
+}

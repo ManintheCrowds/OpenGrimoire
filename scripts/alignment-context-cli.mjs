@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Thin CLI for /api/alignment-context (agent/harness parity).
- * Env: OPENATLAS_BASE_URL (default http://localhost:3001 — matches OpenAtlas `npm run dev`), ALIGNMENT_CONTEXT_API_SECRET (optional in dev).
+ * Env: OPENATLAS_BASE_URL (default http://localhost:3001 — matches OpenAtlas `npm run dev`),
+ * ALIGNMENT_CONTEXT_API_SECRET (required when server enforces it), or server must have
+ * ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true for local dev without a secret.
  *
  * Usage:
  *   node scripts/alignment-context-cli.mjs list [--status=draft|active|archived]

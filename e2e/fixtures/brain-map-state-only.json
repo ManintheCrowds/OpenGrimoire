@@ -5,7 +5,11 @@
       "group": "memory",
       "accessCount": 2,
       "path": ".cursor/state/handoff_fixture.md",
-      "layer": "state"
+      "layer": "state",
+      "trust_score": 0.85,
+      "compass_axis": "alignment",
+      "grimoire_tags": ["fixture", "opengrimoire"],
+      "insight_level": "curated"
     }
   ],
   "edges": [],

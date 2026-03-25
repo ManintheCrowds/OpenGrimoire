@@ -3,13 +3,14 @@ import { cookies } from 'next/headers';
 import type { User } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { Database } from '@/lib/supabase/types';
+import { isOpenAtlasAdminUser } from '@/lib/openatlas-admin';
 
 export type RequireAdminResult =
   | { ok: true; user: User }
   | { ok: false; response: NextResponse };
 
 /**
- * Require a logged-in Supabase user with `user_metadata.role === 'admin'`.
+ * Require a logged-in Supabase user with admin role (see `isOpenAtlasAdminUser`).
  * Uses auth cookies (same session as `/admin`).
  */
 export async function requireOpenAtlasAdminRoute(): Promise<RequireAdminResult> {
@@ -26,8 +27,7 @@ export async function requireOpenAtlasAdminRoute(): Promise<RequireAdminResult> 
     };
   }
 
-  const role = user.user_metadata?.role;
-  if (role !== 'admin') {
+  if (!isOpenAtlasAdminUser(user)) {
     return {
       ok: false,
       response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),

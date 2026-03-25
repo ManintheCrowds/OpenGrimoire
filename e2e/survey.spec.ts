@@ -17,8 +17,11 @@ test.describe('Survey flow', () => {
     await page.getByText('1-2 years').click();
     await page.getByTestId('next-button').click();
 
-    // LearningStyleStep
-    await page.getByText('Visual').first().click();
+    // LearningStyleStep (avoid matching nav link text "Visualization")
+    await page
+      .getByTestId('survey-form-container')
+      .getByText('Visual', { exact: true })
+      .click();
     await page.getByTestId('next-button').click();
 
     // ShapedByStep

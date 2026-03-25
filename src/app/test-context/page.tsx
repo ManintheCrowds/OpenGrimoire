@@ -5,7 +5,8 @@ import { useAppContext } from '@/lib/context/AppContext';
 import Link from 'next/link';
 
 export default function TestContextPage() {
-  const { settings, toggleDarkMode, toggleTestData, toggleAutoPlay } = useAppContext();
+  const { settings, toggleDarkMode, toggleTestData, toggleAutoPlay, getCurrentThemeColors } =
+    useAppContext();
 
   return (
     <div className={`min-h-screen p-8 transition-colors duration-200 ${
@@ -59,21 +60,25 @@ export default function TestContextPage() {
         }`}>
           <h2 className="text-xl font-semibold mb-4">Color Configuration Preview</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(settings.categoryColors).slice(0, 4).map(([category, colors]) => (
-              <div key={category} className="space-y-2">
-                <h3 className="font-medium text-sm">{category.replace(/_/g, ' ')}</h3>
-                <div className="flex flex-wrap gap-1">
-                  {Object.entries(colors).slice(0, 3).map(([answer, color]) => (
-                    <div
-                      key={answer}
-                      className="w-4 h-4 rounded border border-gray-300"
-                      style={{ backgroundColor: color }}
-                      title={answer}
-                    />
-                  ))}
+            {Object.entries(getCurrentThemeColors())
+              .slice(0, 4)
+              .map(([category, colors]) => (
+                <div key={category} className="space-y-2">
+                  <h3 className="font-medium text-sm">{category.replace(/_/g, ' ')}</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {Object.entries(colors)
+                      .slice(0, 3)
+                      .map(([answer, color]) => (
+                        <div
+                          key={answer}
+                          className="w-4 h-4 rounded border border-gray-300"
+                          style={{ backgroundColor: color as string }}
+                          title={answer}
+                        />
+                      ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
         

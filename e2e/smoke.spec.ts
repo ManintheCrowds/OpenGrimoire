@@ -9,8 +9,8 @@ test.describe('Smoke tests', () => {
   test('nav links work and main routes render', async ({ page }) => {
     await page.goto('/');
 
-    // Visualization
-    await page.getByTestId('nav-link-visualization').click();
+    // Visualization (scope to main so we hit the home card, not any future duplicate ids)
+    await page.locator('main').getByTestId('nav-link-visualization').click();
     await expect(page).toHaveURL(/\/visualization/);
     await expect(page.getByTestId('alluvial-diagram')).toBeVisible({ timeout: 10000 });
 

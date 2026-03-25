@@ -151,7 +151,7 @@ Use Playwright for CI truth; Maestro for cross-tool YAML experiments or future m
 
 ## Top recommendations (by impact)
 
-1. **Agent entry + contract:** README and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENATLAS_BASE_URL` should match dev port **3001**; CLI default aligns with README).
+1. **Agent entry + contract:** [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) (single index), README, and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENATLAS_BASE_URL` should match dev port **3001**; CLI default aligns with README).
 2. **Optional:** Thin MCP over REST only — see [`agent/INTEGRATION_PATHS.md`](./agent/INTEGRATION_PATHS.md) (no duplicate business layer).
 3. **CRUD matrix:** Maintained in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md); update in same PR as API changes ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 4. **SCP:** Content pasted into alignment fields from untrusted sources should be gated upstream in the **agent harness** ([TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md); use your `local-proto` clone if not nested under `portfolio-harness`), not inside OpenAtlas alone — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.

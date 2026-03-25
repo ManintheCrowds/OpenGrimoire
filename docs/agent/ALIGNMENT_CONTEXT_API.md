@@ -13,13 +13,18 @@ Always set `OPENATLAS_BASE_URL` explicitly in scripts/agents if the origin might
 
 ## Public API (shared secret)
 
-All of the following require header **`x-alignment-context-key`** when `ALIGNMENT_CONTEXT_API_SECRET` is set in server env (including all production deploys). Value must match the env var exactly.
+When `ALIGNMENT_CONTEXT_API_SECRET` is set, all public routes below require header **`x-alignment-context-key`** matching the secret.
 
 | Condition | Response |
 |-----------|----------|
 | `NODE_ENV=production` and secret missing/blank | **503** `Misconfigured` |
 | Secret set, wrong/missing header | **401** `Unauthorized` |
-| Dev, secret unset | Open (use localhost only) |
+| Secret unset, `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true`, not production | Open (trusted local dev only) |
+| Secret unset, insecure flag not true, not production | **503** — set `ALIGNMENT_CONTEXT_API_SECRET` or allow-flag for local dev ([AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)) |
+
+## Admin UI (session)
+
+Admin routes use Supabase session + **`app_metadata.openatlas_role === 'admin'`** (preferred) or legacy **`user_metadata.role === 'admin'`**. See [OPENATLAS_ADMIN_ROLE.md](../admin/OPENATLAS_ADMIN_ROLE.md).
 
 ### `GET /api/alignment-context`
 

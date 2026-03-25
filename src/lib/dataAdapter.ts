@@ -1,5 +1,6 @@
 import type { Database } from '@/lib/supabase/types';
 import type { LearningStyle, ShapedBy, PeakPerformanceType, MotivationType } from '@/lib/supabase/types';
+import type { SurveyData } from '@/types/survey';
 
 // Database type
 type DBSurveyResponse = Database['public']['Tables']['survey_responses']['Row'] & {
@@ -122,6 +123,28 @@ const normalizeMotivation = (motivation: string): MotivationType => {
   }
 };
 
+/** Map generated `SurveyData` (see `generateMockData`) to `AppSurveyResponse[]`. */
+const convertGeneratedMockToApp = (data: SurveyData): AppSurveyResponse[] => {
+  return data.survey_data.map((item) => {
+    const isAnonymous = item.is_anonymous;
+    const fullName = isAnonymous
+      ? 'Anonymous'
+      : `${item.first_name} ${item.last_name || ''}`.trim();
+
+    return {
+      id: item.id,
+      created_at: item.timestamp,
+      name: fullName,
+      tenure_years: item.responses.tenure_years.toString(),
+      learning_style: normalizeLearningStyle(item.responses.learning_style),
+      shaped_by: normalizeShapedBy(item.responses.shaped_by),
+      peak_performance: normalizePeakPerformance(item.responses.peak_performance),
+      motivation: normalizeMotivation(item.responses.motivation),
+      unique_quality: item.responses.unique_quality,
+    };
+  });
+};
+
 // Convert JSON format to application format
 export const convertJsonToAppResponse = (jsonData: JsonData): AppSurveyResponse[] => {
   return jsonData.survey_data.map((item) => {
@@ -180,31 +203,11 @@ export const loadSurveyData = async (): Promise<AppSurveyResponse[]> => {
     
     // Fallback to TypeScript data if JSON loading fails
     const { mockSurveyResponses } = await import('@/data/generateMockData');
-    return mockSurveyResponses.map((dbResponse) => ({
-      id: dbResponse.id,
-      created_at: dbResponse.created_at,
-      name: dbResponse.attendee.is_anonymous ? 'Anonymous' : `${dbResponse.attendee.first_name} ${dbResponse.attendee.last_name || ''}`,
-      tenure_years: dbResponse.tenure_years?.toString() || '0',
-      learning_style: dbResponse.learning_style || 'visual',
-      shaped_by: dbResponse.shaped_by || 'other',
-      peak_performance: dbResponse.peak_performance || 'team',
-      motivation: dbResponse.motivation || 'impact',
-      unique_quality: dbResponse.unique_quality || '',
-    }));
+    return convertGeneratedMockToApp(mockSurveyResponses);
   } catch (error) {
     console.error('Error loading survey data:', error);
     // Fallback to TypeScript data
     const { mockSurveyResponses } = await import('@/data/generateMockData');
-    return mockSurveyResponses.map((dbResponse) => ({
-      id: dbResponse.id,
-      created_at: dbResponse.created_at,
-      name: dbResponse.attendee.is_anonymous ? 'Anonymous' : `${dbResponse.attendee.first_name} ${dbResponse.attendee.last_name || ''}`,
-      tenure_years: dbResponse.tenure_years?.toString() || '0',
-      learning_style: dbResponse.learning_style || 'visual',
-      shaped_by: dbResponse.shaped_by || 'other',
-      peak_performance: dbResponse.peak_performance || 'team',
-      motivation: dbResponse.motivation || 'impact',
-      unique_quality: dbResponse.unique_quality || '',
-    }));
+    return convertGeneratedMockToApp(mockSurveyResponses);
   }
 }; 

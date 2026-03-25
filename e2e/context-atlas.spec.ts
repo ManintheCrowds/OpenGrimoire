@@ -40,6 +40,11 @@ test.describe('Context Atlas (Brain Map)', () => {
 
     await page.getByRole('tab', { name: 'Table' }).click();
     await expect(page.getByRole('cell', { name: '.cursor/state/handoff_fixture.md' })).toBeVisible();
+    await expect(page.getByTestId('col-trust-score')).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Trust score' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '0.85' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Grimoire tags' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'fixture, opengrimoire' })).toBeVisible();
 
     await page.getByRole('tab', { name: 'Vault' }).click();
     await expect(

@@ -1,0 +1,16 @@
+{
+  "nodes": [],
+  "edges": [],
+  "generated": "2026-03-24T04:06:41Z",
+  "sessionCount": 0,
+  "sourceRoots": [
+    {
+      "path": "C:\\Users\\Dell\\Documents\\GitHub\\MiscRepos\\.cursor\\state",
+      "label": "miscrepos"
+    },
+    {
+      "path": "C:\\Users\\Dell\\Documents\\GitHub\\OpenHarness\\.cursor\\state",
+      "label": "openharness"
+    }
+  ]
+}

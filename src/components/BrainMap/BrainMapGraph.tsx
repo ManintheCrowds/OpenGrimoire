@@ -40,6 +40,11 @@ export interface BrainMapNode {
   provenance?: BrainMapNodeSource;
   risk_tier?: BrainMapRiskTier;
   review_status?: BrainMapReviewStatus;
+  /** OpenGrimoire / TrustGraph optional overlays (see BRAIN_MAP_SCHEMA.md) */
+  trust_score?: number;
+  compass_axis?: string;
+  grimoire_tags?: string[];
+  insight_level?: string;
 }
 
 export interface BrainMapEdge {
@@ -122,6 +127,21 @@ type LayerFilter = 'all' | BrainMapLayer;
 
 function nodeLayer(n: BrainMapNode): BrainMapLayer {
   return n.layer === 'vault' ? 'vault' : 'state';
+}
+
+/** Which optional OpenGrimoire columns to show when at least one visible node carries data. */
+function openGrimoireTableFlags(nodes: BrainMapNode[]) {
+  return {
+    trust_score: nodes.some((n) => typeof n.trust_score === 'number'),
+    compass_axis: nodes.some((n) => typeof n.compass_axis === 'string' && n.compass_axis.length > 0),
+    grimoire_tags: nodes.some((n) => Array.isArray(n.grimoire_tags)),
+    insight_level: nodes.some((n) => typeof n.insight_level === 'string' && n.insight_level.length > 0),
+  };
+}
+
+function formatGrimoireTags(tags: string[] | undefined): string {
+  if (!tags?.length) return '—';
+  return tags.join(', ');
 }
 
 function filterGraphByLayer(data: BrainMapData, layer: LayerFilter): BrainMapData {
@@ -288,6 +308,10 @@ export default function BrainMapGraph() {
         if (d.provenance) extra.push(`Provenance: ${d.provenance}`);
         if (d.risk_tier) extra.push(`Risk: ${d.risk_tier}`);
         if (d.review_status) extra.push(`Review: ${d.review_status}`);
+        if (typeof d.trust_score === 'number') extra.push(`Trust: ${d.trust_score}`);
+        if (d.compass_axis) extra.push(`Axis: ${d.compass_axis}`);
+        if (d.grimoire_tags?.length) extra.push(`Tags: ${d.grimoire_tags.join(', ')}`);
+        if (d.insight_level) extra.push(`Insight: ${d.insight_level}`);
         const tail = extra.length ? `<br/>${extra.join('<br/>')}` : '';
         tooltip
           .style('visibility', 'visible')
@@ -317,6 +341,12 @@ export default function BrainMapGraph() {
     renderGraph();
   }, [renderGraph]);
 
+  const sortedNodes = useMemo(
+    () => [...(filteredData?.nodes ?? [])].sort((a, b) => b.accessCount - a.accessCount),
+    [filteredData]
+  );
+  const ogCols = useMemo(() => openGrimoireTableFlags(sortedNodes), [sortedNodes]);
+
   if (loading) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gray-50">
@@ -325,7 +355,6 @@ export default function BrainMapGraph() {
     );
   }
 
-  const sortedNodes = [...(filteredData?.nodes ?? [])].sort((a, b) => b.accessCount - a.accessCount);
   const layerFilterEmpty =
     Boolean(data && data.nodes.length > 0 && filteredData && filteredData.nodes.length === 0);
 
@@ -434,7 +463,10 @@ export default function BrainMapGraph() {
             aria-label="Context graph nodes as table"
           >
             <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-              <caption className="sr-only">Context graph nodes: path, group, access count, layer, provenance</caption>
+              <caption className="sr-only">
+                Context graph nodes: path, group, access count, layer, provenance, and optional OpenGrimoire fields
+                when present in the graph JSON.
+              </caption>
               <thead>
                 <tr>
                   <th scope="col" className="px-4 py-2 font-semibold text-gray-900">
@@ -452,6 +484,30 @@ export default function BrainMapGraph() {
                   <th scope="col" className="px-4 py-2 font-semibold text-gray-900">
                     Provenance
                   </th>
+                  {ogCols.trust_score && (
+                    <th
+                      scope="col"
+                      className="px-4 py-2 font-semibold text-gray-900"
+                      data-testid="col-trust-score"
+                    >
+                      Trust score
+                    </th>
+                  )}
+                  {ogCols.compass_axis && (
+                    <th scope="col" className="px-4 py-2 font-semibold text-gray-900">
+                      Compass axis
+                    </th>
+                  )}
+                  {ogCols.grimoire_tags && (
+                    <th scope="col" className="px-4 py-2 font-semibold text-gray-900">
+                      Grimoire tags
+                    </th>
+                  )}
+                  {ogCols.insight_level && (
+                    <th scope="col" className="px-4 py-2 font-semibold text-gray-900">
+                      Insight level
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -473,6 +529,20 @@ export default function BrainMapGraph() {
                     <td className="px-4 py-2">{node.accessCount}</td>
                     <td className="px-4 py-2">{nodeLayer(node)}</td>
                     <td className="px-4 py-2">{node.provenance ?? '—'}</td>
+                    {ogCols.trust_score && (
+                      <td className="px-4 py-2">
+                        {typeof node.trust_score === 'number' ? node.trust_score : '—'}
+                      </td>
+                    )}
+                    {ogCols.compass_axis && (
+                      <td className="px-4 py-2">{node.compass_axis ?? '—'}</td>
+                    )}
+                    {ogCols.grimoire_tags && (
+                      <td className="px-4 py-2">{formatGrimoireTags(node.grimoire_tags)}</td>
+                    )}
+                    {ogCols.insight_level && (
+                      <td className="px-4 py-2">{node.insight_level ?? '—'}</td>
+                    )}
                   </tr>
                 ))}
               </tbody>

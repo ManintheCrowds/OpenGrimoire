@@ -12,7 +12,8 @@ This file provides guidance for AI assistants working in this repository.
 
 - **Routes:** `/context-atlas` and `/brain-map` (same UI).
 - **Data:** Static JSON — `public/brain-map-graph.json`, or gitignored `public/brain-map-graph.local.json` when present.
-- **API:** `GET /api/brain-map/graph` serves the graph. **No Supabase required** for this path.
+- **API:** `GET /api/brain-map/graph` serves the graph (do not use bare `/brain-map-graph.json` URLs — blocked). **No Supabase required** for this path.
+- **Agents:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md).
 - **Regeneration:** From portfolio-harness (or repo root with scripts), run `python .cursor/scripts/build_brain_map.py` with `CURSOR_STATE_DIR` / `CURSOR_STATE_DIRS` as documented in README.
 
 ## Optional legacy Supabase path

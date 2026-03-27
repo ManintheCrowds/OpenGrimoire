@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkAlignmentContextApiGate } from '@/lib/alignment-context/api-auth';
-import { alignmentContextPatchBodySchema } from '@/lib/alignment-context/schemas';
+import { alignmentContextPublicPatchBodySchema } from '@/lib/alignment-context/schemas';
 import {
   deleteAlignmentContextItem,
   updateAlignmentContextItem,
@@ -9,7 +9,7 @@ import {
 type RouteContext = { params: { id: string } };
 
 /**
- * PATCH /api/alignment-context/:id — partial update.
+ * PATCH /api/alignment-context/:id — partial update (no `source`; use admin PATCH for provenance).
  * DELETE — hard delete row.
  */
 export async function PATCH(request: Request, context: RouteContext) {
@@ -30,7 +30,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const parsed = alignmentContextPatchBodySchema.safeParse(json);
+  const parsed = alignmentContextPublicPatchBodySchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Validation failed', issues: parsed.error.flatten() },
@@ -55,7 +55,6 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (patch.status !== undefined) updatePayload.status = patch.status;
   if (patch.linked_node_id !== undefined) updatePayload.linked_node_id = patch.linked_node_id;
   if (patch.attendee_id !== undefined) updatePayload.attendee_id = patch.attendee_id;
-  if (patch.source !== undefined) updatePayload.source = patch.source;
 
   const { data, error } = updateAlignmentContextItem(id, updatePayload);
 

@@ -32,8 +32,11 @@ export async function checkSurveyReadGate(request: Request): Promise<SurveyReadG
     return { ok: true };
   }
 
+  const alignmentAllowsSurvey =
+    (process.env.ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ ?? '').trim().toLowerCase() === 'true';
+
   const alignmentSecret = (process.env.ALIGNMENT_CONTEXT_API_SECRET ?? '').trim();
-  if (alignmentSecret) {
+  if (alignmentAllowsSurvey && alignmentSecret) {
     const key = request.headers.get('x-alignment-context-key') ?? '';
     if (timingSafeEqualString(key, alignmentSecret)) {
       return { ok: true };
@@ -55,9 +58,9 @@ export async function checkSurveyReadGate(request: Request): Promise<SurveyReadG
         error: 'Unauthorized',
         detail:
           'In production, survey read endpoints require an admin session cookie, ' +
-          'x-alignment-context-key (when ALIGNMENT_CONTEXT_API_SECRET is set), ' +
           'x-survey-visualization-key (when SURVEY_VISUALIZATION_API_SECRET is set), ' +
           'or set SURVEY_VISUALIZATION_ALLOW_PUBLIC=true for demo-only deployments. ' +
+          'Optional legacy: set ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true to also accept x-alignment-context-key. ' +
           'See docs/AGENT_INTEGRATION.md.',
       },
       { status: 401 }

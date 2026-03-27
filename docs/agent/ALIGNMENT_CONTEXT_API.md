@@ -62,7 +62,9 @@ Response **201:** `{ "item": { ... } }`
 
 ### `PATCH /api/alignment-context/:id`
 
-Body: any subset of create fields plus optional `source` (`ui` \| `import` \| `api`). At least one field required.
+Body: any subset of **mutable** create fields (`title`, `body`, `tags`, `priority`, `status`, `linked_node_id`, `attendee_id`). **`source` is not accepted** on the public route (provenance is admin-only). At least one field required.
+
+**Admin** `PATCH /api/admin/alignment-context/:id` may include `source` for corrections.
 
 Response **200:** `{ "item": { ... } }`  
 **404:** `{ "error": "Not found" }`
@@ -84,7 +86,7 @@ For logged-in **admin** users (same cookie session as `/admin`). **No** `x-align
 |--------|------|--------|
 | GET | `/api/admin/alignment-context` | Same query params as public GET |
 | POST | `/api/admin/alignment-context` | Creates with `source: ui`, `created_by: <user id>` |
-| PATCH | `/api/admin/alignment-context/:id` | Same as public PATCH |
+| PATCH | `/api/admin/alignment-context/:id` | Same fields as public PATCH, plus optional `source` |
 | DELETE | `/api/admin/alignment-context/:id` | Same as public DELETE |
 
 **401** if not logged in. **403** if logged in but not `user_metadata.role === 'admin'`.

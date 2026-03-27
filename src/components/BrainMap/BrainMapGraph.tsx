@@ -170,13 +170,14 @@ export default function BrainMapGraph() {
   useEffect(() => {
     let cancelled = false;
     const headers: HeadersInit = {};
+    // Legacy: optional obfuscation token in bundle — prefer operator login + session for gated graphs.
     if (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BRAIN_MAP_SECRET) {
       headers['x-brain-map-key'] = process.env.NEXT_PUBLIC_BRAIN_MAP_SECRET;
     }
     setLoading(true);
     setError(null);
     const url = `/api/brain-map/graph?cb=${Date.now()}`;
-    fetch(url, { headers, cache: 'no-store' })
+    fetch(url, { headers, credentials: 'include', cache: 'no-store' })
       .then((res) => {
         return res.ok ? res.json() : Promise.reject(new Error(`${res.status} ${res.statusText}`));
       })

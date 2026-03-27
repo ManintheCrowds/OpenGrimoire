@@ -30,5 +30,9 @@ export const alignmentContextPatchBodySchema = z
   })
   .strict();
 
+/** Public API PATCH — `source` is server/admin-only (provenance); not overwritable via shared API key. */
+export const alignmentContextPublicPatchBodySchema = alignmentContextPatchBodySchema.omit({ source: true });
+
 export type AlignmentContextCreateBody = z.infer<typeof alignmentContextCreateBodySchema>;
 export type AlignmentContextPatchBody = z.infer<typeof alignmentContextPatchBodySchema>;
+export type AlignmentContextPublicPatchBody = z.infer<typeof alignmentContextPublicPatchBodySchema>;

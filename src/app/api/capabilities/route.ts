@@ -29,9 +29,9 @@ const CAPABILITIES = {
   ],
   auth_env_hints: [
     'ALIGNMENT_CONTEXT_API_SECRET + header x-alignment-context-key',
-    'BRAIN_MAP_SECRET + header x-brain-map-key',
+    'BRAIN_MAP_SECRET: x-brain-map-key or operator session cookie (same origin, credentials: include)',
     'Operator session: POST /api/auth/login sets HTTP-only cookie (OPENGRIMOIRE_ADMIN_PASSWORD or OPENGRIMOIRE_ADMIN_PASSWORD_HASH + OPENGRIMOIRE_SESSION_SECRET)',
-    'Survey reads (production): SURVEY_VISUALIZATION_ALLOW_PUBLIC=true, or admin session, or x-alignment-context-key, or SURVEY_VISUALIZATION_API_SECRET + x-survey-visualization-key',
+    'Survey reads (production): SURVEY_VISUALIZATION_ALLOW_PUBLIC=true, or admin session, or SURVEY_VISUALIZATION_API_SECRET + x-survey-visualization-key; optional ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true for x-alignment-context-key',
     'POST /api/auth/login: rate limited 10 requests per 60s per IP (middleware; single process)',
   ],
   routes: [
@@ -88,7 +88,8 @@ const CAPABILITIES = {
     {
       path: '/api/brain-map/graph',
       methods: ['GET'],
-      auth: 'Optional x-brain-map-key when BRAIN_MAP_SECRET set',
+      auth:
+        'When BRAIN_MAP_SECRET set: x-brain-map-key matching secret or OpenGrimoire operator session cookie',
     },
     {
       path: '/api/survey',
@@ -99,7 +100,7 @@ const CAPABILITIES = {
       path: '/api/survey/visualization',
       methods: ['GET'],
       auth:
-        'Dev: open. Production: admin cookie, x-alignment-context-key, x-survey-visualization-key, or SURVEY_VISUALIZATION_ALLOW_PUBLIC=true — see docs/AGENT_INTEGRATION.md',
+        'Dev: open. Production: admin cookie, x-survey-visualization-key (when SURVEY_VISUALIZATION_API_SECRET set), optional x-alignment-context-key only if ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true, or SURVEY_VISUALIZATION_ALLOW_PUBLIC=true — see docs/AGENT_INTEGRATION.md',
     },
     {
       path: '/api/survey/approved-qualities',

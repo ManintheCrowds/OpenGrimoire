@@ -7,11 +7,6 @@ type SurveyRow = VisualizationSurveyRow & {
   attendee: VisualizationSurveyRow['attendee'];
 };
 
-interface UseVisualizationDataOptions {
-  /** Reserved for future polling; Supabase realtime removed. */
-  realtime?: boolean;
-}
-
 const vizDebug =
   typeof process !== 'undefined' &&
   process.env.NODE_ENV === 'development' &&
@@ -94,7 +89,7 @@ const mockData: SurveyRow[] = [
   },
 ];
 
-export function useVisualizationData({ realtime: _realtime = true }: UseVisualizationDataOptions = {}) {
+export function useVisualizationData() {
   const [data, setData] = useState<SurveyRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

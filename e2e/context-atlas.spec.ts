@@ -13,10 +13,8 @@ test.describe('Context Atlas (Brain Map)', () => {
     await expect(
       page.getByText(/Loading brain map|Loading context graph|Co-access|No nodes|nodes/)
     ).toBeVisible({ timeout: 10000 });
-    // Graph canvas or empty-state fallback
-    await expect(page.locator('[data-testid="brain-map-graph"], .empty-state')).toBeVisible({
-      timeout: 15000,
-    });
+    // Graph shell is always mounted (see BrainMapGraph data-testid="brain-map-graph")
+    await expect(page.getByTestId('brain-map-graph')).toBeVisible({ timeout: 15000 });
   });
 
   test('context-atlas heading is present', async ({ page }) => {

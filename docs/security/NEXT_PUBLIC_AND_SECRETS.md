@@ -9,19 +9,21 @@ SQLite has no row-level security; **authorization is enforced in Route Handlers*
 
 ## Brain map graph (`/api/brain-map/graph`)
 
-The API route compares the `x-brain-map-key` header to **`BRAIN_MAP_SECRET`** (server-only).
+When **`BRAIN_MAP_SECRET`** is set, the route allows access if **either**:
+
+1. **`x-brain-map-key`** matches `BRAIN_MAP_SECRET` (timing-safe compare), or  
+2. The request carries a valid **OpenGrimoire operator session** cookie (`opengrimoire_session` after `POST /api/auth/login`).
+
+Anonymous browsers without the header get **401**. The in-app brain map uses **`fetch(..., { credentials: 'include' })`** so logged-in operators receive the graph without putting the server secret in the bundle.
 
 **Static bypass:** Files may still exist under `public/` for the server route to read, but **direct** requests to `/brain-map-graph.json` and `/brain-map-graph.local.json` are **blocked** (404) so clients must use `GET /api/brain-map/graph` with your chosen auth posture.
 
-The UI may set that header from **`NEXT_PUBLIC_BRAIN_MAP_SECRET`** so the same value can be configured for static builds. **Important:** any `NEXT_PUBLIC_*` value is readable from the client JavaScript bundle. A motivated user can extract it and call the API with the same header.
+**Legacy:** The UI may still set `x-brain-map-key` from **`NEXT_PUBLIC_BRAIN_MAP_SECRET`**. **Important:** any `NEXT_PUBLIC_*` value is readable from the client JavaScript bundle — treat it as **obfuscation**, not a real secret. Prefer operator login + cookie for gated deployments.
 
 **Implications:**
 
-- Treat `NEXT_PUBLIC_BRAIN_MAP_SECRET` as a **shared gate token** or **obfuscation**, not a cryptographic secret.
-- For stronger protection, prefer:
-  - **Session or HTTP-only cookie** set after server-side login, with the route verifying the session; or
-  - **Short-lived signed tokens** issued by a server route; or
-  - Serving the graph only on an internal network / VPN without exposing the app to the public internet.
+- For public-internet deployments that must not expose graph JSON, set **`BRAIN_MAP_SECRET`**, **omit** `NEXT_PUBLIC_BRAIN_MAP_SECRET`, and rely on **operator session** (or server-side agents with the header).
+- Additional hardening options: short-lived signed URLs, internal-only hosting, VPN.
 
 Document the chosen posture in your deployment runbook.
 

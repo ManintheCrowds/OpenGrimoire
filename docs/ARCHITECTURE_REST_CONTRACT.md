@@ -42,11 +42,11 @@ Maintenance: update this table when adding or changing routes under `src/app/api
 
 | Entity / surface | GET | POST | PATCH | DELETE | Auth mechanism | Notes |
 |------------------|-----|------|-------|--------|----------------|-------|
-| Alignment context (public API) | yes (`/api/alignment-context`) | yes | yes (`/api/alignment-context/:id`) | yes | Header `x-alignment-context-key` when `ALIGNMENT_CONTEXT_API_SECRET` is set | [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md) |
+| Alignment context (public API) | yes (`/api/alignment-context`) | yes | yes (`/api/alignment-context/:id`) | yes | Header `x-alignment-context-key` when `ALIGNMENT_CONTEXT_API_SECRET` is set | [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md); public **PATCH** does not accept `source` (admin only) |
 | Alignment context (admin BFF) | yes | yes | yes | yes | Signed HTTP-only session cookie (`opengrimoire_session`) after `POST /api/auth/login` | No shared-secret header on admin routes |
-| Brain-map graph | yes (`/api/brain-map/graph`) | — | — | — | Optional `BRAIN_MAP_SECRET`; client sends `x-brain-map-key` when configured | Serves `public/brain-map-graph.local.json` or `.json` |
+| Brain-map graph | yes (`/api/brain-map/graph`) | — | — | — | When `BRAIN_MAP_SECRET` is set: `x-brain-map-key` matching secret **or** operator session cookie (`credentials: 'include'` from same origin) | Serves `public/brain-map-graph.local.json` or `.json` |
 | Survey submissions | — | yes (`/api/survey`) | — | — | Public POST; server writes SQLite (`data/opengrimoire.sqlite` by default); not the alignment shared-secret pattern | Creates `attendees` + `responses`; **429** if rate-limited — see [Survey POST rate limiting](#survey-post-rate-limiting) |
-| Survey visualization data | yes (`/api/survey/visualization`) | — | — | — | **Production:** admin session cookie, `x-alignment-context-key` (when alignment secret set), `x-survey-visualization-key` (when `SURVEY_VISUALIZATION_API_SECRET` set), or `SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`. **Development:** open. | May include PII; same gate as approved-qualities |
+| Survey visualization data | yes (`/api/survey/visualization`) | — | — | — | **Production:** admin session cookie, `x-survey-visualization-key` (when `SURVEY_VISUALIZATION_API_SECRET` set), optional `x-alignment-context-key` only when `ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true`, or `SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`. **Development:** open. | May include PII; same gate as approved-qualities |
 | Survey approved quotes | yes (`/api/survey/approved-qualities`) | — | — | — | Same as survey visualization reads | Name + quote text |
 | Operator login | — | yes (`/api/auth/login`) | — | — | Body `{ password }`; **429** if rate-limited — see [Login POST rate limiting](#login-post-rate-limiting) | Sets HTTP-only session cookie |
 | Test data (stub) | yes (`/api/test-data/:dataset`) | — | — | — | None in stub | Placeholder JSON for tests/dev |
@@ -58,7 +58,7 @@ Maintenance: update this table when adding or changing routes under `src/app/api
 
 ### Survey read endpoints (visualization + approved qualities)
 
-`GET /api/survey/visualization` and `GET /api/survey/approved-qualities` may return attendee-linked data. In **`NODE_ENV=production`**, access requires one of: valid **OpenGrimoire operator session** cookie, **`x-alignment-context-key`** matching `ALIGNMENT_CONTEXT_API_SECRET` (when set), **`x-survey-visualization-key`** matching `SURVEY_VISUALIZATION_API_SECRET` (when set), or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`** for demo-only hosts. Non-production builds remain open for local development. Client `fetch` calls should use **`credentials: 'include'`** so session cookies are sent.
+`GET /api/survey/visualization` and `GET /api/survey/approved-qualities` may return attendee-linked data. In **`NODE_ENV=production`**, access requires one of: valid **OpenGrimoire operator session** cookie, **`x-survey-visualization-key`** matching `SURVEY_VISUALIZATION_API_SECRET` (when set), **`x-alignment-context-key`** matching `ALIGNMENT_CONTEXT_API_SECRET` only when **`ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true`** (escape hatch; default off), or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`** for demo-only hosts. Non-production builds remain open for local development. Client `fetch` calls should use **`credentials: 'include'`** so session cookies are sent.
 
 ### Login POST rate limiting
 

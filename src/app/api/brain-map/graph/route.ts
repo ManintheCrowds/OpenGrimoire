@@ -1,18 +1,30 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  OPENGRIMOIRE_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from '@/lib/auth/session';
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
 
 /**
  * Serves brain-map graph JSON. Prefers `public/brain-map-graph.local.json` when present
  * (vault + merged personal builds; gitignored by default), else `public/brain-map-graph.json`.
- * Optional BRAIN_MAP_SECRET for access control.
+ * When BRAIN_MAP_SECRET is set: allow `x-brain-map-key` matching the secret, or a valid
+ * OpenGrimoire operator session cookie (browser UI after login). Anonymous requests without
+ * the header are rejected.
  */
 export async function GET(request: Request) {
-  const key = request.headers.get('x-brain-map-key') ?? '';
   const secret = process.env.BRAIN_MAP_SECRET;
-  if (secret && !timingSafeEqualString(key, secret)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (secret) {
+    const key = request.headers.get('x-brain-map-key') ?? '';
+    const headerOk = timingSafeEqualString(key, secret);
+    const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
+    const sessionOk = (await verifyAdminSessionToken(token)) !== null;
+    if (!headerOk && !sessionOk) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   const publicDir = join(process.cwd(), 'public');

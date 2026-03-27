@@ -9,8 +9,11 @@ test.describe('Smoke tests', () => {
   test('nav links work and main routes render', async ({ page }) => {
     await page.goto('/');
 
-    // Visualization (scope to main so we hit the home card, not any future duplicate ids)
-    await page.locator('main').getByTestId('nav-link-visualization').click();
+    // Client navigation: wait for URL in parallel with click (avoids flake before hydration completes)
+    await Promise.all([
+      page.waitForURL(/\/visualization/),
+      page.getByTestId('nav-link-visualization').click(),
+    ]);
     await expect(page).toHaveURL(/\/visualization/);
     await expect(page.getByTestId('alluvial-diagram')).toBeVisible({ timeout: 10000 });
 
@@ -23,7 +26,10 @@ test.describe('Smoke tests', () => {
 
     // Admin controls
     await page.goto('/');
-    await page.getByTestId('nav-link-admin-controls').click();
+    await Promise.all([
+      page.waitForURL(/\/admin\/controls/),
+      page.getByTestId('nav-link-admin-controls').click(),
+    ]);
     await expect(page).toHaveURL(/\/admin\/controls/);
     await expect(page.getByText('Global Visualization Controls')).toBeVisible();
   });

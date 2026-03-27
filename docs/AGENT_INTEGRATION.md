@@ -11,7 +11,7 @@
 | Alignment CLI | **`node scripts/alignment-context-cli.mjs`** (`list`, `create`, `patch`, `delete`) |
 | Machine-readable routes | **`GET /api/capabilities`** — human UI: **`/capabilities`** |
 | Alignment secret | Set **`ALIGNMENT_CONTEXT_API_SECRET`**; send header **`x-alignment-context-key`** on each public alignment request when enforced |
-| Brain map | **`GET /api/brain-map/graph`** only (not bare `/brain-map-graph.json`); optional **`x-brain-map-key`** when **`BRAIN_MAP_SECRET`** is set |
+| Brain map | **`GET /api/brain-map/graph`** only (not bare `/brain-map-graph.json`); when **`BRAIN_MAP_SECRET`** is set: **`x-brain-map-key`** matching the secret **or** operator session cookie (same-origin UI sends **`credentials: 'include'`**) |
 | Admin / operator | **`POST /api/auth/login`** with password; session cookie (**`OPENGRIMOIRE_SESSION_SECRET`**, **`OPENGRIMOIRE_ADMIN_PASSWORD`** or hash) — see [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
 | Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. |
 
@@ -29,7 +29,7 @@ Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). L
 | Header | When |
 |--------|------|
 | `x-alignment-context-key` | Must match `ALIGNMENT_CONTEXT_API_SECRET` when that env var is set (public alignment API). |
-| `x-brain-map-key` | Must match `BRAIN_MAP_SECRET` when that env var is set (`GET /api/brain-map/graph`). |
+| `x-brain-map-key` | When `BRAIN_MAP_SECRET` is set: must match for programmatic access, unless the request uses a valid operator session cookie instead (`GET /api/brain-map/graph`). |
 
 **Brain map JSON:** Do not fetch `/brain-map-graph.json` or `/brain-map-graph.local.json` from the site root — those paths return **404**. Use **`GET /api/brain-map/graph`** only.
 
@@ -65,10 +65,11 @@ Replace `BASE` with your origin (e.g. `http://localhost:3001`). When a secret en
 curl -sS "$BASE/api/capabilities"
 ```
 
-**Brain map graph** (add header when `BRAIN_MAP_SECRET` is set):
+**Brain map graph** (when `BRAIN_MAP_SECRET` is set — header **or** session cookie):
 
 ```bash
 curl -sS -H "x-brain-map-key: $BRAIN_MAP_SECRET" "$BASE/api/brain-map/graph"
+# Logged-in browser: same-origin fetch with credentials: include (no header required).
 ```
 
 **List alignment context** (add header when `ALIGNMENT_CONTEXT_API_SECRET` is set; on local dev without a secret you may need `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` per section above):

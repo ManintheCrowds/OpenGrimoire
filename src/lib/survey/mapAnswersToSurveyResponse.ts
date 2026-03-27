@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
-import type { Database } from '@/lib/supabase/types';
+import type { SurveyResponseRow } from '@/lib/types/database';
 import type { SurveyPostBody } from './schemas';
 
-type SurveyRow = Database['public']['Tables']['survey_responses']['Row'];
-type LearningStyle = NonNullable<SurveyRow['learning_style']>;
-type ShapedBy = NonNullable<SurveyRow['shaped_by']>;
-type PeakPerformance = NonNullable<SurveyRow['peak_performance']>;
-type Motivation = NonNullable<SurveyRow['motivation']>;
+type LearningStyle = NonNullable<SurveyResponseRow['learning_style']>;
+type ShapedBy = NonNullable<SurveyResponseRow['shaped_by']>;
+type PeakPerformance = NonNullable<SurveyResponseRow['peak_performance']>;
+type Motivation = NonNullable<SurveyResponseRow['motivation']>;
 
 /** Payload for createSurveyResponse (excluding attendee_id). */
 export type SurveyResponseFields = {

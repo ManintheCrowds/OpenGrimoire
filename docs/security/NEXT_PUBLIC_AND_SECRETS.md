@@ -1,9 +1,11 @@
 # `NEXT_PUBLIC_*` variables and brain-map auth
 
-## Supabase
+## SQLite and admin session (server-only)
 
-- **`NEXT_PUBLIC_SUPABASE_URL`** and **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** are embedded in the browser bundle by design. They are **not** sufficient to keep data private: **Row Level Security (RLS)** and auth policies on the Supabase project are what protect rows.
-- **`SUPABASE_SERVICE_ROLE_KEY`** must exist **only** on the server (e.g. API routes, Edge Functions, backend workers). Never prefix with `NEXT_PUBLIC_` and never import it in client components.
+- **Database:** Alignment, survey, and moderation data use **`better-sqlite3`** on the server only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). Clients never open the DB file.
+- **Admin session:** **`OPENGRIMOIRE_SESSION_SECRET`** signs the `opengrimoire_session` cookie. **`OPENGRIMOIRE_ADMIN_PASSWORD`** / **`OPENGRIMOIRE_ADMIN_PASSWORD_HASH`** authenticate `/login`. Never prefix secrets with `NEXT_PUBLIC_`.
+
+SQLite has no row-level security; **authorization is enforced in Route Handlers** (public alignment = optional header gate; admin = valid session cookie).
 
 ## Brain map graph (`/api/brain-map/graph`)
 
@@ -25,5 +27,4 @@ Document the chosen posture in your deployment runbook.
 
 ## Debug flags
 
-- **`NEXT_PUBLIC_DEBUG_SUPABASE`**: logs whether URL/anon key are set — never logs key material (see `src/lib/supabase/client.ts`). Development + flag only.
 - **`NEXT_PUBLIC_DEBUG_VISUALIZATION`**: enables verbose visualization hook logging. **Do not set in production** when connected to real survey data.

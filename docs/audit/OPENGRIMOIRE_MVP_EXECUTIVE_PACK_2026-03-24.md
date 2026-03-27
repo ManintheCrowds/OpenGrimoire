@@ -9,11 +9,11 @@
 
 1. **MVP sentence** (product): Operator loads **local-first brain map** in browser, uses **documented REST/CLI** for alignment when configured, **without Supabase** for the graph path alone.  
 2. **Visualization gap (P0):** Table view does not show optional schema fields (`trust_score`, `grimoire_tags`, etc.) — see `BrainMapGraph.tsx` vs [BRAIN_MAP_SCHEMA.md](../BRAIN_MAP_SCHEMA.md); AC2 open.  
-3. **OpenAtlas** scores **partial–good** on API primitives, shared workspace, alignment CRUD, and **capabilities** discovery (`/api/capabilities` + page).  
+3. **OpenGrimoire** scores **partial–good** on API primitives, shared workspace, alignment CRUD, and **capabilities** discovery (`/api/capabilities` + page).  
 4. **Context injection / prompt-native** are **low by design** per REST contract non-goals—not bugs.  
 5. **UI integration:** Admin alignment refetches on focus/visibility; cross-client live sync not guaranteed (documented).  
 6. **OpenHarness** is **docs/skills/state** — audit uses **honest N/A** for GUI; handoff flow is the primary “intent surface.”  
-7. **Monitoring** split: [MONITORING_OPENATLAS.md](../MONITORING_OPENATLAS.md) (app) vs portfolio orchestrator (pointers only).  
+7. **Monitoring** split: [MONITORING_OPENGRIMOIRE.md](../MONITORING_OPENGRIMOIRE.md) (app) vs portfolio orchestrator (pointers only).  
 8. **Runbooks:** [OPERATOR_GUI_RUNBOOK.md](../OPERATOR_GUI_RUNBOOK.md) added for GUI flows.  
 9. **Tech-lead placement:** [architect/OPENGRIMOIRE_MVP_PLACEMENT.md](../architect/OPENGRIMOIRE_MVP_PLACEMENT.md).  
 10. **Critic:** **PASS** (total 23 ≥ 18; safety/correctness 5).
@@ -34,7 +34,7 @@
 
 ## Agent-native scores (rollup)
 
-| Principle | OpenAtlas (approx.) | OpenHarness |
+| Principle | OpenGrimoire (approx.) | OpenHarness |
 |-----------|----------------------|-------------|
 | Action parity | 50% | 50% |
 | Tools as primitives | 80% | 80% |
@@ -81,6 +81,5 @@ From [agent_native_opengrimoire_2026-03-24.md](./agent_native_opengrimoire_2026-
 
 1. **AC2:** Add columns for all optional fields, or subset + “more” drawer?  
 2. **Supabase:** Is MVP **demo** without hosted Supabase acceptable for alignment UI, or must admin path work in CI?  
-3. **Rename:** When (if ever) rename `capabilities.app` from `open-atlas` to `opengrimoire`?  
-4. **OpenHarness:** Single combined operator doc vs per-repo runbooks?  
-5. **E2E:** Gate PRs on Playwright in CI or manual pre-release only?
+3. **OpenHarness:** Single combined operator doc vs per-repo runbooks?  
+4. **E2E:** Gate PRs on Playwright in CI or manual pre-release only?

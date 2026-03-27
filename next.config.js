@@ -10,6 +10,7 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingRoot: undefined,
+    serverComponentsExternalPackages: ['better-sqlite3', 'bcryptjs'],
   },
   async headers() {
     return [

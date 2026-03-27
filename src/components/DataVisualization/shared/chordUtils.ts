@@ -2,13 +2,13 @@ import { interpolateRgb } from 'd3-interpolate';
 import { scaleOrdinal } from 'd3-scale';
 import { chord, ribbon } from 'd3-chord';
 import * as d3 from 'd3';
-import type { Database } from '@/lib/supabase/types';
+import type { SurveyResponseRow } from '@/lib/types/database';
 
 type YearsCategory = '0-5' | '6-10' | '11-15' | '16-20' | '20+';
-type LearningStyle = Database['public']['Tables']['survey_responses']['Row']['learning_style'];
-type ShapedBy = Database['public']['Tables']['survey_responses']['Row']['shaped_by'];
-type PeakPerformance = Database['public']['Tables']['survey_responses']['Row']['peak_performance'];
-type Motivation = Database['public']['Tables']['survey_responses']['Row']['motivation'];
+type LearningStyle = SurveyResponseRow['learning_style'];
+type ShapedBy = SurveyResponseRow['shaped_by'];
+type PeakPerformance = SurveyResponseRow['peak_performance'];
+type Motivation = SurveyResponseRow['motivation'];
 
 // Chord-specific configuration
 export const chordConfig = {

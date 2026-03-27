@@ -7,9 +7,9 @@
   --background-rgb: 249, 250, 251;
   --atlas-body-text: #4b5563;
   --atlas-surface-muted: #f3f4f6;
-  /* OpenAtlas visualization header (tokens for agent/theming surfaces) */
-  --openatlas-viz-header-bg: #170f5f;
-  --openatlas-viz-header-font: 'Avenir Next World', -apple-system, BlinkMacSystemFont, 'SF Pro', 'Roboto',
+  /* OpenGrimoire visualization header (tokens for agent/theming surfaces) */
+  --opengrimoire-viz-header-bg: #170f5f;
+  --opengrimoire-viz-header-font: 'Avenir Next World', -apple-system, BlinkMacSystemFont, 'SF Pro', 'Roboto',
     sans-serif;
 }
 

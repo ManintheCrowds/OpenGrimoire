@@ -1,7 +1,7 @@
-# OpenAtlas web smoke (Maestro). Requires dev server on port 3001.
+# OpenGrimoire web smoke (Maestro). Requires dev server on port 3001.
 # Run: npm run dev -- -p 3001  (or rely on Playwright webServer when using npm run test:e2e)
 # Docs: https://docs.maestro.dev/get-started/supported-platform/web-browser
 url: http://localhost:3001
 ---
 - launchApp
-- assertVisible: "OpenAtlas"
+- assertVisible: "OpenGrimoire"

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { MotivationType } from '@/lib/supabase/types';
+import type { MotivationType } from '@/lib/types/database';
 
 interface MotivationStepProps {
   formData: SurveyFormData;

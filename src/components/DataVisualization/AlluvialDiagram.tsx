@@ -29,7 +29,7 @@ import { DataInsightPanel } from './shared/DataInsightPanel';
 import { getYearsColorScale, getYearsCategory, getNodeColor } from './shared/colorUtils';
 // import { QuestionSelector } from './shared/QuestionSelector'; // Temporarily disabled
 import { useAppContext } from '@/lib/context/AppContext';
-import type { Database } from '@/lib/supabase/types';
+import type { VisualizationSurveyRow } from '@/lib/types/database';
 import { CATEGORY_COLORS } from '../colorConfig';
 
 /**
@@ -49,9 +49,7 @@ interface AlluvialDiagramProps {
 /**
  * Survey response type with attendee information
  */
-type SurveyResponse = Database['public']['Tables']['survey_responses']['Row'] & {
-  attendee: Database['public']['Tables']['attendees']['Row'];
-};
+type SurveyResponse = VisualizationSurveyRow;
 
 /**
  * Sankey node interface representing a category in the flow diagram

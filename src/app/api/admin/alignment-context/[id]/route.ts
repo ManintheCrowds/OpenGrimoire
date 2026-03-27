@@ -1,22 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase/admin';
-import { requireOpenAtlasAdminRoute } from '@/lib/alignment-context/admin-auth';
+import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { alignmentContextPatchBodySchema } from '@/lib/alignment-context/schemas';
+import {
+  deleteAlignmentContextItem,
+  updateAlignmentContextItem,
+} from '@/lib/storage/repositories/alignment';
 
 type RouteContext = { params: { id: string } };
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const auth = await requireOpenAtlasAdminRoute();
+  const auth = await requireOpenGrimoireAdminRoute();
   if (!auth.ok) {
     return auth.response;
-  }
-
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      { error: 'Server misconfigured', detail: 'SUPABASE_SERVICE_ROLE_KEY required.' },
-      { status: 503 }
-    );
   }
 
   const { id } = context.params;
@@ -47,7 +42,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 
-  const updatePayload: Record<string, unknown> = {};
+  const updatePayload: Parameters<typeof updateAlignmentContextItem>[1] = {};
   if (patch.title !== undefined) updatePayload.title = patch.title;
   if (patch.body !== undefined) updatePayload.body = patch.body;
   if (patch.tags !== undefined) updatePayload.tags = patch.tags;
@@ -57,14 +52,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (patch.attendee_id !== undefined) updatePayload.attendee_id = patch.attendee_id;
   if (patch.source !== undefined) updatePayload.source = patch.source;
 
-  const { data, error } = await admin
-    .from('alignment_context_items')
-    .update(updatePayload)
-    .eq('id', id)
-    .select(
-      'id,title,body,tags,priority,status,linked_node_id,attendee_id,source,created_by,created_at,updated_at'
-    )
-    .maybeSingle();
+  const { data, error } = updateAlignmentContextItem(id, updatePayload);
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -83,17 +71,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
-  const auth = await requireOpenAtlasAdminRoute();
+  const auth = await requireOpenGrimoireAdminRoute();
   if (!auth.ok) {
     return auth.response;
-  }
-
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      { error: 'Server misconfigured', detail: 'SUPABASE_SERVICE_ROLE_KEY required.' },
-      { status: 503 }
-    );
   }
 
   const { id } = context.params;
@@ -101,12 +81,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
-  const { data, error } = await admin
-    .from('alignment_context_items')
-    .delete()
-    .eq('id', id)
-    .select('id')
-    .maybeSingle();
+  const { deleted, error } = deleteAlignmentContextItem(id);
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -117,9 +92,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
   }
 
-  if (!data) {
+  if (!deleted) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ ok: true, id: data.id });
+  return NextResponse.json({ ok: true, id });
 }

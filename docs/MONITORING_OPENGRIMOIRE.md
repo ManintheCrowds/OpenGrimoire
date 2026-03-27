@@ -1,10 +1,10 @@
-# Monitoring: OpenAtlas (product) vs portfolio
+# Monitoring: OpenGrimoire (product) vs portfolio
 
 **Purpose:** Split observability so Next.js/API metrics are not confused with MiscRepos orchestration or MCP host processes.
 
 ---
 
-## OpenAtlas (this repo)
+## OpenGrimoire (this repo)
 
 | Signal | How | Notes |
 |--------|-----|--------|
@@ -25,7 +25,7 @@
 | Brain map build | `build_brain_map.py`, CI job logs |
 | MCP servers | `.cursor/mcp.json`, MCP host stderr |
 
-Document run-level success/failure in **orchestrator** or **known-issues** docs; do not duplicate full logs inside OpenAtlas.
+Document run-level success/failure in **orchestrator** or **known-issues** docs; do not duplicate full logs inside this app.
 
 ---
 

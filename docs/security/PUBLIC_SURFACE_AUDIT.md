@@ -1,7 +1,9 @@
-# OpenAtlas public surface audit
+# OpenGrimoire public surface audit
 
-**Date:** 2026-03-19  
-**Scope:** Application source, `public/`, Supabase migrations, in-repo docs, env examples, and local/runtime configuration patterns. Live Supabase dashboard / RLS verification is out of scope for this document.
+**Date:** 2026-03-19 (updated for SQLite + route-handler auth)  
+**Scope:** Application source, `public/`, historical `supabase/migrations/` (reference only), in-repo docs, env examples, and local/runtime configuration patterns.
+
+**Current persistence:** Alignment and survey data use **local SQLite** (`OPENGRIMOIRE_DB_PATH`); **authorization is enforced in Route Handlers** (no Postgres RLS). Sections below that mention Supabase JWTs or service-role clients describe **legacy** findings unless noted.
 
 ## Summary
 
@@ -29,14 +31,11 @@
 
 | Variable | Bundled to browser? | Intended exposure | Notes |
 |----------|--------------------|--------------------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Yes (project URL) | Public by design; protect data with RLS |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Yes (anon JWT) | Public by design; **not** a secret — RLS must enforce authz |
 | `NEXT_PUBLIC_APP_URL` | Yes | Yes | App origin |
-| `NEXT_PUBLIC_DEBUG_SUPABASE` | Yes | Dev-only flag | Gated with `NODE_ENV === 'development'` in client |
 | `NEXT_PUBLIC_DEBUG_VISUALIZATION` | Yes | Dev-only flag | Must stay off in production builds used with real data |
 | `NEXT_PUBLIC_BRAIN_MAP_SECRET` | Yes | **Misleading name** | Value is visible in compiled JS; treat as shared “gate token”, not a server secret |
 
-**Never** put `SUPABASE_SERVICE_ROLE_KEY` in any `NEXT_PUBLIC_*` variable or client code.
+**Never** put `OPENGRIMOIRE_SESSION_SECRET`, `ALIGNMENT_CONTEXT_API_SECRET`, or other server-only secrets in any `NEXT_PUBLIC_*` variable or client code.
 
 ## Tracked secrets scan (methodology)
 
@@ -61,11 +60,12 @@ Expect: no real JWT material in tracked sources after remediation.
 
 ## Operator checklist
 
-1. Copy `.env.example` → `.env.local`; paste keys only from Supabase dashboard (never from chat logs).
-2. Rotate Supabase keys if they ever appeared in a commit, screenshot, or shared doc.
-3. For production, set strict RLS and review policies for `survey_responses`, `attendees`, and `alignment_context_items` (anon has no SELECT; authenticated read-only; API uses service role).
-4. If `GET /api/alignment-context` is deployed with `NODE_ENV=production`, **set `ALIGNMENT_CONTEXT_API_SECRET`** and configure callers with `x-alignment-context-key`. Without it the route returns 503 and does not read the database.
-5. Do not enable `NEXT_PUBLIC_DEBUG_*` in production when using real survey data.
+1. Copy `.env.example` → `.env.local`; generate long random values for secrets (never from chat logs).
+2. Rotate `OPENGRIMOIRE_SESSION_SECRET`, `ALIGNMENT_CONTEXT_API_SECRET`, and operator password if they ever appeared in a commit or shared doc.
+3. **SQLite has no RLS** — rely on route-handler checks and network posture; back up `data/opengrimoire.sqlite` (or `OPENGRIMOIRE_DB_PATH`) securely.
+4. If `GET /api/alignment-context` is deployed with `NODE_ENV=production`, **set `ALIGNMENT_CONTEXT_API_SECRET`** and configure callers with `x-alignment-context-key`. Without it the route returns **503**.
+5. For **production** survey visualization pages, configure survey read gate env vars (see [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)).
+6. Do not enable `NEXT_PUBLIC_DEBUG_*` in production when using real survey data.
 
 ## Related docs
 

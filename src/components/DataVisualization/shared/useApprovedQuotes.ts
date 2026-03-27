@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/lib/supabase/types';
 
 interface ApprovedQuote {
   unique_quality: string;
@@ -18,9 +16,7 @@ export function useApprovedQuotes() {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient<Database>();
 
-  // Fetch approved quotes
   useEffect(() => {
     let mounted = true;
 
@@ -29,32 +25,25 @@ export function useApprovedQuotes() {
         setIsLoading(true);
         setError(null);
 
-        // Fetch directly from survey_responses where status is approved
-        const { data, error: fetchError } = await supabase
-          .from('survey_responses')
-          .select(`
-            unique_quality,
-            attendee:attendees (
-              first_name,
-              last_name,
-              is_anonymous
-            )
-          `)
-          .eq('status', 'approved')
-          .not('unique_quality', 'is', null)
-          .order('created_at', { ascending: false });
-
-        if (fetchError) throw fetchError;
+        const res = await fetch('/api/survey/approved-qualities', {
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to load (${res.status})`);
+        }
+        const data = (await res.json()) as {
+          items?: { unique_quality: string | null; attendee: ApprovedQuote['attendee'] }[];
+        };
 
         if (mounted) {
-          const filteredQuotes = data
-            ?.filter(item => item.unique_quality && item.unique_quality.trim() !== '')
-            .map(item => ({
-              unique_quality: item.unique_quality,
-              attendee: Array.isArray(item.attendee) ? item.attendee[0] : item.attendee
-            })) || [];
-          
-          console.log('Fetched quotes:', filteredQuotes.length, filteredQuotes);
+          const filteredQuotes =
+            data.items
+              ?.filter((item) => item.unique_quality && item.unique_quality.trim() !== '')
+              .map((item) => ({
+                unique_quality: item.unique_quality as string,
+                attendee: item.attendee,
+              })) ?? [];
+
           setQuotes(filteredQuotes);
         }
       } catch (err) {
@@ -69,19 +58,18 @@ export function useApprovedQuotes() {
       }
     }
 
-    fetchQuotes();
+    void fetchQuotes();
 
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, []);
 
-  // Rotate quotes every 8 seconds
   useEffect(() => {
     if (quotes.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentQuoteIndex(prev => (prev + 1) % quotes.length);
+      setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
     }, 8000);
 
     return () => clearInterval(interval);
@@ -91,20 +79,20 @@ export function useApprovedQuotes() {
 
   const formatQuote = (quote: ApprovedQuote) => {
     if (!quote) return null;
-    
+
     const { unique_quality, attendee } = quote;
     let authorName = 'Anonymous';
-    
+
     if (!attendee.is_anonymous && attendee.first_name) {
       authorName = attendee.first_name;
       if (attendee.last_name) {
         authorName += ` ${attendee.last_name}`;
       }
     }
-    
+
     return {
       text: unique_quality,
-      author: authorName
+      author: authorName,
     };
   };
 
@@ -113,6 +101,6 @@ export function useApprovedQuotes() {
     currentQuote: currentQuote ? formatQuote(currentQuote) : null,
     isLoading,
     error,
-    hasQuotes: quotes.length > 0
+    hasQuotes: quotes.length > 0,
   };
-} 
+}

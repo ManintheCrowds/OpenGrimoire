@@ -21,10 +21,8 @@ export default defineConfig({
     env: {
       ...process.env,
       ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL: 'true',
-      // Placeholders so SSR routes that import Supabase client do not throw (E2E does not call a real project).
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://e2e-placeholder.supabase.co',
-      NEXT_PUBLIC_SUPABASE_ANON_KEY:
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiJ9.e30.e2e-placeholder-anon-key',
+      OPENGRIMOIRE_SESSION_SECRET: process.env.OPENGRIMOIRE_SESSION_SECRET ?? 'e2e-opengrimoire-session-secret',
+      OPENGRIMOIRE_ADMIN_PASSWORD: process.env.OPENGRIMOIRE_ADMIN_PASSWORD ?? 'e2e-test-password',
     },
   },
 });

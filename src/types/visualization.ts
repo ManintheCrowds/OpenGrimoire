@@ -1,5 +1,5 @@
 import type { Vector3 } from 'three';
-import type { Database } from '@/lib/supabase/types';
+import type { SurveyResponseRow } from '@/lib/types/database';
 
 export type VisualizationMode = 'learning_style' | 'shaped_by' | 'peak_performance' | 'motivation';
 
@@ -15,10 +15,10 @@ export interface NodeData {
   };
   tenure_years: number;
   yearsCategory: YearsCategory;
-  learning_style: Database['public']['Tables']['survey_responses']['Row']['learning_style'];
-  shaped_by: Database['public']['Tables']['survey_responses']['Row']['shaped_by'];
-  peak_performance: Database['public']['Tables']['survey_responses']['Row']['peak_performance'];
-  motivation: Database['public']['Tables']['survey_responses']['Row']['motivation'];
+  learning_style: SurveyResponseRow['learning_style'];
+  shaped_by: SurveyResponseRow['shaped_by'];
+  peak_performance: SurveyResponseRow['peak_performance'];
+  motivation: SurveyResponseRow['motivation'];
   unique_quality: string | null;
   connections: string[];
   opacity: number;
@@ -44,10 +44,10 @@ export interface VisualizationState {
   error: string | null;
   filters: {
     yearsCategory: YearsCategory | null;
-    learningStyle: Database['public']['Tables']['survey_responses']['Row']['learning_style'] | null;
-    shapedBy: Database['public']['Tables']['survey_responses']['Row']['shaped_by'] | null;
-    peakPerformance: Database['public']['Tables']['survey_responses']['Row']['peak_performance'] | null;
-    motivation: Database['public']['Tables']['survey_responses']['Row']['motivation'] | null;
+    learningStyle: SurveyResponseRow['learning_style'] | null;
+    shapedBy: SurveyResponseRow['shaped_by'] | null;
+    peakPerformance: SurveyResponseRow['peak_performance'] | null;
+    motivation: SurveyResponseRow['motivation'] | null;
   };
   sortBy: 'years' | 'connections' | null;
   sortDirection: 'asc' | 'desc';
@@ -69,4 +69,4 @@ export interface VisualizationProps {
   onNodeHover?: (nodeId: string | null) => void;
   initialMode?: VisualizationMode;
   isExportMode?: boolean;
-} 
+}

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { LearningStyle } from '@/lib/supabase/types';
+import type { LearningStyle } from '@/lib/types/database';
 
 interface LearningStyleStepProps {
   formData: SurveyFormData;

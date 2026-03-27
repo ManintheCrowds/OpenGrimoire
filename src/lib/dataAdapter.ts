@@ -1,9 +1,13 @@
-import type { Database } from '@/lib/supabase/types';
-import type { LearningStyle, ShapedBy, PeakPerformanceType, MotivationType } from '@/lib/supabase/types';
+import type {
+  LearningStyle,
+  MotivationType,
+  PeakPerformanceType,
+  ShapedBy,
+  SurveyResponseRow,
+} from '@/lib/types/database';
 import type { SurveyData } from '@/types/survey';
 
-// Database type
-type DBSurveyResponse = Database['public']['Tables']['survey_responses']['Row'] & {
+type DBSurveyResponse = SurveyResponseRow & {
   attendee: {
     first_name: string;
     last_name: string | null;
@@ -182,12 +186,15 @@ export const convertAppToDBResponse = (appResponse: AppSurveyResponse): DBSurvey
       last_name: isAnonymous ? null : lastName,
       is_anonymous: isAnonymous,
     },
-    tenure_years: parseInt(appResponse.tenure_years),
+    tenure_years: parseInt(appResponse.tenure_years, 10),
     learning_style: appResponse.learning_style,
     shaped_by: appResponse.shaped_by,
     peak_performance: appResponse.peak_performance,
     motivation: appResponse.motivation,
     unique_quality: appResponse.unique_quality,
+    status: 'pending',
+    moderated_at: null,
+    test_data: false,
   };
 };
 

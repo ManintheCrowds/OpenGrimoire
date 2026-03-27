@@ -4,9 +4,9 @@ import AlluvialDiagram from './AlluvialDiagram';
 import ChordDiagram from './ChordDiagram';
 import { EnhancedVisualizationHeader } from './shared/EnhancedVisualizationHeader';
 import {
-  OPENATLAS_VIZ_MAIN_PANEL_ID,
-  OPENATLAS_VIZ_TAB_ALLUVIAL_ID,
-  OPENATLAS_VIZ_TAB_CHORD_ID,
+  OPENGRIMOIRE_VIZ_MAIN_PANEL_ID,
+  OPENGRIMOIRE_VIZ_TAB_ALLUVIAL_ID,
+  OPENGRIMOIRE_VIZ_TAB_CHORD_ID,
 } from './shared/vizLayoutIds';
 import { useAppContext } from '@/lib/context/AppContext';
 
@@ -85,15 +85,15 @@ export function DataVisualization() {
       {/* Visualization Content - Scales to fill remaining space */}
       <div className="flex h-full w-full min-h-0 flex-1 flex-col pb-4">
         <div
-          id={OPENATLAS_VIZ_MAIN_PANEL_ID}
+          id={OPENGRIMOIRE_VIZ_MAIN_PANEL_ID}
           role="tabpanel"
           aria-labelledby={
             visualizationType === 'alluvial'
-              ? OPENATLAS_VIZ_TAB_ALLUVIAL_ID
-              : OPENATLAS_VIZ_TAB_CHORD_ID
+              ? OPENGRIMOIRE_VIZ_TAB_ALLUVIAL_ID
+              : OPENGRIMOIRE_VIZ_TAB_CHORD_ID
           }
           className="min-h-0 flex-1"
-          data-region="openatlas-viz-canvas"
+          data-region="opengrimoire-viz-canvas"
         >
           {visualizationType === 'alluvial' ? (
             <div data-testid="alluvial-diagram">

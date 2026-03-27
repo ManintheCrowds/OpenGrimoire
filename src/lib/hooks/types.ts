@@ -1,4 +1,9 @@
-import type { Database } from '@/lib/supabase/types';
+import type {
+  LearningStyle,
+  MotivationType,
+  PeakPerformanceType,
+  ShapedBy,
+} from '@/lib/types/database';
 
 export type SurveyFormData = {
   first_name: string;
@@ -6,9 +11,9 @@ export type SurveyFormData = {
   email?: string;
   is_anonymous: boolean;
   tenure_years?: number;
-  learning_style?: Database['public']['Tables']['survey_responses']['Row']['learning_style'];
-  shaped_by?: Database['public']['Tables']['survey_responses']['Row']['shaped_by'];
-  peak_performance?: Database['public']['Tables']['survey_responses']['Row']['peak_performance'];
-  motivation?: Database['public']['Tables']['survey_responses']['Row']['motivation'];
+  learning_style?: LearningStyle;
+  shaped_by?: ShapedBy;
+  peak_performance?: PeakPerformanceType;
+  motivation?: MotivationType;
   unique_quality?: string;
-}; 
+};

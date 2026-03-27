@@ -1,4 +1,4 @@
-# Agent-native architecture audit: OpenAtlas
+# Agent-native architecture audit: OpenGrimoire
 
 **Normative rules:** Integration expectations and the **strict public REST contract** for entities are defined in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md). This document is a **gap report** against those rules and the eight principles below.
 
@@ -17,7 +17,7 @@ One-time review against eight agent-native principles. **Evidence:** Playwright 
 | 7. Capability discovery | 2 / 7 | 29% | Needs work |
 | 8. Prompt-native features | 2 / 10 | 20% | Needs work |
 
-**Weighted takeaway:** OpenAtlas is a **Next.js + Supabase** product with strong **HTTP API + CLI** affordances for alignment context, but it is **not** an embedded agent shell. Parity for external agents depends on **browser automation** and **CLI/HTTP**, not first-class OpenAtlas MCP tools.
+**Weighted takeaway:** OpenGrimoire is a **Next.js + SQLite (local-first)** app with strong **HTTP API + CLI** affordances for alignment context, but it is **not** an embedded agent shell. Parity for external agents depends on **browser automation** and **CLI/HTTP**, not first-class OpenGrimoire MCP tools.
 
 Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50% (mapped to status column).
 
@@ -34,7 +34,7 @@ Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50%
 | Navigate pages, use visualization, operator intake, admin | Playwright / Maestro / cursor-ide-browser | Yes (generic UI automation) |
 | CRUD alignment context via UI | Same + manual; or **REST** | Partial |
 | CRUD alignment context programmatically | [`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs) (`list`, `create`, `patch`, `delete`) | Yes for API-shaped actions |
-| Auth-gated flows | Depends on env (`ALIGNMENT_CONTEXT_API_SECRET`, Supabase) | Same gates for agent |
+| Auth-gated flows | Depends on env (`ALIGNMENT_CONTEXT_API_SECRET`, admin session for UI) | Same gates for agent |
 
 **Gaps:** No dedicated “OpenAtlas MCP server” listing app-specific tools; agents rely on **generic** MCP (browser, fetch) + CLI.
 
@@ -60,7 +60,7 @@ Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50%
 
 **Principle:** Dynamic context (workspace state, capabilities) feeds the agent system prompt.
 
-**Findings:** OpenAtlas **does not** implement Cursor/agent system prompts. Alignment **content** is data in Supabase and can be fetched via API for *external* agents if the harness loads it.
+**Findings:** OpenGrimoire **does not** implement Cursor/agent system prompts. Alignment **content** is data in SQLite and can be fetched via API for *external* agents if the harness loads it.
 
 **Gaps:** No in-app “agent context panel” or exported prompt bundle for sessions.
 
@@ -74,7 +74,7 @@ Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50%
 
 **Principle:** Agent and user read/write the same stores.
 
-**Findings:** Same Supabase tables and API for users (via app) and agents (via CLI/fetch with same secrets). No separate “agent-only” database for alignment context.
+**Findings:** Same SQLite store and API for users (via app) and agents (via CLI/fetch with same secrets). No separate “agent-only” database for alignment context.
 
 **Gaps:** Survey/brain-map flows may be more UI-centric; verify per feature.
 
@@ -114,13 +114,13 @@ Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50%
 
 **Principle:** Users discover what the agent can do (onboarding, `/help`, suggested prompts, etc.).
 
-**Findings:** [`README.md`](../README.md) and docs; CLI `--help` via script usage comment.
+**Findings (updated since original audit):** In-app **[`/capabilities`](../src/app/capabilities/page.tsx)** lists the API surface; **[`SiteFooter`](../src/components/SiteFooter.tsx)** links to `/capabilities` and **`GET /api/capabilities`** (JSON); **[`SharedNavBar`](../src/components/SharedNavBar.tsx)** includes a Capabilities nav item. Machine-readable index: **[`GET /api/capabilities`](../src/app/api/capabilities/route.ts)** (hand-maintained manifest, same PR as route changes per [CONTRIBUTING](../CONTRIBUTING.md)). [`README.md`](../README.md) and [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) point agents at headers, CLI, and contract.
 
-**Gaps:** No in-product “agent capabilities” page; harness docs live in portfolio-harness.
+**Gaps:** No onboarding wizard; harness-side discovery still lives in portfolio-harness; stretch **OpenAPI** (OA-REST-2) — [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Capability discovery.
 
-**Improvement:** `GET /api/capabilities` (hand-maintained manifest). Stretch: OpenAPI, in-UI links — [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Capability discovery.
+**Score:** 2 / 7 discovery mechanisms — **point-in-time** scoring; several mechanisms are now partially addressed (in-product page + nav + public JSON).
 
-**Score:** 2 / 7 discovery mechanisms.
+**Future (distinct from intake survey):** Async **HITL intent** form for AI-posted human questions — see [`HITL_INTENT_SURVEY_BACKLOG.md`](./HITL_INTENT_SURVEY_BACKLOG.md).
 
 ---
 
@@ -151,7 +151,7 @@ Use Playwright for CI truth; Maestro for cross-tool YAML experiments or future m
 
 ## Top recommendations (by impact)
 
-1. **Agent entry + contract:** [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) (single index), README, and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENATLAS_BASE_URL` should match dev port **3001**; CLI default aligns with README).
+1. **Agent entry + contract:** [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) (single index), README, and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENGRIMOIRE_BASE_URL` or legacy `OPENATLAS_BASE_URL` should match dev port **3001**; CLI default aligns with README).
 2. **Optional:** Thin MCP over REST only — see [`agent/INTEGRATION_PATHS.md`](./agent/INTEGRATION_PATHS.md) (no duplicate business layer).
 3. **CRUD matrix:** Maintained in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md); update in same PR as API changes ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 4. **SCP:** Content pasted into alignment fields from untrusted sources should be gated upstream in the **agent harness** ([TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md); use your `local-proto` clone if not nested under `portfolio-harness`), not inside OpenAtlas alone — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.

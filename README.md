@@ -1,8 +1,8 @@
-# OpenAtlas — Operator context graph and brain-map visualization
+# OpenGrimoire — Operator context graph and brain-map visualization
 
 Next.js app for co-access across `.cursor/state` handoffs and daily notes; D3/Three.js; static JSON graph, no Supabase required. Part of portfolio-harness **Build** (see Guard–Guide–Build taxonomy).
 
-**Package name:** `open-atlas`. App folder: `OpenAtlas` (renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical path.
+**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **Repo folder:** often still `OpenAtlas` on disk (legacy name; renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical folder path until you rename the clone.
 
 ## Key Concepts
 
@@ -27,7 +27,7 @@ Next.js app for co-access across `.cursor/state` handoffs and daily notes; D3/Th
 
 - **Optional auth:** set `BRAIN_MAP_SECRET` on the server. If the UI must send a header, `NEXT_PUBLIC_BRAIN_MAP_SECRET` is supported — **that value is embedded in the browser bundle** (obfuscation only, not a true secret). See [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
 
-Full JSON contract: [docs/BRAIN_MAP_SCHEMA.md](docs/BRAIN_MAP_SCHEMA.md). **Tools, APIs, and how this relates to OpenHarness:** [docs/OPENATLAS_SYSTEMS_INVENTORY.md](docs/OPENATLAS_SYSTEMS_INVENTORY.md).
+Full JSON contract: [docs/BRAIN_MAP_SCHEMA.md](docs/BRAIN_MAP_SCHEMA.md). **Tools, APIs, and how this relates to OpenHarness:** [docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md](docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md).
 
 ### Local-first notes
 
@@ -46,24 +46,24 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 | `/context-atlas`, `/brain-map` | Context graph (same UI) |
 | `/operator-intake`, `/survey` | Legacy intake form (same UI) |
 | `/visualization` | D3 demos |
-| `/login`, `/admin/*` | Supabase-backed areas (require env) |
+| `/login`, `/admin/*` | Operator password + session cookie (see `.env.example`: `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or hash) |
 
 ## Features (accurate)
 
 - D3 / Three.js visualizations (Sankey, chord, constellation, etc.).
 - Context graph from handoff/daily/decision-log derived paths.
-- Multi-step form sample with Supabase submission when configured.
-- Admin / theme controls when Supabase is available.
+- Multi-step form posting to `POST /api/survey` (SQLite on the server).
+- Admin / theme controls after operator login.
 
 ### Agents and APIs
 
-- **Start here:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) — base URL, headers, brain-map policy, alignment env, CLI.
+- **Start here:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) — **Quick reference** table at the top, then base URL, headers, survey read rules in production, CLI.
 - **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
 - **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
-- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENATLAS_BASE_URL` (local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
-- **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENATLAS.md](docs/AGENT_NATIVE_AUDIT_OPENATLAS.md).
+- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy alias `OPENATLAS_BASE_URL`; local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
+- **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md).
 - **OpenGrimoire MVP (scope + audit + pack):** [docs/scope_opengrimoire_mvp_agent_native.md](docs/scope_opengrimoire_mvp_agent_native.md), [docs/audit/agent_native_opengrimoire_2026-03-24.md](docs/audit/agent_native_opengrimoire_2026-03-24.md), [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md).
-- **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENATLAS.md](docs/MONITORING_OPENATLAS.md).
+- **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENGRIMOIRE.md](docs/MONITORING_OPENGRIMOIRE.md).
 - **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Quick start
@@ -73,7 +73,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 ```bash
 cd OpenAtlas   # path under portfolio-harness
 npm install
-cp .env.example .env.local   # if present; add Supabase keys only if you need auth/survey persistence. For alignment API without a shared secret in local dev, set ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true (see docs/AGENT_INTEGRATION.md).
+cp .env.example .env.local   # set OPENGRIMOIRE_SESSION_SECRET and OPENGRIMOIRE_ADMIN_PASSWORD (or hash) for `/login` and `/admin`. For alignment API without a shared secret in local dev, set ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true (see docs/AGENT_INTEGRATION.md).
 npm run dev
 ```
 
@@ -92,7 +92,7 @@ Open [http://localhost:3001](http://localhost:3001). Visit `/context-atlas` afte
 | `npm run lint` | ESLint |
 | `npm run type-check` | `tsc --noEmit` |
 | `npm run test` | Placeholder (exits 0 until unit tests exist) |
-| `npm run verify` | **CI / agents:** `lint` + `type-check` + `test` (single pass/fail). **Note:** `type-check` may fail until known TS issues in `src/app/test-chord/`, `test-context/`, `dataAdapter`, etc. are cleared—run `npm run lint` alone if you only need ESLint. |
+| `npm run verify` | **CI / agents:** `lint` + `type-check` + `test` (single pass/fail). |
 | `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
 | `npm run test:e2e` | Playwright |
 

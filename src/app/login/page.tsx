@@ -1,128 +1,69 @@
 "use client";
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [resetSent, setResetSent] = useState(false);
-  const [showReset, setShowReset] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
-    console.log('Attempting login with email:', email);
-    
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log('Login response:', { data, error });
-      
-      if (error) {
-        console.error('Login error:', error);
-        setError(error.message);
-      } else {
-        console.log('Login successful, user:', data.user);
-        console.log('User metadata:', data.user?.user_metadata);
-        router.push('/admin');
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error ?? 'Login failed');
+        return;
       }
+
+      router.push('/admin');
     } catch (err) {
-      console.error('Unexpected error during login:', err);
+      console.error('Login error:', err);
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setResetSent(false);
-    
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/login',
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        setResetSent(true);
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    }
-  };
-
   return (
     <div className="max-w-sm mx-auto mt-10 space-y-4">
-      {showReset ? (
-        <form onSubmit={handleReset} className="space-y-4">
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            required 
-            className="w-full border p-2" 
-          />
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
-          >
-            {isLoading ? 'Sending...' : 'Send Password Reset'}
-          </button>
-          <button 
-            type="button" 
-            className="w-full border p-2 rounded" 
-            onClick={() => setShowReset(false)}
-          >
-            Back to Login
-          </button>
-          {resetSent && <div className="text-green-600">Password reset email sent!</div>}
-          {error && <div className="text-red-600">{error}</div>}
-        </form>
-      ) : (
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            required 
-            className="w-full border p-2" 
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
-            className="w-full border p-2" 
-          />
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-          <button 
-            type="button" 
-            className="w-full border p-2 rounded" 
-            onClick={() => setShowReset(true)}
-          >
-            Forgot Password?
-          </button>
-          {error && <div className="text-red-600">{error}</div>}
-        </form>
-      )}
+      <h1 className="text-xl font-semibold text-gray-900">OpenGrimoire admin</h1>
+      <p className="text-sm text-gray-600">
+        Sign in with the operator password configured on the server (
+        <code className="text-xs">OPENGRIMOIRE_ADMIN_PASSWORD</code> or{' '}
+        <code className="text-xs">OPENGRIMOIRE_ADMIN_PASSWORD_HASH</code>).
+      </p>
+      <form onSubmit={handleLogin} className="space-y-4">
+        <input
+          type="password"
+          placeholder="Operator password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="current-password"
+          className="w-full border p-2 rounded"
+        />
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
+        >
+          {isLoading ? 'Signing in…' : 'Sign in'}
+        </button>
+        {error && <div className="text-red-600">{error}</div>}
+      </form>
     </div>
   );
-} 
+}

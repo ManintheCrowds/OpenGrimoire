@@ -7,7 +7,7 @@ export default function SiteFooter() {
       aria-label="Site footer"
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1">
-        <span>OpenAtlas</span>
+        <span>OpenGrimoire</span>
         <Link href="/capabilities" className="text-blue-600 hover:underline">
           API capabilities
         </Link>

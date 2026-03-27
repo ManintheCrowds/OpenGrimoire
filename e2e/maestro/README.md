@@ -1,4 +1,4 @@
-# Maestro flows (OpenAtlas web)
+# Maestro flows (OpenGrimoire web)
 
 Optional YAML-based E2E using [Maestro](https://github.com/mobile-dev-inc/Maestro). **Primary** regression coverage remains [Playwright](../) (`npm run test:e2e`); Maestro is a small, human-readable smoke for agent-native / cross-surface parity experiments.
 
@@ -8,7 +8,7 @@ Optional YAML-based E2E using [Maestro](https://github.com/mobile-dev-inc/Maestr
 - **Maestro CLI** — [install](https://docs.maestro.dev/maestro-cli):  
   `curl -fsSL "https://get.maestro.mobile.dev" | bash`  
   On Windows, use WSL or follow [Maestro CLI](https://docs.maestro.dev/maestro-cli) for native install paths.
-- **OpenAtlas dev server** on `http://localhost:3001` (same as Playwright `baseURL` in `playwright.config.ts`).
+- **OpenGrimoire dev server** on `http://localhost:3001` (same as Playwright `baseURL` in `playwright.config.ts`).
 
 ## Run
 

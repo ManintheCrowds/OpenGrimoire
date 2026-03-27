@@ -2,9 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import Layout from '@/components/Layout';
-import { isOpenAtlasAdminUser } from '@/lib/openatlas-admin';
+import { isOpenGrimoireAdminSessionUser } from '@/lib/opengrimoire-admin';
 
 type AlignmentItem = {
   id: string;
@@ -23,7 +22,7 @@ type AlignmentItem = {
 
 export default function AdminAlignmentPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ user_metadata?: { role?: string } } | null>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AlignmentItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -36,21 +35,24 @@ export default function AdminAlignmentPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const {
-          data: { user: u },
-        } = await supabase.auth.getUser();
-        if (!u || !isOpenAtlasAdminUser(u)) {
+        const res = await fetch('/api/auth/session', { credentials: 'include' });
+        if (!res.ok) {
           router.replace('/login');
           return;
         }
-        setUser(u);
+        const data = (await res.json()) as { authenticated?: boolean; user?: { id: string } };
+        if (!data.authenticated || !isOpenGrimoireAdminSessionUser(data.user)) {
+          router.replace('/login');
+          return;
+        }
+        setUser(data.user ?? null);
       } catch {
         router.replace('/login');
       } finally {
         setIsLoading(false);
       }
     };
-    checkAuth();
+    void checkAuth();
   }, [router]);
 
   const refresh = useCallback(async () => {
@@ -170,7 +172,7 @@ export default function AdminAlignmentPage() {
             <h1 className="text-3xl font-bold text-gray-900">Alignment context</h1>
             <p className="mt-2 text-gray-600">
               Operator CRUD for <code className="rounded bg-gray-100 px-1">alignment_context_items</code>. Agents
-              and scripts use the public API — see <code className="text-sm">OpenAtlas/docs/agent/ALIGNMENT_CONTEXT_API.md</code>{' '}
+              and scripts use the public API — see <code className="text-sm">docs/agent/ALIGNMENT_CONTEXT_API.md</code>{' '}
               in the repository.
             </p>
           </div>
@@ -249,10 +251,7 @@ export default function AdminAlignmentPage() {
           </div>
           <ul className="space-y-4">
             {items.map((it) => (
-              <li
-                key={it.id}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
-              >
+              <li key={it.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold text-gray-900">{it.title}</h3>
@@ -289,7 +288,7 @@ export default function AdminAlignmentPage() {
             ))}
           </ul>
           {items.length === 0 && !loadError && (
-            <p className="text-gray-500">No rows yet. Create one above or apply the Supabase migration.</p>
+            <p className="text-gray-500">No rows yet. Create one above.</p>
           )}
         </section>
       </div>

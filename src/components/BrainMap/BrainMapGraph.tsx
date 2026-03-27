@@ -361,7 +361,7 @@ export default function BrainMapGraph() {
   return (
     <div className="flex h-full w-full flex-col bg-gray-50">
       <div className="border-b bg-white px-4 py-2">
-        <h1 className="text-lg font-semibold text-gray-900">OpenAtlas — context graph</h1>
+        <h1 className="text-lg font-semibold text-gray-900">OpenGrimoire — context graph</h1>
         <p className="text-sm text-gray-600">
           Co-access across session journals and handoffs. After rebuilding JSON, use <strong>Refresh graph</strong>{' '}
           below (or reload the page). Rebuild with{' '}

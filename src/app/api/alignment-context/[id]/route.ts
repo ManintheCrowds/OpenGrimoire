@@ -1,29 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { checkAlignmentContextApiGate } from '@/lib/alignment-context/api-auth';
 import { alignmentContextPatchBodySchema } from '@/lib/alignment-context/schemas';
+import {
+  deleteAlignmentContextItem,
+  updateAlignmentContextItem,
+} from '@/lib/storage/repositories/alignment';
 
 type RouteContext = { params: { id: string } };
 
 /**
- * PATCH /api/alignment-context/:id — partial update (service role).
+ * PATCH /api/alignment-context/:id — partial update.
  * DELETE — hard delete row.
  */
 export async function PATCH(request: Request, context: RouteContext) {
   const gate = checkAlignmentContextApiGate(request);
   if (!gate.ok) {
     return gate.response;
-  }
-
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      {
-        error: 'Server misconfigured',
-        detail: 'NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for this route.',
-      },
-      { status: 503 }
-    );
   }
 
   const { id } = context.params;
@@ -55,7 +47,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 
-  const updatePayload: Record<string, unknown> = {};
+  const updatePayload: Parameters<typeof updateAlignmentContextItem>[1] = {};
   if (patch.title !== undefined) updatePayload.title = patch.title;
   if (patch.body !== undefined) updatePayload.body = patch.body;
   if (patch.tags !== undefined) updatePayload.tags = patch.tags;
@@ -65,42 +57,25 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (patch.attendee_id !== undefined) updatePayload.attendee_id = patch.attendee_id;
   if (patch.source !== undefined) updatePayload.source = patch.source;
 
-  try {
-    const { data, error } = await admin
-      .from('alignment_context_items')
-      .update(updatePayload)
-      .eq('id', id)
-      .select(
-        'id,title,body,tags,priority,status,linked_node_id,attendee_id,source,created_by,created_at,updated_at'
-      )
-      .maybeSingle();
+  const { data, error } = updateAlignmentContextItem(id, updatePayload);
 
-    if (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[alignment-context] PATCH failed:', error.code, error.message);
-      } else {
-        console.error('[alignment-context] PATCH failed:', error.code);
-      }
-      return NextResponse.json(
-        { error: 'Failed to update alignment context item' },
-        { status: 500 }
-      );
-    }
-
-    if (!data) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ item: data });
-  } catch (err) {
-    const e = err instanceof Error ? err : new Error(String(err));
+  if (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[alignment-context] PATCH transport:', e.name, e.message);
+      console.error('[alignment-context] PATCH failed:', error.code, error.message);
     } else {
-      console.error('[alignment-context] PATCH transport:', e.name);
+      console.error('[alignment-context] PATCH failed:', error.code);
     }
-    return NextResponse.json({ error: 'Failed to reach Supabase' }, { status: 502 });
+    return NextResponse.json(
+      { error: 'Failed to update alignment context item' },
+      { status: 500 }
+    );
   }
+
+  if (!data) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ item: data });
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
@@ -109,54 +84,28 @@ export async function DELETE(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      {
-        error: 'Server misconfigured',
-        detail: 'NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for this route.',
-      },
-      { status: 503 }
-    );
-  }
-
   const { id } = context.params;
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
-  try {
-    const { data, error } = await admin
-      .from('alignment_context_items')
-      .delete()
-      .eq('id', id)
-      .select('id')
-      .maybeSingle();
+  const { deleted, error } = deleteAlignmentContextItem(id);
 
-    if (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[alignment-context] DELETE failed:', error.code, error.message);
-      } else {
-        console.error('[alignment-context] DELETE failed:', error.code);
-      }
-      return NextResponse.json(
-        { error: 'Failed to delete alignment context item' },
-        { status: 500 }
-      );
-    }
-
-    if (!data) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ ok: true, id: data.id });
-  } catch (err) {
-    const e = err instanceof Error ? err : new Error(String(err));
+  if (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[alignment-context] DELETE transport:', e.name, e.message);
+      console.error('[alignment-context] DELETE failed:', error.code, error.message);
     } else {
-      console.error('[alignment-context] DELETE transport:', e.name);
+      console.error('[alignment-context] DELETE failed:', error.code);
     }
-    return NextResponse.json({ error: 'Failed to reach Supabase' }, { status: 502 });
+    return NextResponse.json(
+      { error: 'Failed to delete alignment context item' },
+      { status: 500 }
+    );
   }
+
+  if (!deleted) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, id });
 }

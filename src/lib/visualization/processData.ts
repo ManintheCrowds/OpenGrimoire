@@ -1,23 +1,15 @@
 import { Vector3 } from 'three';
 import type { NodeData, EdgeData, YearsCategory } from '@/types/visualization';
-import type { Database } from '@/lib/supabase/types';
-
-type SurveyResponse = Database['public']['Tables']['survey_responses']['Row'] & {
-  attendee: {
-    first_name: string;
-    last_name: string | null;
-    is_anonymous: boolean;
-  };
-};
+import type { VisualizationSurveyRow } from '@/lib/types/database';
 
 interface ProcessOptions {
   mode: 'learning_style' | 'shaped_by' | 'peak_performance' | 'motivation';
   filters: {
     yearsCategory: YearsCategory | null;
-    learningStyle: Database['public']['Tables']['survey_responses']['Row']['learning_style'] | null;
-    shapedBy: Database['public']['Tables']['survey_responses']['Row']['shaped_by'] | null;
-    peakPerformance: Database['public']['Tables']['survey_responses']['Row']['peak_performance'] | null;
-    motivation: Database['public']['Tables']['survey_responses']['Row']['motivation'] | null;
+    learningStyle: VisualizationSurveyRow['learning_style'] | null;
+    shapedBy: VisualizationSurveyRow['shaped_by'] | null;
+    peakPerformance: VisualizationSurveyRow['peak_performance'] | null;
+    motivation: VisualizationSurveyRow['motivation'] | null;
   };
   sortBy: 'years' | 'connections' | null;
   sortDirection: 'asc' | 'desc';
@@ -53,8 +45,8 @@ const calculateNodePosition = (index: number, total: number): Vector3 => {
 };
 
 const findConnections = (
-  response: SurveyResponse,
-  allResponses: SurveyResponse[],
+  response: VisualizationSurveyRow,
+  allResponses: VisualizationSurveyRow[],
   mode: ProcessOptions['mode']
 ): string[] => {
   return allResponses
@@ -65,15 +57,19 @@ const findConnections = (
     .map((other) => other.id);
 };
 
-function isValidNode(response: any): response is Omit<NodeData, 'position' | 'connections' | 'opacity' | 'scale'> & { tenure_years: number, attendee: any } {
+function isValidNode(
+  response: any
+): response is Omit<NodeData, 'position' | 'connections' | 'opacity' | 'scale'> & {
+  tenure_years: number;
+  attendee: any;
+} {
   return typeof response.tenure_years === 'number' && response.attendee;
 }
 
 export const processVisualizationData = (
-  data: SurveyResponse[],
+  data: VisualizationSurveyRow[],
   options: ProcessOptions
 ): { nodes: NodeData[]; edges: EdgeData[] } => {
-  // Apply filters
   let filteredData = data.filter((response) => {
     if (
       options.filters.yearsCategory &&
@@ -97,22 +93,22 @@ export const processVisualizationData = (
     return true;
   });
 
-  // Sort data if needed
   if (options.sortBy) {
     filteredData.sort((a, b) => {
-      const aValue = options.sortBy === 'years' ? (a.tenure_years ?? 0) : findConnections(a, filteredData, options.mode).length;
-      const bValue = options.sortBy === 'years' ? (b.tenure_years ?? 0) : findConnections(b, filteredData, options.mode).length;
+      const aValue =
+        options.sortBy === 'years' ? (a.tenure_years ?? 0) : findConnections(a, filteredData, options.mode).length;
+      const bValue =
+        options.sortBy === 'years' ? (b.tenure_years ?? 0) : findConnections(b, filteredData, options.mode).length;
       return options.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
     });
   }
 
-  // Create nodes
   const validResponses = filteredData.filter(isValidNode);
   const nodes: NodeData[] = validResponses.map((response, index) => {
     const tenure_years = response.tenure_years as number;
     const yearsCategory = getYearsCategory(tenure_years);
     const connections = findConnections(
-      filteredData.find(r => r.id === response.id)!,
+      filteredData.find((r) => r.id === response.id)!,
       filteredData,
       options.mode
     );
@@ -134,7 +130,6 @@ export const processVisualizationData = (
   });
   console.log('Filtered out nodes without attendee or tenure_years:', filteredData.length - nodes.length);
 
-  // Create edges
   const edges: EdgeData[] = [];
   const edgeMap = new Set<string>();
 
@@ -155,4 +150,4 @@ export const processVisualizationData = (
   });
 
   return { nodes, edges };
-}; 
+};

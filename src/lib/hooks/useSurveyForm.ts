@@ -1,8 +1,26 @@
 import { useState } from 'react';
 import type { SurveyFormData } from './types';
-import { createAttendee, createSurveyResponse } from '@/lib/supabase/db';
 
-export type { SurveyFormData };
+export type { SurveyFormData } from './types';
+
+function buildSurveyPostBody(formData: SurveyFormData) {
+  const lastName = formData.last_name?.trim() || '—';
+  const answers = [
+    { questionId: 'tenure_years', answer: String(formData.tenure_years ?? 0) },
+    { questionId: 'learning_style', answer: formData.learning_style ?? '' },
+    { questionId: 'shaped_by', answer: formData.shaped_by ?? '' },
+    { questionId: 'peak_performance', answer: formData.peak_performance ?? '' },
+    { questionId: 'motivation', answer: formData.motivation ?? '' },
+    { questionId: 'unique_quality', answer: formData.unique_quality ?? '' },
+  ];
+  return {
+    firstName: formData.first_name,
+    lastName,
+    email: formData.is_anonymous ? '' : formData.email ?? '',
+    isAnonymous: formData.is_anonymous,
+    answers,
+  };
+}
 
 export function useSurveyForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -29,50 +47,40 @@ export function useSurveyForm() {
   };
 
   const submitForm = async () => {
-    console.log('Submitting survey form...', formData);
     try {
       setIsSubmitting(true);
       setError(null);
 
-      // Create attendee record
-      const attendee = await createAttendee({
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        is_anonymous: formData.is_anonymous,
+      const res = await fetch('/api/survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildSurveyPostBody(formData)),
       });
 
-      // Create survey response
-      await createSurveyResponse({
-        attendee_id: attendee.id,
-        tenure_years: formData.tenure_years,
-        learning_style: formData.learning_style,
-        shaped_by: formData.shaped_by,
-        peak_performance: formData.peak_performance,
-        motivation: formData.motivation,
-        unique_quality: formData.unique_quality,
-      });
+      const payload = (await res.json()) as {
+        success?: boolean;
+        message?: string;
+        error?: string;
+        issues?: unknown;
+      };
 
-      // Move to success step
+      if (!res.ok) {
+        if (res.status === 409 && payload.message) {
+          setError(payload.message);
+        } else if (payload.message) {
+          setError(payload.message);
+        } else if (payload.error === 'Validation failed') {
+          setError('Please check your answers and try again.');
+        } else {
+          setError('An error occurred while submitting the form');
+        }
+        return;
+      }
+
       nextStep();
     } catch (err) {
       console.error('Survey submission error:', err);
-      
-      // Handle specific error types
-      if (err && typeof err === 'object' && 'code' in err && 'message' in err) {
-        const errorCode = err.code as string;
-        const errorMessage = err.message as string;
-        
-        if (errorCode === '23505' && errorMessage.includes('attendees_email_key')) {
-          setError('An account with this email already exists. Please use a different email or submit anonymously.');
-        } else if (errorCode === '23505') {
-          setError('This data already exists. Please check your information and try again.');
-        } else {
-          setError(`Submission error: ${errorMessage}`);
-        }
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
-      }
+      setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
     } finally {
       setIsSubmitting(false);
     }
@@ -88,4 +96,4 @@ export function useSurveyForm() {
     prevStep,
     submitForm,
   };
-} 
+}

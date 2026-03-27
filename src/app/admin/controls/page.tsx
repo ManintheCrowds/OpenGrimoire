@@ -142,7 +142,7 @@ export default function GlobalControlsPage() {
               </div>
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  OpenAtlas
+                  OpenGrimoire
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Global Visualization Controls

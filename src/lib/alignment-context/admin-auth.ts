@@ -1,38 +1,29 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import type { User } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import type { Database } from '@/lib/supabase/types';
-import { isOpenAtlasAdminUser } from '@/lib/openatlas-admin';
+import {
+  OPENGRIMOIRE_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from '@/lib/auth/session';
+
+export type AdminSessionUser = { id: string };
 
 export type RequireAdminResult =
-  | { ok: true; user: User }
+  | { ok: true; user: AdminSessionUser }
   | { ok: false; response: NextResponse };
 
 /**
- * Require a logged-in Supabase user with admin role (see `isOpenAtlasAdminUser`).
- * Uses auth cookies (same session as `/admin`).
+ * Require a valid OpenGrimoire operator session (HTTP-only cookie, signed JWT).
  */
-export async function requireOpenAtlasAdminRoute(): Promise<RequireAdminResult> {
-  const supabase = createRouteHandlerClient<Database>({ cookies });
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+export async function requireOpenGrimoireAdminRoute(): Promise<RequireAdminResult> {
+  const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
+  const session = await verifyAdminSessionToken(token);
 
-  if (error || !user) {
+  if (!session) {
     return {
       ok: false,
       response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     };
   }
 
-  if (!isOpenAtlasAdminUser(user)) {
-    return {
-      ok: false,
-      response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
-    };
-  }
-
-  return { ok: true, user };
+  return { ok: true, user: { id: session.sub } };
 }

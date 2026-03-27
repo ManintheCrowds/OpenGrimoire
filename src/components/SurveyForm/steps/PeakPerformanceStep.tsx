@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { PeakPerformanceType } from '@/lib/supabase/types';
+import type { PeakPerformanceType } from '@/lib/types/database';
 
 interface PeakPerformanceStepProps {
   formData: SurveyFormData;

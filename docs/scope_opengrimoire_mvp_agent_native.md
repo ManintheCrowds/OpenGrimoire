@@ -1,14 +1,14 @@
 # Product scope: OpenGrimoire MVP (agent-native readiness)
 
 **Date:** 2026-03-24  
-**Product:** OpenGrimoire (narrative); repository **OpenAtlas** (package `open-atlas`).  
+**Product:** OpenGrimoire; **npm package** `open-grimoire`; **repo folder** on disk may still be **`OpenAtlas`** (legacy path).  
 **Related:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md), [BRAIN_MAP_SCHEMA.md](./BRAIN_MAP_SCHEMA.md), [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md).
 
 ---
 
 ## MVP in one sentence
 
-**MVP:** An operator can open the app, load the **local-first brain map** in the browser (`/context-atlas` or `/brain-map`), read **alignment context** when Supabase + admin or the **public alignment API** is configured, and agents/operators can follow **documented REST + CLI** paths—**without requiring Supabase** for the context-graph viewer path.
+**MVP:** An operator can open the app, load the **local-first brain map** in the browser (`/context-atlas` or `/brain-map`), read **alignment context** via **admin UI** (SQLite + session) or the **public alignment API** when configured, and agents/operators can follow **documented REST + CLI** paths—**without requiring a hosted database** for the context-graph viewer path.
 
 ---
 
@@ -35,7 +35,7 @@
 | AC3 | **Given** `ALIGNMENT_CONTEXT_API_SECRET` set, **When** client sends wrong key to `GET /api/alignment-context`, **Then** **401** (per contract). |
 | AC4 | **Given** admin user, **When** `/admin/alignment` loads, **Then** list refetches on window focus/visibility (per [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § UI integration). |
 | AC5 | **Given** `GET /api/capabilities`, **When** compared to `src/app/api/**/route.ts` inventory, **Then** no silent missing **public** entity routes claimed in README. |
-| AC6 | Monitoring playbook exists split: OpenAtlas vs portfolio (see [MONITORING_OPENATLAS.md](./MONITORING_OPENATLAS.md) when created). |
+| AC6 | Monitoring playbook exists split: OpenGrimoire vs portfolio (see [MONITORING_OPENGRIMOIRE.md](./MONITORING_OPENGRIMOIRE.md) when created). |
 | AC7 | Operator runbook exists with primary flows and env **names** (no secret values). |
 
 ---
@@ -48,8 +48,7 @@ The Table view in [`src/components/BrainMap/BrainMapGraph.tsx`](../src/component
 
 ## Non-goals (this MVP scope document)
 
-- Renaming `app: 'open-atlas'` in [`src/app/api/capabilities/route.ts`](../src/app/api/capabilities/route.ts) or package rename in this pass.
-- Full Langfuse/tracing **inside** OpenAtlas unless separately scoped.
+- Full Langfuse/tracing **inside** OpenGrimoire unless separately scoped.
 - Embedded Cursor system prompts or in-app “agent shell” ([ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) non-goals).
 - React **E2E for OpenHarness** (no App Router product UI there).
 
@@ -63,7 +62,7 @@ The Table view in [`src/components/BrainMap/BrainMapGraph.tsx`](../src/component
 | **Portfolio / MiscRepos** | Orchestrator, scheduled scripts, MCP process logs, brain-map build CI | `orchestrator_config.json`, `run_*` scripts |
 | **OpenHarness** | Handoff integrity, local scripts | `validate_handoff_scp.py`, copy prompts |
 
-Cross-link automation metrics from [MONITORING_OPENATLAS.md](./MONITORING_OPENATLAS.md) (OpenAtlas app vs portfolio orchestration).
+Cross-link automation metrics from [MONITORING_OPENGRIMOIRE.md](./MONITORING_OPENGRIMOIRE.md) (OpenGrimoire app vs portfolio orchestration).
 
 ---
 

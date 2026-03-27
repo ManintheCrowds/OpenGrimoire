@@ -1,15 +1,15 @@
 # Alignment context HTTP API (agent + operator contract)
 
-Single reference for **machines and agents** integrating with OpenAtlas `alignment_context_items`. UI operators may prefer `/admin/alignment` (session auth).
+Single reference for **machines and agents** integrating with OpenGrimoire `alignment_context_items`. UI operators may prefer `/admin/alignment` (session auth).
 
 **Related:** [OPERATOR_ALIGNMENT_SETUP.md](./OPERATOR_ALIGNMENT_SETUP.md), [PUBLIC_SURFACE_AUDIT.md](../security/PUBLIC_SURFACE_AUDIT.md), [DEPLOYMENT.md](../../DEPLOYMENT.md).
 
 ## Base URL
 
-- Local dev (matches `npm run dev` in OpenAtlas `package.json`): **`http://localhost:3001`**
+- Local dev (matches `npm run dev` in this repo’s `package.json`): **`http://localhost:3001`**
 - Production: your deployed origin
 
-Always set `OPENATLAS_BASE_URL` explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
+Always set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`) explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
 
 ## Public API (shared secret)
 
@@ -24,7 +24,7 @@ When `ALIGNMENT_CONTEXT_API_SECRET` is set, all public routes below require head
 
 ## Admin UI (session)
 
-Admin routes use Supabase session + **`app_metadata.openatlas_role === 'admin'`** (preferred) or legacy **`user_metadata.role === 'admin'`**. See [OPENATLAS_ADMIN_ROLE.md](../admin/OPENATLAS_ADMIN_ROLE.md).
+Admin routes require a **signed session cookie** after **`POST /api/auth/login`** (operator password from env). See [OPENGRIMOIRE_ADMIN_ROLE.md](../admin/OPENGRIMOIRE_ADMIN_ROLE.md).
 
 ### `GET /api/alignment-context`
 
@@ -93,7 +93,7 @@ For logged-in **admin** users (same cookie session as `/admin`). **No** `x-align
 
 ## CLI (harness / agents)
 
-From `OpenAtlas` directory:
+From this repo’s root (folder may still be named `OpenAtlas` on disk):
 
 ```bash
 set OPENATLAS_BASE_URL=http://localhost:3001
@@ -106,7 +106,7 @@ node scripts/alignment-context-cli.mjs patch <uuid> --status active
 node scripts/alignment-context-cli.mjs delete <uuid>
 ```
 
-PowerShell: `$env:OPENATLAS_BASE_URL="..."`; `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
+PowerShell: `$env:OPENGRIMOIRE_BASE_URL="..."` (or `$env:OPENATLAS_BASE_URL`); `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
 
 If secret is unset locally, CLI omits the header (matches open dev server behavior).
 
@@ -114,4 +114,4 @@ If secret is unset locally, CLI omits the header (matches open dev server behavi
 
 ## A2UI / declarative UI
 
-OpenAtlas visualization exposes `data-region` and `usageHint` on components (see [A2UI_FRONTEND_DESIGN_GUIDANCE.md](../../../.cursor/docs/A2UI_FRONTEND_DESIGN_GUIDANCE.md)). This document is the **operator data API** contract; it does not duplicate A2UI component schemas.
+The visualization stack exposes `data-region` and `usageHint` on components (see [A2UI_FRONTEND_DESIGN_GUIDANCE.md](../../../.cursor/docs/A2UI_FRONTEND_DESIGN_GUIDANCE.md)). This document is the **operator data API** contract; it does not duplicate A2UI component schemas.

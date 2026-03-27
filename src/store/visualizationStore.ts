@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Vector3 } from 'three';
 import type { VisualizationState, VisualizationMode, YearsCategory } from '@/types/visualization';
-import { getVisualizationData } from '@/lib/supabase/db';
+import { fetchVisualizationData } from '@/lib/visualization/fetchVisualizationData';
 import { processVisualizationData } from '@/lib/visualization/processData';
 
 type StateWithoutMethods = Omit<VisualizationState, 'setMode' | 'setSelectedNode' | 'setHoveredNode' | 'setCameraPosition' | 'setFilter' | 'setSort' | 'updateVisualization' | 'resetFilters' | 'toggleShowTestData'> & { showTestData: boolean };
@@ -65,7 +65,7 @@ export const useVisualizationStore = create<VisualizationState & { showTestData:
 
     try {
       console.log('Fetching visualization data...');
-      const data = await getVisualizationData(state.showTestData);
+      const data = await fetchVisualizationData(state.showTestData);
       console.log('Raw data from database:', data);
       if (data && data.length > 0) {
         console.log('First raw data point:', data[0]);

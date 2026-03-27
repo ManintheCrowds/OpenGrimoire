@@ -41,10 +41,10 @@ rg -l "MCP|tool" docs .cursor
 | Path |
 |------|
 | [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| [AGENT_NATIVE_AUDIT_OPENATLAS.md](./AGENT_NATIVE_AUDIT_OPENATLAS.md) |
+| [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](./AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) |
 | [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) |
 | [LOCAL_FIRST_NEWS_POINTER.md](./LOCAL_FIRST_NEWS_POINTER.md) |
-| [OPENATLAS_SYSTEMS_INVENTORY.md](./OPENATLAS_SYSTEMS_INVENTORY.md) |
+| [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md) |
 | [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) |
 | [plans/SCOPE_OPENATLAS_FULL_REVIEW.md](./plans/SCOPE_OPENATLAS_FULL_REVIEW.md) |
 | [plans/2026-03-19-openatlas-alignment-context-design.md](./plans/2026-03-19-openatlas-alignment-context-design.md) |
@@ -127,7 +127,7 @@ Paths are relative to `portfolio-harness/`:
 
 | Anchor | Role |
 |--------|------|
-| [AGENT_NATIVE_AUDIT_OPENATLAS.md](./AGENT_NATIVE_AUDIT_OPENATLAS.md) | Gap report; §1 Action parity. |
+| [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](./AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) | Gap report; §1 Action parity. |
 | [capabilities/route.ts](../src/app/api/capabilities/route.ts) | Machine-readable route manifest. |
 | [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) | Normative REST contract. |
 | [portfolio-harness/.cursor/docs/MCP_CAPABILITY_MAP.md](../../.cursor/docs/MCP_CAPABILITY_MAP.md) | Harness-wide MCP ↔ actions. |

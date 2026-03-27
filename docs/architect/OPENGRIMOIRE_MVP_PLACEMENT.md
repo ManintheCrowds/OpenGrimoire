@@ -12,8 +12,8 @@
 |-------|------|-----------|
 | Product scope / AC | [docs/scope_opengrimoire_mvp_agent_native.md](../scope_opengrimoire_mvp_agent_native.md) | Single source for MVP + AC; lives next to REST contract. |
 | Operator GUI runbook | [docs/OPERATOR_GUI_RUNBOOK.md](../OPERATOR_GUI_RUNBOOK.md) | Human-first name; link from README + AGENT_INTEGRATION. |
-| Monitoring (OpenAtlas) | [docs/MONITORING_OPENATLAS.md](../MONITORING_OPENATLAS.md) | App/API/process signals; not orchestrator internals. |
-| Agent-native audit (this engagement) | [docs/audit/agent_native_opengrimoire_2026-03-24.md](../audit/agent_native_opengrimoire_2026-03-24.md) | Dated audit; prior [AGENT_NATIVE_AUDIT_OPENATLAS.md](../AGENT_NATIVE_AUDIT_OPENATLAS.md) remains historical reference. |
+| Monitoring (OpenAtlas) | [docs/MONITORING_OPENGRIMOIRE.md](../MONITORING_OPENGRIMOIRE.md) | App/API/process signals; not orchestrator internals. |
+| Agent-native audit (this engagement) | [docs/audit/agent_native_opengrimoire_2026-03-24.md](../audit/agent_native_opengrimoire_2026-03-24.md) | Dated audit; prior [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) remains historical reference. |
 | Executive pack | [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](../audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md) | One-page rollup for operators. |
 | Critic artifact | [docs/audit/critic_report_agent_native_2026-03-24.json](../audit/critic_report_agent_native_2026-03-24.json) | Machine-readable pass/fail. |
 | OpenHarness operator flow | Repo sibling: `OpenHarness/docs/HANDOFF_FLOW.md` | Canonical handoff narrative; cross-link MiscRepos `HANDOFF_FLOW` for full procedure. |

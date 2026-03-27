@@ -1,5 +1,5 @@
 {
-  "name": "open-atlas",
+  "name": "open-grimoire",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -21,7 +21,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:maestro": "maestro test e2e/maestro/smoke_web.yaml",
-    "alignment:cli": "node scripts/alignment-context-cli.mjs"
+    "alignment:cli": "node scripts/alignment-context-cli.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -29,11 +31,10 @@
     "@react-spring/three": "^10.0.1",
     "@react-three/drei": "9.56.14",
     "@react-three/fiber": "8.13.7",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/auth-helpers-react": "^0.5.0",
-    "@supabase/supabase-js": "^2.50.2",
     "@tailwindcss/forms": "^0.5.7",
     "@types/three": "0.149.0",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.8.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "d3-chord": "^3.0.1",
@@ -46,7 +47,9 @@
     "d3-selection": "^3.0.0",
     "d3-transition": "^3.0.1",
     "d3-zoom": "^3.0.0",
+    "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.16.0",
+    "jose": "^6.2.2",
     "lucide-react": "^0.513.0",
     "next": "14.0.4",
     "react": "^18.2.0",
@@ -60,12 +63,15 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/d3": "^7.4.3",
     "@types/d3-sankey": "^0.12.4",
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.42",
     "@types/react-dom": "^18.2.17",
     "autoprefixer": "^10.4.16",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^8.55.0",
     "eslint-config-next": "14.0.4",
     "postcss": "^8.4.32",

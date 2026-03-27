@@ -9,7 +9,7 @@ import { createResponsiveSVG, createForceSimulation, addDragBehavior } from '../
 import { yearsColorScale, learningStyleColors, shapedByColors, peakPerformanceColors, motivationColors } from '../shared/colorUtils';
 import { useConstellationStore } from '@/store/constellationStore';
 import type { NodeData, EdgeData, VisualizationMode, YearsCategory } from '@/types/visualization';
-import type { LearningStyle, ShapedBy, PeakPerformanceType, MotivationType } from '@/lib/supabase/types';
+import type { LearningStyle, ShapedBy, PeakPerformanceType, MotivationType } from '@/lib/types/database';
 import { Vector3 } from 'three';
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
 import { Selection } from 'd3-selection';

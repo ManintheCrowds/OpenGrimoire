@@ -1,7 +1,16 @@
+import Database from 'better-sqlite3';
 import { NextResponse } from 'next/server';
-import { createAttendee, createSurveyResponse } from '@/lib/supabase/db';
+import { createAttendee, createSurveyResponse } from '@/lib/storage/repositories/survey';
 import { mapAnswersToSurveyResponsePayload } from '@/lib/survey/mapAnswersToSurveyResponse';
 import { surveyPostBodySchema } from '@/lib/survey/schemas';
+
+function isUniqueConstraintError(e: unknown): boolean {
+  return (
+    e instanceof Database.SqliteError &&
+    (e.code === 'SQLITE_CONSTRAINT_UNIQUE' ||
+      (typeof e.message === 'string' && e.message.includes('UNIQUE constraint failed')))
+  );
+}
 
 export async function POST(request: Request) {
   let json: unknown;
@@ -33,14 +42,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const attendee = await createAttendee({
+    const attendee = createAttendee({
       first_name: body.firstName,
       last_name: body.lastName,
       email: body.isAnonymous ? undefined : body.email || undefined,
       is_anonymous: body.isAnonymous,
     });
 
-    await createSurveyResponse({
+    createSurveyResponse({
       attendee_id: attendee.id,
       ...mapped.data,
     });
@@ -52,10 +61,9 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('Error submitting survey:', error);
 
-    if (error && typeof error === 'object' && 'code' in error) {
-      const code = (error as { code?: string }).code;
-      const message = String((error as { message?: string }).message ?? '');
-      if (code === '23505' && message.includes('attendees_email_key')) {
+    if (isUniqueConstraintError(error)) {
+      const msg = error instanceof Error ? error.message : '';
+      if (msg.includes('attendees.email')) {
         return NextResponse.json(
           {
             success: false,
@@ -65,12 +73,10 @@ export async function POST(request: Request) {
           { status: 409 }
         );
       }
-      if (code === '23505') {
-        return NextResponse.json(
-          { success: false, message: 'This data already exists. Check your information and try again.' },
-          { status: 409 }
-        );
-      }
+      return NextResponse.json(
+        { success: false, message: 'This data already exists. Check your information and try again.' },
+        { status: 409 }
+      );
     }
 
     return NextResponse.json(

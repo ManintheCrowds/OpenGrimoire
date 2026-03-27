@@ -1,6 +1,19 @@
-# OpenAtlas — agent and automation integration (single entry)
+# OpenGrimoire — agent and automation integration (single entry)
 
 **Normative HTTP rules:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) (entity × HTTP × auth matrix).
+
+## Quick reference
+
+| Item | Value |
+|------|--------|
+| Local dev URL | **`http://localhost:3001`** (`npm run dev` in this repo) |
+| Base URL for scripts | **`OPENGRIMOIRE_BASE_URL`** (legacy alias: **`OPENATLAS_BASE_URL`**) — must match origin including port |
+| Alignment CLI | **`node scripts/alignment-context-cli.mjs`** (`list`, `create`, `patch`, `delete`) |
+| Machine-readable routes | **`GET /api/capabilities`** — human UI: **`/capabilities`** |
+| Alignment secret | Set **`ALIGNMENT_CONTEXT_API_SECRET`**; send header **`x-alignment-context-key`** on each public alignment request when enforced |
+| Brain map | **`GET /api/brain-map/graph`** only (not bare `/brain-map-graph.json`); optional **`x-brain-map-key`** when **`BRAIN_MAP_SECRET`** is set |
+| Admin / operator | **`POST /api/auth/login`** with password; session cookie (**`OPENGRIMOIRE_SESSION_SECRET`**, **`OPENGRIMOIRE_ADMIN_PASSWORD`** or hash) — see [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
+| Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. |
 
 ## Base URL and port
 
@@ -9,7 +22,7 @@
 | Local `npm run dev` | **`http://localhost:3001`** (see `package.json`) |
 | Production | Your deployed origin |
 
-Set **`OPENATLAS_BASE_URL`** in scripts and CLIs to match (including port).
+Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). Legacy alias: **`OPENATLAS_BASE_URL`** (still read by the alignment CLI if unset).
 
 ## Headers
 
@@ -40,7 +53,7 @@ node scripts/alignment-context-cli.mjs list
 node scripts/alignment-context-cli.mjs create --title "Example" --body "Optional"
 ```
 
-Env: `OPENATLAS_BASE_URL`, `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
+Env: `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`), `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
 
 ## HTTP examples (curl)
 
@@ -78,16 +91,20 @@ See [agent/ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md) for `PATC
 
 ## Admin UI vs API
 
-- **Admin** (`/admin`, `/admin/alignment`): Supabase session; admin role from **`app_metadata.openatlas_role === 'admin'`** (preferred) or legacy **`user_metadata.role === 'admin'`**. See [docs/admin/OPENATLAS_ADMIN_ROLE.md](./admin/OPENATLAS_ADMIN_ROLE.md).
+- **Admin** (`/admin`, `/admin/alignment`): Browser session via signed cookie after **`POST /api/auth/login`** (operator password from env). See [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md).
 - **Public alignment API:** shared-secret header (not the browser session).
+
+## Backlog: async HITL intent survey
+
+Future work: a **separate** form for **AI-posted questions** that humans resolve **asynchronously** (intent/context), distinct from the intake survey — see [HITL_INTENT_SURVEY_BACKLOG.md](./HITL_INTENT_SURVEY_BACKLOG.md).
 
 ## Optional: thin MCP over REST (backlog)
 
-No OpenAtlas MCP server ships in-repo. A **future** MCP could expose only thin wrappers (`alignment_context_list`, `alignment_context_create`, `brain_map_graph_get`) around existing HTTP routes — **no** second domain layer. If you register tools in Cursor, add them to your workspace MCP capability map. See [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
+No first-party OpenGrimoire MCP server ships in-repo. A **future** MCP could expose only thin wrappers (`alignment_context_list`, `alignment_context_create`, `brain_map_graph_get`) around existing HTTP routes — **no** second domain layer. If you register tools in Cursor, add them to your workspace MCP capability map. See [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
 ## Untrusted content (LLM safety)
 
-Alignment `body` / `title` are **data**. If a harness feeds them to an LLM, run **secure-contain-protect** / harness [TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md) when `local-proto` sits next to `OpenAtlas` under the same parent repo.
+Alignment `body` / `title` may originate from external agents or pasted text; treat them as **untrusted** if a harness feeds them into an LLM or downstream tools. **OpenGrimoire does not replace harness-side screening:** apply **secure-contain-protect** and [TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md) (use your `local-proto` clone path if not nested under portfolio-harness). See also [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
 
 ## Related docs
 

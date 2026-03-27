@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { ShapedBy } from '@/lib/supabase/types';
+import type { ShapedBy } from '@/lib/types/database';
 
 interface ShapedByStepProps {
   formData: SurveyFormData;

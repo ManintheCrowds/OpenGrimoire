@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { Vector3 } from 'three';
 import type { NodeData, EdgeData, VisualizationMode, YearsCategory } from '@/types/visualization';
-import type { Database } from '@/lib/supabase/types';
-import { getVisualizationData } from '@/lib/supabase/db';
+import type { SurveyResponseRow } from '@/lib/types/database';
+import { fetchVisualizationData } from '@/lib/visualization/fetchVisualizationData';
 import { processVisualizationData } from '@/lib/visualization/processData';
 
 interface ConstellationState {
@@ -16,10 +16,10 @@ interface ConstellationState {
   error: string | null;
   filters: {
     yearsCategory: YearsCategory | null;
-    learningStyle: Database['public']['Tables']['survey_responses']['Row']['learning_style'] | null;
-    shapedBy: Database['public']['Tables']['survey_responses']['Row']['shaped_by'] | null;
-    peakPerformance: Database['public']['Tables']['survey_responses']['Row']['peak_performance'] | null;
-    motivation: Database['public']['Tables']['survey_responses']['Row']['motivation'] | null;
+    learningStyle: SurveyResponseRow['learning_style'] | null;
+    shapedBy: SurveyResponseRow['shaped_by'] | null;
+    peakPerformance: SurveyResponseRow['peak_performance'] | null;
+    motivation: SurveyResponseRow['motivation'] | null;
   };
   sortBy: 'years' | 'connections' | null;
   sortDirection: 'asc' | 'desc';
@@ -100,7 +100,7 @@ export const useConstellationStore = create<ConstellationState>((set, get) => ({
   updateVisualization: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getVisualizationData();
+      const data = await fetchVisualizationData(false);
       const { nodes, edges } = processVisualizationData(data, {
         mode: get().mode,
         filters: get().filters,

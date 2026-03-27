@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
 
 /** Result of checking the shared-secret gate for public alignment-context API routes. */
 export type AlignmentContextGateResult =
@@ -18,8 +19,8 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (secret) {
-    const key = request.headers.get('x-alignment-context-key');
-    if (key !== secret) {
+    const key = request.headers.get('x-alignment-context-key') ?? '';
+    if (!timingSafeEqualString(key, secret)) {
       return {
         ok: false,
         response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),

@@ -4,52 +4,53 @@ This file provides guidance for AI assistants working in this repository.
 
 ## Project overview
 
-**OpenAtlas / Agent Context Atlas** (folder `OpenAtlas`): a Next.js app with a **local-first context graph** (brain map) plus **legacy** survey/visualization paths that can use Supabase when configured. Product copy targets OpenAtlas, not a specific client event. The Git remote may still use the `Med-Vis` slug until renamed.
+**OpenGrimoire** (Agent Context Atlas; repo folder often `OpenAtlas`): a Next.js app with a **local-first context graph** (brain map) plus survey, alignment, and admin flows backed by a **gitignored SQLite** file (`data/opengrimoire.sqlite` by default). Product copy targets **OpenGrimoire**, not a specific client event. The Git remote may still use the `Med-Vis` slug until renamed.
 
-**Canonical persistence story:** See [README.md](README.md). **Route × persistence × tools** inventory: [docs/OPENATLAS_SYSTEMS_INVENTORY.md](docs/OPENATLAS_SYSTEMS_INVENTORY.md).
+**Canonical persistence story:** See [README.md](README.md). **Route × persistence × tools** inventory: [docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md](docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md).
 
 ## Local-first path (primary)
 
 - **Routes:** `/context-atlas` and `/brain-map` (same UI).
 - **Data:** Static JSON — `public/brain-map-graph.json`, or gitignored `public/brain-map-graph.local.json` when present.
-- **API:** `GET /api/brain-map/graph` serves the graph (do not use bare `/brain-map-graph.json` URLs — blocked). **No Supabase required** for this path.
+- **API:** `GET /api/brain-map/graph` serves the graph (do not use bare `/brain-map-graph.json` URLs — blocked). **No database file required** for this path beyond static JSON.
 - **Agents:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md).
 - **Regeneration:** From portfolio-harness (or repo root with scripts), run `python .cursor/scripts/build_brain_map.py` with `CURSOR_STATE_DIR` / `CURSOR_STATE_DIRS` as documented in README.
 
-## Optional legacy Supabase path
+## SQLite + operator session (alignment, survey, admin)
 
-- **Routes:** `/operator-intake`, `/survey`, `/login`, `/admin/*`, and some visualization data loaders still use `src/lib/supabase/` when env vars are set.
-- **When to configure:** Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` only if you need those features.
-- **Schema / RLS:** Migrations under `supabase/migrations/` apply when using hosted Supabase.
+- **Routes:** `/operator-intake`, `/survey`, `/login`, `/admin/*`, visualization data — persistence in **`OPENGRIMOIRE_DB_PATH`** (default `data/opengrimoire.sqlite`; directory gitignored).
+- **Admin auth:** `POST /api/auth/login` sets an HTTP-only signed cookie (`opengrimoire_session`). Configure **`OPENGRIMOIRE_ADMIN_PASSWORD`** or **`OPENGRIMOIRE_ADMIN_PASSWORD_HASH`** and **`OPENGRIMOIRE_SESSION_SECRET`** (see `.env.example`).
+- **Historical schema:** Postgres migrations under `supabase/migrations/` are reference only; runtime schema is created by the app (Drizzle + bootstrap).
 
 ## Development commands
 
 - `npm run dev` — Dev server at **http://localhost:3001** (see `package.json` `next dev -p 3001`).
 - `npm run build` / `npm run start` — Production build and server.
 - `npm run lint` — ESLint.
-- `npm run type-check` — `tsc --noEmit` (may fail until known issues in test pages and `dataAdapter` are cleared; see README `verify` note).
+- `npm run type-check` — `tsc --noEmit`.
 - `npm run test` — Vitest.
 - `npm run verify` — `lint` + `type-check` + `test`.
 
 ## Architecture (tech stack)
 
-- **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Tailwind, OpenAtlas theme tokens.
+- **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Tailwind, OpenGrimoire theme tokens.
 - **Visualization:** D3.js (2D), Three.js (3D constellation).
 - **State:** React Context, Zustand.
-- **Optional backend:** Supabase (PostgreSQL, Auth) for legacy survey/admin flows only.
+- **Backend:** SQLite via `better-sqlite3` (server-only); repositories under `src/lib/storage/repositories/`.
 
 ## Environment setup (`.env.local`)
 
 - **Brain-map only:** Optional `BRAIN_MAP_SECRET` / `NEXT_PUBLIC_BRAIN_MAP_SECRET` (see [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md)).
 - **Alignment API:** Optional `ALIGNMENT_CONTEXT_API_SECRET` when using `/api/alignment-context`.
 - **App URL:** `NEXT_PUBLIC_APP_URL=http://localhost:3001` for local dev.
-- **Supabase:** Only if using legacy routes — see `.env.example` for variable names.
+- **SQLite + admin:** `OPENGRIMOIRE_DB_PATH`, `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or `OPENGRIMOIRE_ADMIN_PASSWORD_HASH` — see `.env.example`.
 
 ## Important locations
 
 - `src/app/` — App Router pages and API routes.
 - `src/components/BrainMap/` — Context graph UI.
-- `src/lib/supabase/` — Client, types, DB helpers (legacy / optional).
+- `src/db/` — Drizzle schema and SQLite client/bootstrap.
+- `src/lib/storage/repositories/` — Alignment and survey data access.
 - `public/brain-map-graph.json` — Default graph data for the viewer.
 
 ## Constraints

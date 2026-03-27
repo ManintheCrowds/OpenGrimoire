@@ -1,82 +1,64 @@
-import { supabase } from '../supabase/client';
+import type { VisualizationSurveyRow } from '@/lib/types/database';
+
+async function fetchViz(showTestData: boolean): Promise<VisualizationSurveyRow[]> {
+  const res = await fetch(
+    `/api/survey/visualization?showTestData=${showTestData ? 'true' : 'false'}`,
+    { credentials: 'include' }
+  );
+  if (!res.ok) throw new Error('Failed to load survey data');
+  const json = (await res.json()) as { data?: VisualizationSurveyRow[] };
+  return json.data ?? [];
+}
 
 export async function exportSurveyData() {
-  try {
-    const { data: responses, error } = await supabase
-      .from('responses')
-      .select(`
-        *,
-        attendee:attendees(first_name, last_name, email)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Transform data for export
-    const exportData = responses.map((response) => ({
-      'First Name': response.attendee.first_name,
-      'Last Name': response.attendee.last_name,
-      'Email': response.attendee.email,
-      'Question ID': response.question_id,
-      'Answer': response.answer,
-      'Created At': new Date(response.created_at).toLocaleString(),
-    }));
-
-    type ExportRow = (typeof exportData)[number];
-    const headers = Object.keys(exportData[0]) as (keyof ExportRow)[];
-
-    // Convert to CSV
-    const csvContent = [
-      headers.join(','),
-      ...exportData.map((row) =>
-        headers.map((header) => JSON.stringify(row[header])).join(',')
-      ),
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `survey-data-${new Date().toISOString()}.csv`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error('Error exporting data:', error);
-    throw error;
+  const responses = await fetchViz(true);
+  if (responses.length === 0) {
+    throw new Error('No data to export');
   }
+
+  const exportData = responses.map((response) => ({
+    'First Name': response.attendee.first_name,
+    'Last Name': response.attendee.last_name ?? '',
+    Email: '',
+    'Tenure years': response.tenure_years ?? '',
+    'Learning style': response.learning_style ?? '',
+    'Shaped by': response.shaped_by ?? '',
+    'Peak performance': response.peak_performance ?? '',
+    Motivation: response.motivation ?? '',
+    'Unique quality': response.unique_quality ?? '',
+    'Created At': new Date(response.created_at).toLocaleString(),
+  }));
+
+  type ExportRow = (typeof exportData)[number];
+  const headers = Object.keys(exportData[0]) as (keyof ExportRow)[];
+
+  const csvContent = [
+    headers.join(','),
+    ...exportData.map((row) =>
+      headers.map((header) => JSON.stringify(row[header] ?? '')).join(',')
+    ),
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', `survey-data-${new Date().toISOString()}.csv`);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 export async function exportVisualizationData() {
-  try {
-    const { data: responses, error } = await supabase
-      .from('responses')
-      .select(`
-        *,
-        attendee:attendees(first_name, last_name),
-        moderation:moderation(status)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Transform data for visualization
-    const visualizationData = responses.map(response => ({
-      id: response.id,
-      attendee: `${response.attendee.first_name} ${response.attendee.last_name}`,
-      questionId: response.question_id,
-      answer: response.answer,
-      status: response.moderation?.status || 'pending',
-      timestamp: new Date(response.created_at).getTime(),
-    }));
-
-    return visualizationData;
-  } catch (error) {
-    console.error('Error preparing visualization data:', error);
-    throw error;
-  }
-} 
+  const responses = await fetchViz(false);
+  return responses.map((response) => ({
+    id: response.id,
+    attendee: `${response.attendee.first_name} ${response.attendee.last_name ?? ''}`.trim(),
+    unique_quality: response.unique_quality,
+    status: response.moderation?.[0]?.status ?? 'pending',
+    timestamp: new Date(response.created_at).getTime(),
+  }));
+}

@@ -4,9 +4,9 @@ import React, { useCallback, useRef } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { useApprovedQuotes } from './useApprovedQuotes';
 import {
-  OPENATLAS_VIZ_MAIN_PANEL_ID,
-  OPENATLAS_VIZ_TAB_ALLUVIAL_ID,
-  OPENATLAS_VIZ_TAB_CHORD_ID,
+  OPENGRIMOIRE_VIZ_MAIN_PANEL_ID,
+  OPENGRIMOIRE_VIZ_TAB_ALLUVIAL_ID,
+  OPENGRIMOIRE_VIZ_TAB_CHORD_ID,
 } from './vizLayoutIds';
 
 interface EnhancedVisualizationHeaderProps {
@@ -19,7 +19,7 @@ interface EnhancedVisualizationHeaderProps {
 }
 
 /**
- * Header for OpenAtlas data visualization (alluvial / chord).
+ * Header for OpenGrimoire data visualization (alluvial / chord).
  * Regions: `data-region` attributes for agent or test selectors.
  */
 export function EnhancedVisualizationHeader({
@@ -55,37 +55,37 @@ export function EnhancedVisualizationHeader({
     return author;
   };
 
-  const headerFont = { fontFamily: 'var(--openatlas-viz-header-font)' } as const;
+  const headerFont = { fontFamily: 'var(--opengrimoire-viz-header-font)' } as const;
 
   return (
     <header
       className="flex w-full flex-row items-center justify-between px-8 py-4"
       style={{
         minHeight: hasQuotes && currentQuote ? 120 : 88,
-        background: 'var(--openatlas-viz-header-bg)',
+        background: 'var(--opengrimoire-viz-header-bg)',
         alignItems: 'center',
         display: 'flex',
       }}
-      data-region="openatlas-viz-header"
+      data-region="opengrimoire-viz-header"
       {...(usageHint ? { 'data-usage-hint': usageHint } : {})}
     >
       <div
         className="flex flex-shrink-0 flex-row items-center justify-start gap-3"
         style={{ minWidth: 220 }}
-        data-region="openatlas-viz-wordmark"
+        data-region="opengrimoire-viz-wordmark"
       >
         <div
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg font-bold text-white"
           aria-hidden
         >
-          OA
+          OG
         </div>
         <div className="flex flex-col text-left">
           <span
             className="font-bold leading-tight text-white"
             style={{ ...headerFont, fontSize: '1.35rem', letterSpacing: 0.5 }}
           >
-            OpenAtlas
+            OpenGrimoire
           </span>
           <span className="mt-0.5 text-sm font-medium text-white/80" style={headerFont}>
             Agent Context Atlas
@@ -95,7 +95,7 @@ export function EnhancedVisualizationHeader({
 
       <div
         className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 text-center"
-        data-region="openatlas-viz-quote-slot"
+        data-region="opengrimoire-viz-quote-slot"
       >
         {isLoading ? (
           <span className="text-xs text-white/40" aria-live="polite">
@@ -156,7 +156,7 @@ export function EnhancedVisualizationHeader({
       <div
         className="flex flex-shrink-0 flex-col items-center justify-center"
         style={{ minWidth: 90, height: 100, justifyContent: 'center' }}
-        data-region="openatlas-viz-controls"
+        data-region="opengrimoire-viz-controls"
         role="toolbar"
         aria-label="Visualization type and playback"
       >
@@ -170,9 +170,9 @@ export function EnhancedVisualizationHeader({
             ref={alluvialTabRef}
             type="button"
             role="tab"
-            id={OPENATLAS_VIZ_TAB_ALLUVIAL_ID}
+            id={OPENGRIMOIRE_VIZ_TAB_ALLUVIAL_ID}
             aria-selected={visualizationType === 'alluvial'}
-            aria-controls={OPENATLAS_VIZ_MAIN_PANEL_ID}
+            aria-controls={OPENGRIMOIRE_VIZ_MAIN_PANEL_ID}
             tabIndex={visualizationType === 'alluvial' ? 0 : -1}
             onClick={() => onVisualizationTypeChange('alluvial')}
             className={`mb-2 h-10 w-20 rounded-lg border border-gray-400 bg-white/10 text-base font-semibold text-white/80 transition-colors hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
@@ -186,9 +186,9 @@ export function EnhancedVisualizationHeader({
             ref={chordTabRef}
             type="button"
             role="tab"
-            id={OPENATLAS_VIZ_TAB_CHORD_ID}
+            id={OPENGRIMOIRE_VIZ_TAB_CHORD_ID}
             aria-selected={visualizationType === 'chord'}
-            aria-controls={OPENATLAS_VIZ_MAIN_PANEL_ID}
+            aria-controls={OPENGRIMOIRE_VIZ_MAIN_PANEL_ID}
             tabIndex={visualizationType === 'chord' ? 0 : -1}
             onClick={() => onVisualizationTypeChange('chord')}
             className={`h-10 w-20 rounded-lg border border-gray-400 bg-white/10 text-base font-semibold text-white/80 transition-colors hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${

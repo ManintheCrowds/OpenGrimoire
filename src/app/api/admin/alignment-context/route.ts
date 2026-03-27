@@ -1,31 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseAdmin } from '@/lib/supabase/admin';
-import { requireOpenAtlasAdminRoute } from '@/lib/alignment-context/admin-auth';
-import { listAlignmentContextItems } from '@/lib/alignment-context/db';
+import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { alignmentContextCreateBodySchema } from '@/lib/alignment-context/schemas';
+import {
+  insertAlignmentContextItem,
+  listAlignmentContextItems,
+} from '@/lib/storage/repositories/alignment';
 
 const LIMIT_DEFAULT = 100;
 const LIMIT_MAX = 500;
 
 /**
- * Admin BFF: list / create alignment_context_items using service role after session admin check.
- * No x-alignment-context-key in browser — uses Supabase auth cookies.
+ * Admin BFF: list / create alignment_context_items after session admin check.
  */
 export async function GET(request: Request) {
-  const auth = await requireOpenAtlasAdminRoute();
+  const auth = await requireOpenGrimoireAdminRoute();
   if (!auth.ok) {
     return auth.response;
-  }
-
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      {
-        error: 'Server misconfigured',
-        detail: 'SUPABASE_SERVICE_ROLE_KEY required for admin alignment routes.',
-      },
-      { status: 503 }
-    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -36,7 +26,7 @@ export async function GET(request: Request) {
   }
   limit = Math.min(limit, LIMIT_MAX);
 
-  const { data, error } = await listAlignmentContextItems(admin, { statusFilter, limit });
+  const { data, error } = listAlignmentContextItems({ statusFilter, limit });
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -54,20 +44,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireOpenAtlasAdminRoute();
+  const auth = await requireOpenGrimoireAdminRoute();
   if (!auth.ok) {
     return auth.response;
-  }
-
-  const admin = createSupabaseAdmin();
-  if (!admin) {
-    return NextResponse.json(
-      {
-        error: 'Server misconfigured',
-        detail: 'SUPABASE_SERVICE_ROLE_KEY required for admin alignment routes.',
-      },
-      { status: 503 }
-    );
   }
 
   let json: unknown;
@@ -97,13 +76,7 @@ export async function POST(request: Request) {
     created_by: auth.user.id,
   };
 
-  const { data, error } = await admin
-    .from('alignment_context_items')
-    .insert(row)
-    .select(
-      'id,title,body,tags,priority,status,linked_node_id,attendee_id,source,created_by,created_at,updated_at'
-    )
-    .single();
+  const { data, error } = insertAlignmentContextItem(row);
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
@@ -111,6 +84,10 @@ export async function POST(request: Request) {
     } else {
       console.error('[admin/alignment-context] insert:', error.code);
     }
+    return NextResponse.json({ error: 'Failed to create item' }, { status: 500 });
+  }
+
+  if (!data) {
     return NextResponse.json({ error: 'Failed to create item' }, { status: 500 });
   }
 

@@ -630,67 +630,36 @@ export default function ResponsiveChart() {
 
 ### Unit Testing with Jest
 
+The shipped intake survey is [`src/components/SurveyForm/index.tsx`](../../src/components/SurveyForm/index.tsx) (uses [`useSurveyForm`](../../src/lib/hooks/useSurveyForm.ts)). There is no `components/form/SurveyForm` — that path was a removed demo.
+
 ```typescript
-// __tests__/components/SurveyForm.test.tsx
+// __tests__/components/SurveyForm.test.tsx (illustrative)
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { SurveyForm } from '@/components/form/SurveyForm';
+import { render, screen } from '@testing-library/react';
+import { SurveyForm } from '@/components/SurveyForm';
 
-// Mock dependencies
 jest.mock('@/lib/hooks/useSurveyForm', () => ({
   useSurveyForm: () => ({
     currentStep: 0,
+    formData: { first_name: '', is_anonymous: false },
+    isSubmitting: false,
+    error: null,
+    updateFormData: jest.fn(),
     nextStep: jest.fn(),
     prevStep: jest.fn(),
-    submitForm: jest.fn()
-  })
+    submitForm: jest.fn(),
+  }),
 }));
 
 describe('SurveyForm', () => {
-  const mockOnSubmit = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('renders the first step by default', () => {
-    render(<SurveyForm onSubmit={mockOnSubmit} />);
-    
-    expect(screen.getByText('Personal Information')).toBeInTheDocument();
-    expect(screen.getByLabelText('Name')).toBeInTheDocument();
-  });
-
-  it('validates required fields', async () => {
-    const user = userEvent.setup();
-    render(<SurveyForm onSubmit={mockOnSubmit} />);
-    
-    const submitButton = screen.getByRole('button', { name: /next/i });
-    await user.click(submitButton);
-    
-    expect(screen.getByText('Name is required')).toBeInTheDocument();
-  });
-
-  it('submits form with valid data', async () => {
-    const user = userEvent.setup();
-    render(<SurveyForm onSubmit={mockOnSubmit} />);
-    
-    // Fill out form
-    await user.type(screen.getByLabelText('Name'), 'John Doe');
-    await user.type(screen.getByLabelText('Email'), 'john@example.com');
-    
-    // Submit
-    await user.click(screen.getByRole('button', { name: /submit/i }));
-    
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith({
-        name: 'John Doe',
-        email: 'john@example.com'
-      });
-    });
+  it('renders the survey container', () => {
+    render(<SurveyForm />);
+    expect(screen.getByTestId('survey-form-container')).toBeInTheDocument();
   });
 });
 ```
+
+Extend mocks to match step content and assertions as needed.
 
 ### Integration Testing
 

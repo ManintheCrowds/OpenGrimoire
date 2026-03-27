@@ -8,7 +8,7 @@ import SiteFooter from '@/components/SiteFooter';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'OpenAtlas',
+  title: 'OpenGrimoire',
   description:
     'Operator context atlas: visualize co-access across session journals and handoffs. Includes D3 demos and a legacy multi-step intake form.',
 };

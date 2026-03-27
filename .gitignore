@@ -17,3 +17,6 @@ npm-debug.log
 
 # Local / personal brain map (vault merges; not committed by default)
 public/brain-map-graph.local.json
+
+# Local SQLite (alignment + survey)
+/data/

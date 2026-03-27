@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
 
 /**
  * Serves brain-map graph JSON. Prefers `public/brain-map-graph.local.json` when present
@@ -8,9 +9,9 @@ import { join } from 'path';
  * Optional BRAIN_MAP_SECRET for access control.
  */
 export async function GET(request: Request) {
-  const key = request.headers.get('x-brain-map-key');
+  const key = request.headers.get('x-brain-map-key') ?? '';
   const secret = process.env.BRAIN_MAP_SECRET;
-  if (secret && key !== secret) {
+  if (secret && !timingSafeEqualString(key, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

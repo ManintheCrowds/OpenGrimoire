@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Smoke tests', () => {
   test('home loads', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'OpenAtlas' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
   });
 
   test('nav links work and main routes render', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('Smoke tests', () => {
 
     // Operator intake
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'OpenAtlas' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
     await page.getByTestId('nav-link-operator-intake').click();
     await expect(page).toHaveURL(/\/operator-intake/);
     await expect(page.getByTestId('survey-form-container')).toBeVisible();

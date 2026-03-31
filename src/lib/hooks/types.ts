@@ -5,7 +5,7 @@ import type {
   ShapedBy,
 } from '@/lib/types/database';
 
-export type SurveyFormData = {
+export type SyncSessionFormData = {
   first_name: string;
   last_name?: string;
   email?: string;

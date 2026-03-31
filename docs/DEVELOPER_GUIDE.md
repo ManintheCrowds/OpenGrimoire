@@ -91,10 +91,10 @@ src/
 
 ```typescript
 // Components: PascalCase
-export default function SurveyForm() {}
+export default function SyncSessionForm() {}
 
 // Files: camelCase or kebab-case
-// survey-form.tsx or surveyForm.tsx
+// sync-session-form.tsx or syncSessionForm.tsx
 
 // Constants: SCREAMING_SNAKE_CASE
 const API_ENDPOINTS = {
@@ -167,7 +167,7 @@ npx husky add .husky/pre-commit "npm run lint && npm run type-check"
 
 ```typescript
 /**
- * SurveyForm - Multi-step survey component
+ * SyncSessionForm - Multi-step Sync Session component (example template)
  * 
  * @param onSubmit - Callback function when form is submitted
  * @param initialData - Initial form data for editing
@@ -179,17 +179,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { surveySchema } from '@/lib/validation/survey';
 
-interface SurveyFormProps {
+interface SyncSessionFormProps {
   onSubmit: (data: SurveyData) => Promise<void>;
   initialData?: Partial<SurveyData>;
   disabled?: boolean;
 }
 
-export default function SurveyForm({ 
+export default function SyncSessionForm({ 
   onSubmit, 
   initialData, 
   disabled = false 
-}: SurveyFormProps) {
+}: SyncSessionFormProps) {
   // State management
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -230,7 +230,7 @@ export default function SurveyForm({
 
   // Render
   return (
-    <div className="survey-form">
+    <div className="sync-session-form">
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         {/* Form content */}
       </form>
@@ -239,7 +239,7 @@ export default function SurveyForm({
 }
 
 // Export types for consumers
-export type { SurveyFormProps };
+export type { SyncSessionFormProps };
 ```
 
 ### Custom Hooks Pattern
@@ -630,16 +630,16 @@ export default function ResponsiveChart() {
 
 ### Unit Testing with Jest
 
-The shipped intake survey is [`src/components/SurveyForm/index.tsx`](../../src/components/SurveyForm/index.tsx) (uses [`useSurveyForm`](../../src/lib/hooks/useSurveyForm.ts)). There is no `components/form/SurveyForm` — that path was a removed demo.
+The shipped Sync Session form is [`src/components/SyncSessionForm/index.tsx`](../../src/components/SyncSessionForm/index.tsx) (uses [`useSyncSessionForm`](../../src/lib/hooks/useSyncSessionForm.ts)). There is no `components/form/SyncSessionForm` — that path was a removed demo.
 
 ```typescript
-// __tests__/components/SurveyForm.test.tsx (illustrative)
+// __tests__/components/SyncSessionForm.test.tsx (illustrative)
 
 import { render, screen } from '@testing-library/react';
-import { SurveyForm } from '@/components/SurveyForm';
+import { SyncSessionForm } from '@/components/SyncSessionForm';
 
-jest.mock('@/lib/hooks/useSurveyForm', () => ({
-  useSurveyForm: () => ({
+jest.mock('@/lib/hooks/useSyncSessionForm', () => ({
+  useSyncSessionForm: () => ({
     currentStep: 0,
     formData: { first_name: '', is_anonymous: false },
     isSubmitting: false,
@@ -651,10 +651,10 @@ jest.mock('@/lib/hooks/useSurveyForm', () => ({
   }),
 }));
 
-describe('SurveyForm', () => {
-  it('renders the survey container', () => {
-    render(<SurveyForm />);
-    expect(screen.getByTestId('survey-form-container')).toBeInTheDocument();
+describe('SyncSessionForm', () => {
+  it('renders the Sync Session container', () => {
+    render(<SyncSessionForm />);
+    expect(screen.getByTestId('sync-session-form-container')).toBeInTheDocument();
   });
 });
 ```
@@ -664,7 +664,7 @@ Extend mocks to match step content and assertions as needed.
 ### Integration Testing
 
 ```typescript
-// __tests__/integration/survey-flow.test.tsx
+// __tests__/integration/sync-session-flow.test.tsx
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

@@ -1,7 +1,7 @@
 'use client';
 
-import { SurveyForm } from '@/components/SurveyForm';
+import { SyncSessionForm } from '@/components/SyncSessionForm';
 
 export default function OperatorIntakePage() {
-  return <SurveyForm />;
+  return <SyncSessionForm />;
 }

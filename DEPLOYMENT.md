@@ -1,5 +1,16 @@
 # OpenAtlas — survey & moderation — deployment guide
 
+## OpenGrimoire (current stack) — agent API keys
+
+Runtime uses **local SQLite** (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`) for alignment + survey; Supabase sections below are **legacy reference** unless you still run that path.
+
+**Production checklist for agent-facing routes:**
+
+- **`ALIGNMENT_CONTEXT_API_SECRET`** — required in production for `/api/alignment-context`; callers send **`x-alignment-context-key`**.
+- **`CLARIFICATION_QUEUE_API_SECRET`** — **recommended** when harnesses or scripts only need the clarification queue: set a dedicated value and send **`x-clarification-queue-key`** on `/api/clarification-requests` (blast-radius separation from alignment automation). When unset, clarification accepts the same secret/header as alignment. See [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) and [.env.example](.env.example).
+
+Operator login uses **`OPENGRIMOIRE_SESSION_SECRET`** and **`OPENGRIMOIRE_ADMIN_PASSWORD`** (or bcrypt hash). See [.env.example](.env.example) and [docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md](docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md).
+
 ## 🎯 MVP Focus: Survey & Moderation Only
 
 This deployment guide focuses on the two essential features:
@@ -85,7 +96,7 @@ OpenAtlas/
 │   │   ├── admin/page.tsx                # Admin dashboard
 │   │   └── login/page.tsx                # Admin login
 │   ├── components/
-│   │   ├── SurveyForm/                   # Multi-step survey
+│   │   ├── SyncSessionForm/              # Sync Session multi-step form
 │   │   ├── AdminPanel/                   # Moderation interface
 │   │   └── Layout/                       # Basic layout
 │   ├── lib/

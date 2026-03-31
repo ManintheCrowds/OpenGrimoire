@@ -11,6 +11,9 @@ const CAPABILITIES = {
   documentation: {
     contract: '/docs/ARCHITECTURE_REST_CONTRACT.md (repo)',
     alignment_api: '/docs/agent/ALIGNMENT_CONTEXT_API.md (repo)',
+    openapi_partial: 'GET /api/openapi or GET /api/openapi.json (partial OpenAPI 3; see src/lib/openapi/openapi-document.ts)',
+    discovery_stability_gate: '/docs/engineering/DISCOVERY_STABILITY_GATE.md (repo; Phase A gate)',
+    route_index: '/docs/api/ROUTE_INDEX.json (generated; scripts/generate-route-index.mjs)',
     opencompass_brain_map_interop:
       'Portfolio: MiscRepos/trustgraph-local-repo/interop/OPENCOMPASS_OPENATLAS_INTEROP.md',
   },
@@ -56,6 +59,26 @@ const CAPABILITIES = {
       auth: 'OpenGrimoire operator session cookie',
     },
     {
+      path: '/api/clarification-requests',
+      methods: ['GET', 'POST'],
+      auth: 'x-clarification-queue-key when CLARIFICATION_QUEUE_API_SECRET set; else x-alignment-context-key (alignment secret)',
+    },
+    {
+      path: '/api/clarification-requests/:id',
+      methods: ['GET', 'PATCH'],
+      auth: 'x-clarification-queue-key when CLARIFICATION_QUEUE_API_SECRET set; else x-alignment-context-key (alignment secret)',
+    },
+    {
+      path: '/api/admin/clarification-requests',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/clarification-requests/:id',
+      methods: ['GET', 'PATCH'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
       path: '/api/admin/moderation-queue',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie',
@@ -94,7 +117,13 @@ const CAPABILITIES = {
     {
       path: '/api/survey',
       methods: ['POST'],
-      auth: 'Public; persists to local SQLite (server-only)',
+      auth:
+        'Public; persists to local SQLite. Optional: x-survey-post-token (SURVEY_POST_REQUIRE_TOKEN), turnstileToken body field (Turnstile when enforced). 200 returns attendeeId + surveyResponseId — docs/agent/SYNC_SESSION_HANDOFF.md',
+    },
+    {
+      path: '/api/survey/bootstrap-token',
+      methods: ['GET'],
+      auth: 'Public; short-lived JWT for POST when SURVEY_POST_REQUIRE_TOKEN is set — see docs/engineering/OPERATIONAL_TRADEOFFS.md',
     },
     {
       path: '/api/survey/visualization',
@@ -117,6 +146,11 @@ const CAPABILITIES = {
       path: '/api/capabilities',
       methods: ['GET'],
       auth: 'None (public manifest)',
+    },
+    {
+      path: '/api/openapi',
+      methods: ['GET'],
+      auth: 'None (public partial OpenAPI document); /api/openapi.json rewrites here (next.config.js)',
     },
   ],
 } as const;

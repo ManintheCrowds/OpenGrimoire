@@ -1,6 +1,6 @@
 # OpenGrimoire — Local-first context graph and Sync Session platform
 
-OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution; outcomes are persisted as alignment context records.
+OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution. **Sync Session** submissions use `POST /api/survey` (survey rows in SQLite); **Alignment Context** is a separate surface—alignment items persisted and served via `/api/alignment-context` and the alignment CLI, not the form submit path.
 
 **Product:** OpenGrimoire. **Package name:** `open-grimoire`. **Repo folder:** often still `OpenAtlas` on disk (legacy name; renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical folder path until you rename the clone.
 
@@ -13,19 +13,22 @@ OpenGrimoire is a local-first context graph and alignment workspace for human-to
 | **Handoff-derived nodes** | Graph nodes extracted from handoff files and daily notes via `build_brain_map.py` |
 | **Static JSON contract** | Graph data as JSON file (`brain-map-graph.json`); no database required |
 | **Sync Session (UX)** | User-facing alignment workflow for human-to-agent one-on-ones |
-| **Alignment Context (system)** | Persisted artifacts produced and consumed by Sync Sessions |
+| **Alignment Context (system)** | Alignment items via `/api/alignment-context` (distinct from survey submit; see agent docs) |
 
 ## Context graph (no Supabase required)
 
 - **Viewer:** `/context-atlas` (alias of the same UI as `/brain-map`).
 - **Data:** `GET /api/brain-map/graph` reads **`public/brain-map-graph.local.json` when that file exists** (personal / vault merges; gitignored), otherwise `public/brain-map-graph.json`.
-- **Regenerate** (from portfolio-harness root):
+- **Regenerate** (canonical script — **MiscRepos**, sibling of this repo under your GitHub folder):
 
   ```bash
+  cd ../MiscRepos
   python .cursor/scripts/build_brain_map.py
   ```
 
-  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`). Copy-paste paths for **openharness + software state + openharness/docs**: see [`../.cursor/brain-map.env.example`](../.cursor/brain-map.env.example) (set vars then run the same `python` command).
+  **Which `build_brain_map.py`?** Use **[MiscRepos `.cursor/scripts/build_brain_map.py`](../MiscRepos/.cursor/scripts/build_brain_map.py)** for OpenGrimoire work: multi-root `CURSOR_STATE_DIRS`, vault roots, SCP screening, default output to `OpenAtlas/public/brain-map-graph.local.json`. **[OpenHarness `scripts/build_brain_map.py`](../OpenHarness/scripts/build_brain_map.py)** is a smaller, portable copy for harness-only trees without those extras.
+
+  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`). Example env for **OpenHarness + other state trees**: [`../MiscRepos/.cursor/brain-map.env.example`](../MiscRepos/.cursor/brain-map.env.example) (set vars then run the same `python` command from `MiscRepos`).
 
 - **Optional auth:** set `BRAIN_MAP_SECRET` on the server. If the UI must send a header, `NEXT_PUBLIC_BRAIN_MAP_SECRET` is supported — **that value is embedded in the browser bundle** (obfuscation only, not a true secret). See [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
 
@@ -73,7 +76,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 **Prerequisites:** Node 18+, npm.
 
 ```bash
-cd OpenAtlas   # path under portfolio-harness
+cd OpenAtlas   # e.g. Documents/GitHub/OpenAtlas (sibling of MiscRepos, OpenHarness)
 npm install
 cp .env.example .env.local   # set OPENGRIMOIRE_SESSION_SECRET and OPENGRIMOIRE_ADMIN_PASSWORD (or hash) for `/login` and `/admin`. For alignment API without a shared secret in local dev, set ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true (see docs/AGENT_INTEGRATION.md).
 npm run dev
@@ -97,6 +100,9 @@ Open [http://localhost:3001](http://localhost:3001). Visit `/context-atlas` afte
 | `npm run verify` | **CI / agents:** `lint` + `type-check` + `test` (single pass/fail). |
 | `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
 | `npm run test:e2e` | Playwright |
+| `npm run test:maestro` | Maestro mobile smoke (optional; requires [Maestro](https://maestro.mobile.dev/) CLI) |
+
+**Tagged releases:** See [RELEASING.md](RELEASING.md) (`verify`, E2E, optional Maestro).
 
 ## License / attribution
 

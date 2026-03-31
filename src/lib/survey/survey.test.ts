@@ -67,6 +67,19 @@ describe('surveyPostBodySchema', () => {
     });
     expect(parsed.success).toBe(false);
   });
+
+  it('accepts optional turnstileToken', () => {
+    const body = {
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane@example.com',
+      isAnonymous: false,
+      answers: validAnswers,
+      turnstileToken: 'turnstile-response-token',
+    };
+    const parsed = surveyPostBodySchema.safeParse(body);
+    expect(parsed.success).toBe(true);
+  });
 });
 
 describe('mapAnswersToSurveyResponsePayload', () => {

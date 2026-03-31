@@ -19,7 +19,7 @@ Set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`) to your app origin 
 
 ## Browser automation (UI-only paths)
 
-Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and portfolio-harness [Agent-Native-Testing.md](../../../docs/Agent-Native-Testing.md).
+Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and sibling-harness [Agent-Native-Testing.md](../../../docs/Agent-Native-Testing.md) (when `docs/` exists beside OpenAtlas under `GitHub/`).
 
 ---
 
@@ -28,5 +28,7 @@ Where there is no stable API for a user action, use **Playwright** (CI truth), *
 A dedicated MCP server could expose **only** thin wrappers around existing endpoints — **not** a second orchestration or business layer. Workspace-wide MCP inventory: [`.cursor/docs/MCP_CAPABILITY_MAP.md`](../../../.cursor/docs/MCP_CAPABILITY_MAP.md).
 
 **Checklist (if you add an MCP server elsewhere):** map tools 1:1 to existing HTTP methods — e.g. `alignment_context_list` → `GET /api/alignment-context`, `alignment_context_create` → `POST /api/alignment-context`, `alignment_context_patch` → `PATCH /api/alignment-context/:id`, `alignment_context_delete` → `DELETE /api/alignment-context/:id`, `brain_map_graph_get` → `GET /api/brain-map/graph`. Pass through the same headers (`x-alignment-context-key`, `x-brain-map-key`) and env-backed secrets; do not embed business rules beyond request shaping.
+
+**Stub / pointer (no server in-repo):** [`scripts/mcp-opengrimoire/README.md`](../../scripts/mcp-opengrimoire/README.md).
 
 Scoring note: product branding on a tool is **optional**; parity is measured by **REST + CLI + E2E**, not naming.

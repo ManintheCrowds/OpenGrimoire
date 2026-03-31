@@ -12,6 +12,9 @@ const nextConfig = {
     outputFileTracingRoot: undefined,
     serverComponentsExternalPackages: ['better-sqlite3', 'bcryptjs'],
   },
+  async rewrites() {
+    return [{ source: '/api/openapi.json', destination: '/api/openapi' }];
+  },
   async headers() {
     return [
       {

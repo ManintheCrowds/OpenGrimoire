@@ -1,6 +1,6 @@
 "use client";
 
-import { useSurveyForm } from '@/lib/hooks/useSurveyForm';
+import { useSyncSessionForm } from '@/lib/hooks/useSyncSessionForm';
 import { AttendeeStep } from './steps/AttendeeStep';
 import { YearsStep } from './steps/YearsStep';
 import { LearningStyleStep } from './steps/LearningStyleStep';
@@ -22,7 +22,9 @@ const steps = [
   SuccessStep,
 ];
 
-export function SurveyForm() {
+const TOTAL_STEPS = steps.length;
+
+export function SyncSessionForm() {
   const {
     currentStep,
     formData,
@@ -32,13 +34,13 @@ export function SurveyForm() {
     nextStep,
     prevStep,
     submitForm,
-  } = useSurveyForm();
+  } = useSyncSessionForm();
 
   const CurrentStepComponent = steps[currentStep];
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-[var(--brand-atmospheric-white)]" data-testid="survey-form-container">
+    <div className="min-h-screen bg-[var(--brand-atmospheric-white)]" data-testid="sync-session-form-container">
       <div className="max-w-xl w-full mx-auto px-0 pt-4 pb-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -50,8 +52,13 @@ export function SurveyForm() {
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="progress-bar">
+        {/* Progress: bar + step label for sighted users and AT */}
+        <div className="mb-2" aria-live="polite" aria-atomic="true">
+          <p className="text-center text-sm text-[var(--brand-secondary-text)] mb-1" id="sync-session-step-status">
+            Step {currentStep + 1} of {TOTAL_STEPS}
+          </p>
+        </div>
+        <div className="progress-bar" role="progressbar" aria-valuemin={1} aria-valuemax={TOTAL_STEPS} aria-valuenow={currentStep + 1} aria-labelledby="sync-session-step-status">
           <div
             className="progress-fill"
             style={{ width: `${progress}%` }}
@@ -59,9 +66,9 @@ export function SurveyForm() {
         </div>
 
         {/* Form Container */}
-        <div className="form-container" data-testid="survey-form-steps">
+        <div className="form-container" data-testid="sync-session-form-steps">
           {error && (
-            <div className="message message-error">
+            <div className="message message-error" role="alert">
               {error}
             </div>
           )}
@@ -79,4 +86,4 @@ export function SurveyForm() {
       </div>
     </div>
   );
-} 
+}

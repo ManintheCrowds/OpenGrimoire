@@ -22,7 +22,7 @@ test.describe('Smoke tests', () => {
     await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
     await page.getByTestId('home-card-operator-intake').click();
     await expect(page).toHaveURL(/\/operator-intake/);
-    await expect(page.getByTestId('survey-form-container')).toBeVisible();
+    await expect(page.getByTestId('sync-session-form-container')).toBeVisible();
 
     // Operator intake via top nav (OA-2 — not only home cards)
     await page.goto('/context-atlas');
@@ -30,7 +30,7 @@ test.describe('Smoke tests', () => {
       page.waitForURL(/\/operator-intake/),
       page.getByTestId('nav-link-operator-intake').click(),
     ]);
-    await expect(page.getByTestId('survey-form-container')).toBeVisible();
+    await expect(page.getByTestId('sync-session-form-container')).toBeVisible();
 
     // Admin controls
     await page.goto('/');

@@ -12,10 +12,18 @@ const BRAIN_MAP_STATIC_PATHS = new Set([
 ]);
 
 /** POST /api/survey — single Node instance; not for multi-replica. */
-const rateLimitSurvey = createRateLimiter(60_000, 30);
+const rateLimitSyncSessionSubmit = createRateLimiter(60_000, 30);
 
 /** POST /api/auth/login — stricter; brute-force protection (per-process only). */
 const rateLimitLogin = createRateLimiter(60_000, 10);
+
+/**
+ * GET discovery / OpenAPI — generous per-IP limit to reduce scraping noise (single Node; not multi-replica).
+ * 200 requests / minute / IP (same window as other limiters).
+ */
+const rateLimitDiscoveryGet = createRateLimiter(60_000, 200);
+
+const DISCOVERY_GET_PATHS = new Set(['/api/capabilities', '/api/openapi', '/api/openapi.json']);
 
 /**
  * Dev/demo App Router pages only (OA-4). Blocked in production unless explicitly allowed
@@ -71,9 +79,9 @@ export function middleware(request: NextRequest) {
 
   if (pathname === '/api/survey' && request.method === 'POST') {
     const ip = getClientIp(request);
-    if (!rateLimitSurvey(ip)) {
+    if (!rateLimitSyncSessionSubmit(ip)) {
       return NextResponse.json(
-        { error: 'Too many requests', detail: 'Survey rate limit exceeded. Try again later.' },
+        { error: 'Too many requests', detail: 'Sync Session submit rate limit exceeded. Try again later.' },
         { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
@@ -89,6 +97,19 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  if (request.method === 'GET' && DISCOVERY_GET_PATHS.has(pathname)) {
+    const ip = getClientIp(request);
+    if (!rateLimitDiscoveryGet(ip)) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          detail: 'Discovery endpoint rate limit exceeded. Try again later.',
+        },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -99,6 +120,9 @@ export const config = {
     '/brain-map-graph.local.json',
     '/api/survey',
     '/api/auth/login',
+    '/api/capabilities',
+    '/api/openapi',
+    '/api/openapi.json',
     '/test',
     '/test/:path*',
     '/test-chord',

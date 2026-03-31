@@ -75,15 +75,15 @@ Used for complex UI components like surveys and visualizations:
 
 ```typescript
 // Example: Survey Form
-<SurveyForm>
-  <SurveyForm.Step id="personal">
-    <SurveyForm.Field name="name" />
-    <SurveyForm.Field name="email" />
-  </SurveyForm.Step>
-  <SurveyForm.Step id="preferences">
-    <SurveyForm.Field name="learning_style" />
-  </SurveyForm.Step>
-</SurveyForm>
+<SyncSessionForm>
+  <SyncSessionForm.Step id="personal">
+    <SyncSessionForm.Field name="name" />
+    <SyncSessionForm.Field name="email" />
+  </SyncSessionForm.Step>
+  <SyncSessionForm.Step id="preferences">
+    <SyncSessionForm.Field name="learning_style" />
+  </SyncSessionForm.Step>
+</SyncSessionForm>
 ```
 
 #### Render Props Pattern

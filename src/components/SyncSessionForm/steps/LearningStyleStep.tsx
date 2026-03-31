@@ -1,56 +1,51 @@
 "use client";
 
 import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { MotivationType } from '@/lib/types/database';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
+import type { LearningStyle } from '@/lib/types/database';
 
-interface MotivationStepProps {
-  formData: SurveyFormData;
-  updateFormData: (data: Partial<SurveyFormData>) => void;
+interface LearningStyleStepProps {
+  formData: SyncSessionFormData;
+  updateFormData: (data: Partial<SyncSessionFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const motivationTypes: { value: MotivationType; label: string; description: string }[] = [
+const learningStyles: { value: LearningStyle; label: string; description: string }[] = [
   {
-    value: 'impact',
-    label: 'Making an Impact',
-    description: 'Contributing to meaningful change and positive outcomes',
+    value: 'visual',
+    label: 'Visual',
+    description: 'You learn best through images, diagrams, and spatial understanding',
   },
   {
-    value: 'growth',
-    label: 'Personal Growth',
-    description: 'Learning, developing skills, and expanding capabilities',
+    value: 'auditory',
+    label: 'Auditory',
+    description: 'You learn best through listening and verbal communication',
   },
   {
-    value: 'recognition',
-    label: 'Recognition',
-    description: 'Being acknowledged and valued for contributions',
+    value: 'kinesthetic',
+    label: 'Kinesthetic',
+    description: 'You learn best through physical activities and hands-on experience',
   },
   {
-    value: 'autonomy',
-    label: 'Autonomy',
-    description: 'Having independence and control over work',
-  },
-  {
-    value: 'purpose',
-    label: 'Purpose & Mission',
-    description: 'Aligning with organizational values and mission',
+    value: 'reading_writing',
+    label: 'Reading/Writing',
+    description: 'You learn best through written words and text-based materials',
   },
 ];
 
-export function MotivationStep({
+export function LearningStyleStep({
   formData,
   updateFormData,
   nextStep,
   prevStep,
-}: MotivationStepProps) {
+}: LearningStyleStepProps) {
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.motivation) {
-      setError('Please select what motivates you most');
+    if (!formData.learning_style) {
+      setError('Please select your preferred learning style');
       return;
     }
     nextStep();
@@ -58,34 +53,34 @@ export function MotivationStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div aria-invalid={!!error} aria-describedby={error ? 'motivation_error' : undefined}>
+      <div aria-invalid={!!error} aria-describedby={error ? 'learning_style_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What motivates you most in your work here?
+          What is your preferred learning style?
         </label>
         <div className="grid grid-cols-1 gap-4">
-          {motivationTypes.map((type) => (
+          {learningStyles.map((style) => (
             <button
-              key={type.value}
+              key={style.value}
               type="button"
               onClick={() => {
                 setError(null);
-                updateFormData({ motivation: type.value });
+                updateFormData({ learning_style: style.value });
               }}
               className={`
                 p-4 text-left rounded-lg border-2 transition-colors
                 ${
-                  formData.motivation === type.value
+                  formData.learning_style === style.value
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-200'
                 }
               `}
             >
-              <div className="font-medium">{type.label}</div>
-              <div className="mt-1 text-sm text-gray-500">{type.description}</div>
+              <div className="font-medium">{style.label}</div>
+              <div className="mt-1 text-sm text-gray-500">{style.description}</div>
             </button>
           ))}
         </div>
-        {error && <p id="motivation_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
+        {error && <p id="learning_style_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between">

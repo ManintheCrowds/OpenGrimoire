@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Survey flow', () => {
-  test('multi-step survey: fill AttendeeStep, YearsStep, reach SuccessStep via submit', async ({
+test.describe('Sync Session flow', () => {
+  test('multi-step Sync Session: fill AttendeeStep, YearsStep, reach SuccessStep via submit', async ({
     page,
   }) => {
     await page.goto('/operator-intake');
 
     // AttendeeStep
-    await expect(page.getByTestId('survey-form-container')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('sync-session-form-container')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('name-input')).toBeVisible({ timeout: 10000 });
     await page.getByTestId('name-input').fill('Test');
     await page.getByTestId('email-input').fill('test@example.com');
@@ -19,7 +19,7 @@ test.describe('Survey flow', () => {
 
     // LearningStyleStep (avoid matching nav link text "Visualization")
     await page
-      .getByTestId('survey-form-container')
+      .getByTestId('sync-session-form-container')
       .getByText('Visual', { exact: true })
       .click();
     await page.getByTestId('next-button').click();
@@ -46,7 +46,7 @@ test.describe('Survey flow', () => {
     ).toBeVisible({ timeout: 15000 });
   });
 
-  test('survey prev/next navigation works', async ({ page }) => {
+  test('Sync Session prev/next navigation works', async ({ page }) => {
     await page.goto('/operator-intake');
 
     // AttendeeStep -> Next

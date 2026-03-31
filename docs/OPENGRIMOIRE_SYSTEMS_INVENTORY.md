@@ -1,6 +1,6 @@
 # OpenGrimoire — systems inventory (tools, APIs, workflows)
 
-**Purpose:** Single place to list what OpenGrimoire touches and what agents use around it. **Workspace-wide MCP and browser tooling** stay canonical in [`.cursor/docs/MCP_CAPABILITY_MAP.md`](../../.cursor/docs/MCP_CAPABILITY_MAP.md) — do not duplicate that full matrix here; link it instead.
+**Purpose:** Single place to list what OpenGrimoire touches and what agents use around it. **Workspace-wide MCP and browser tooling** stay canonical in [`MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) (sibling repo layout under `GitHub/`) — do not duplicate that full matrix here; link it instead.
 
 **Normative API/agent rules:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) (strict public REST, entity × HTTP × auth matrix, UI freshness tiers, verification appendix). **Integration paths:** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
@@ -13,38 +13,52 @@
 | Piece | Role |
 |-------|------|
 | **OpenHarness** (`D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
-| **OpenGrimoire** (this app; repo folder often `OpenAtlas` under `portfolio-harness/OpenAtlas`) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts. |
+| **OpenGrimoire** (this app; repo folder often `OpenAtlas`) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
 
-**This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../../openharness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
+**This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../OpenHarness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
+
+---
+
+## Which `build_brain_map.py` (two copies)
+
+| Location | Use when |
+|----------|-----------|
+| [`MiscRepos/.cursor/scripts/build_brain_map.py`](../../MiscRepos/.cursor/scripts/build_brain_map.py) | **Default for OpenGrimoire:** multi-root state, optional Obsidian vault roots, SCP gating, default output to `OpenAtlas/public/brain-map-graph.local.json`. |
+| [`OpenHarness/scripts/build_brain_map.py`](../../OpenHarness/scripts/build_brain_map.py) | **Harness-only** checkout: minimal portable builder; no vault multi-root features. |
+
+Paths assume **sibling repos** under the same parent folder (e.g. `Documents/GitHub/{OpenAtlas,MiscRepos,OpenHarness}`).
 
 ---
 
 ## Why OpenHarness files may not appear in the graph
 
-The brain map is **not** a full-file scan of OpenHarness (or any repo). It is built by [`portfolio-harness/.cursor/scripts/build_brain_map.py`](../../.cursor/scripts/build_brain_map.py) from:
+The brain map is **not** a full-file scan of OpenHarness (or any repo). It is built by [`MiscRepos/.cursor/scripts/build_brain_map.py`](../../MiscRepos/.cursor/scripts/build_brain_map.py) from:
 
 - `.cursor/state/daily/*.md`
 - `.cursor/state/handoff_latest.md`
 - `.cursor/state/handoff_archive/*.md`
 - `.cursor/state/decision-log.md`
 
-Only **`.md` paths mentioned in those files** become nodes; edges are **co-access in the same session**. Default `CURSOR_STATE_DIR` is **`portfolio-harness/.cursor/state`**, not `openharness/.cursor/state`.
+Only **`.md` paths mentioned in those files** become nodes; edges are **co-access in the same session**. With no env set, the script defaults to a single state root — typically **`MiscRepos/.cursor/state`** when you run from a **MiscRepos** clone (see script `--help`).
 
-**To merge portfolio-harness + OpenHarness (or any clones) in one graph:**
+**To merge MiscRepos + OpenHarness (or any clones) in one graph:**
 
 ```powershell
 # Windows-friendly (semicolon-separated)
-$env:CURSOR_STATE_DIRS = "D:\portfolio-harness\.cursor\state;D:\openharness\.cursor\state"
+$env:CURSOR_STATE_DIRS = "C:\Users\YOU\Documents\GitHub\MiscRepos\.cursor\state;C:\Users\YOU\Documents\GitHub\OpenHarness\state"
 # Optional explicit labels (same order):
-$env:CURSOR_STATE_DIR_LABELS = "portfolio-harness;openharness"
-python D:\portfolio-harness\.cursor\scripts\build_brain_map.py
+$env:CURSOR_STATE_DIR_LABELS = "MiscRepos;OpenHarness"
+cd C:\Users\YOU\Documents\GitHub\MiscRepos
+python .cursor\scripts\build_brain_map.py
 ```
 
 Or CLI (overrides env):
 
-`python .cursor/scripts/build_brain_map.py --state-dir D:\portfolio-harness\.cursor\state --state-dir D:\openharness\.cursor\state`
+`python ../MiscRepos/.cursor/scripts/build_brain_map.py --state-dir ../MiscRepos/.cursor/state --state-dir ../OpenHarness/state`
 
-Single-root legacy: `CURSOR_STATE_DIR` or default `portfolio-harness/.cursor/state` only; session ids in JSON stay **unprefixed**.
+(Adjust paths to your machine; use `OpenHarness/state` if the harness uses `state/` at repo root.)
+
+Single-root legacy: `CURSOR_STATE_DIR` or one default state dir only; session ids in JSON stay **unprefixed** when a single root is used.
 
 Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to appear; the builder does not crawl the whole repo.
 
@@ -59,9 +73,11 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | Route | `/`, `/visualization`, `/login`, `/admin/*` | Admin needs `OPENGRIMOIRE_SESSION_SECRET` + operator password (see `.env.example`) |
 | Route | `/context-atlas`, `/brain-map` | Context graph UI (same app) |
 | Route | `/operator-intake`, `/survey` | Legacy sample form |
+| Route | `/admin/clarification-queue` | Operator inbox for async **clarification queue** (agent questions); distinct from Sync Session |
 | Static data | `public/brain-map-graph.json` | Served to viewer; regenerate via build script |
 | API | `GET /api/brain-map/graph` | Serves graph JSON |
 | API | Alignment context | See [`docs/agent/ALIGNMENT_CONTEXT_API.md`](./agent/ALIGNMENT_CONTEXT_API.md) (`GET`/`POST`/`PATCH` `/api/alignment-context`, secret header when configured). Data in **SQLite** (`OPENGRIMOIRE_DB_PATH`). Misconfiguration may yield **503**. |
+| API | Clarification queue | [`docs/agent/CLARIFICATION_QUEUE_API.md`](./agent/CLARIFICATION_QUEUE_API.md) — `clarification_requests` table; same shared-secret gate as alignment for public routes. |
 | API | `GET /api/capabilities` | Hand-maintained JSON index of public API surface (agents); see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) |
 | Auth (optional) | `BRAIN_MAP_SECRET` / `NEXT_PUBLIC_BRAIN_MAP_SECRET` | See [`docs/security/NEXT_PUBLIC_AND_SECRETS.md`](./security/NEXT_PUBLIC_AND_SECRETS.md) |
 | Auth (admin) | `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or hash | [`docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md`](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
@@ -80,7 +96,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `npm run verify` | **`lint` + `type-check` + `test`** — one command for agents / CI |
 | `npm run verify:e2e` | `verify` then Playwright E2E (uses `playwright.config.ts` `webServer`) |
 | `npm run test:e2e` | Playwright only |
-| `python ../../.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from portfolio-harness root; see OpenAtlas README) |
+| `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenAtlas** repo root with sibling **MiscRepos**; see OpenAtlas README) |
 | `node scripts/alignment-context-cli.mjs` | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENATLAS_BASE_URL`) |
 | `docker-compose.yml` | Local stack (see `DEPLOYMENT.md`) |
 
@@ -110,11 +126,11 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 
 ## Workspace tools that interact with OpenAtlas (agents)
 
-Use **one** primary path per task ([`MCP_CAPABILITY_MAP.md`](../../.cursor/docs/MCP_CAPABILITY_MAP.md)):
+Use **one** primary path per task ([`MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md)):
 
 | Need | Primary |
 |------|---------|
-| Manual UI review in Cursor | `cursor-ide-browser` + [`browser-review-protocol` skill](../../.cursor/skills/browser-review-protocol/SKILL.md) |
+| Manual UI review in Cursor | `cursor-ide-browser` + [`browser-review-protocol` skill](../../MiscRepos/.cursor/skills/browser-review-protocol/SKILL.md) |
 | CI / headless E2E | Playwright (`npm run test:e2e` in OpenAtlas) |
 | Third-party docs | context7 |
 | Repo symbols / search | jcodemunch, codebase_search |
@@ -124,6 +140,6 @@ Use **one** primary path per task ([`MCP_CAPABILITY_MAP.md`](../../.cursor/docs/
 
 ## TODO / gaps (tracked in harness `pending_tasks`)
 
-See **PENDING_OPENATLAS_HARNESS** in [`.cursor/state/pending_tasks.md`](../../.cursor/state/pending_tasks.md): keep this inventory accurate when routes/APIs change; **OA-4 `npm run verify`** is the unified lint/type-check/test entry (E2E optional via `verify:e2e`).
+See **PENDING_OPENATLAS_HARNESS** in [`MiscRepos/.cursor/state/pending_tasks.md`](../../MiscRepos/.cursor/state/pending_tasks.md): keep this inventory accurate when routes/APIs change; **OA-4 `npm run verify`** is the unified lint/type-check/test entry (E2E optional via `verify:e2e`).
 
-- **Future:** [async HITL intent survey](HITL_INTENT_SURVEY_BACKLOG.md) (AI-posted human questions; not the intake `POST /api/survey` flow).
+- **Clarification queue:** [HITL_INTENT_SURVEY_BACKLOG.md](HITL_INTENT_SURVEY_BACKLOG.md) / [CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md) (AI-posted human questions; not the intake `POST /api/survey` flow).

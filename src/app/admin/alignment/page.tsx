@@ -1,7 +1,8 @@
 'use client';
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { isOpenGrimoireAdminSessionUser } from '@/lib/opengrimoire-admin';
 
@@ -22,9 +23,9 @@ type AlignmentItem = {
 
 export default function AdminAlignmentPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<{ id: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<AlignmentItem[]>([]);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -49,71 +50,74 @@ export default function AdminAlignmentPage() {
       } catch {
         router.replace('/login');
       } finally {
-        setIsLoading(false);
+        setIsAuthLoading(false);
       }
     };
     void checkAuth();
   }, [router]);
 
-  const refresh = useCallback(async () => {
-    setLoadError(null);
-    const res = await fetch('/api/admin/alignment-context?limit=200', {
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      setLoadError(`Failed to load (${res.status})`);
-      return;
-    }
-    const data = await res.json();
-    setItems(data.items ?? []);
-  }, []);
+  const alignmentQuery = useQuery({
+    queryKey: ['admin', 'alignment-items'],
+    enabled: !!user,
+    queryFn: async () => {
+      const res = await fetch('/api/admin/alignment-context?limit=200', {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to load (${res.status})`);
+      }
+      const data = await res.json();
+      return (data.items ?? []) as AlignmentItem[];
+    },
+  });
 
-  useEffect(() => {
-    if (user) {
-      void refresh();
-    }
-  }, [user, refresh]);
+  const items = alignmentQuery.data ?? [];
 
   useEffect(() => {
     if (!user) return;
-    const onFocus = () => void refresh();
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') void refresh();
+    const inv = () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] });
     };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibility);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') inv();
+    };
+    window.addEventListener('focus', inv);
+    document.addEventListener('visibilitychange', onVis);
     return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', inv);
+      document.removeEventListener('visibilitychange', onVis);
     };
-  }, [user, refresh]);
+  }, [user, queryClient]);
 
-  const createItem = async () => {
-    if (!newTitle.trim()) return;
-    const res = await fetch('/api/admin/alignment-context', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: newTitle.trim(),
-        body: newBody.trim() || null,
-        status: newStatus,
-        tags: [],
-      }),
-    });
-    if (!res.ok) {
-      setLoadError(`Create failed (${res.status})`);
-      return;
-    }
-    setNewTitle('');
-    setNewBody('');
-    setNewStatus('draft');
-    await refresh();
-  };
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/admin/alignment-context', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          body: newBody.trim() || null,
+          status: newStatus,
+          tags: [],
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Create failed (${res.status})`);
+      }
+    },
+    onSuccess: () => {
+      setLoadError(null);
+      setNewTitle('');
+      setNewBody('');
+      setNewStatus('draft');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] });
+    },
+    onError: (e: Error) => setLoadError(e.message),
+  });
 
-  const patchStatus = async (id: string, status: string) => {
-    setBusyId(id);
-    try {
+  const patchMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const res = await fetch(`/api/admin/alignment-context/${id}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -121,34 +125,55 @@ export default function AdminAlignmentPage() {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) {
-        setLoadError(`Update failed (${res.status})`);
-        return;
+        throw new Error(`Update failed (${res.status})`);
       }
-      await refresh();
-    } finally {
-      setBusyId(null);
-    }
-  };
+    },
+    onMutate: ({ id }) => setBusyId(id),
+    onSettled: () => setBusyId(null),
+    onSuccess: () => {
+      setLoadError(null);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] });
+    },
+    onError: (e: Error) => setLoadError(e.message),
+  });
 
-  const removeItem = async (id: string) => {
-    if (!confirm('Delete this alignment context row permanently?')) return;
-    setBusyId(id);
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const res = await fetch(`/api/admin/alignment-context/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
       if (!res.ok) {
-        setLoadError(`Delete failed (${res.status})`);
-        return;
+        throw new Error(`Delete failed (${res.status})`);
       }
-      await refresh();
-    } finally {
-      setBusyId(null);
-    }
+    },
+    onMutate: (id) => setBusyId(id),
+    onSettled: () => setBusyId(null),
+    onSuccess: () => {
+      setLoadError(null);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] });
+    },
+    onError: (e: Error) => setLoadError(e.message),
+  });
+
+  const createItem = () => {
+    if (!newTitle.trim()) return;
+    createMutation.mutate();
   };
 
-  if (isLoading) {
+  const patchStatus = (id: string, status: string) => {
+    patchMutation.mutate({ id, status });
+  };
+
+  const removeItem = (id: string) => {
+    if (!confirm('Delete this alignment context row permanently?')) return;
+    deleteMutation.mutate(id);
+  };
+
+  const queryError =
+    alignmentQuery.error instanceof Error ? alignmentQuery.error.message : null;
+
+  if (isAuthLoading) {
     return (
       <Layout>
         <div className="flex h-96 items-center justify-center">Loading…</div>
@@ -176,17 +201,25 @@ export default function AdminAlignmentPage() {
               in the repository.
             </p>
           </div>
-          <a
-            href="/admin"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Back to moderation
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/admin"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Back to moderation
+            </a>
+            <a
+              href="/admin/clarification-queue"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Clarification queue
+            </a>
+          </div>
         </div>
 
-        {loadError && (
+        {(loadError || queryError) && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-800" role="alert">
-            {loadError}
+            {loadError ?? queryError}
           </div>
         )}
 
@@ -229,7 +262,8 @@ export default function AdminAlignmentPage() {
             <button
               type="button"
               onClick={() => void createItem()}
-              className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              disabled={createMutation.isPending}
+              className="w-fit rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
             >
               Create
             </button>
@@ -243,51 +277,55 @@ export default function AdminAlignmentPage() {
             </h2>
             <button
               type="button"
-              onClick={() => void refresh()}
+              onClick={() => void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] })}
               className="text-sm text-blue-600 hover:underline"
             >
               Refresh
             </button>
           </div>
-          <ul className="space-y-4">
-            {items.map((it) => (
-              <li key={it.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{it.title}</h3>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {it.status} · {it.source} · {new Date(it.updated_at).toLocaleString()}
-                    </p>
-                    {it.body && (
-                      <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{it.body}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(['draft', 'active', 'archived'] as const).map((s) => (
+          {alignmentQuery.isPending ? (
+            <p className="text-gray-500">Loading items…</p>
+          ) : (
+            <ul className="space-y-4">
+              {items.map((it) => (
+                <li key={it.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{it.title}</h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {it.status} · {it.source} · {new Date(it.updated_at).toLocaleString()}
+                      </p>
+                      {it.body && (
+                        <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{it.body}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(['draft', 'active', 'archived'] as const).map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={busyId === it.id || it.status === s || patchMutation.isPending}
+                          onClick={() => void patchStatus(it.id, s)}
+                          className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
+                        >
+                          Set {s}
+                        </button>
+                      ))}
                       <button
-                        key={s}
                         type="button"
-                        disabled={busyId === it.id || it.status === s}
-                        onClick={() => void patchStatus(it.id, s)}
-                        className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
+                        disabled={busyId === it.id || deleteMutation.isPending}
+                        onClick={() => void removeItem(it.id)}
+                        className="rounded border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
                       >
-                        Set {s}
+                        Delete
                       </button>
-                    ))}
-                    <button
-                      type="button"
-                      disabled={busyId === it.id}
-                      onClick={() => void removeItem(it.id)}
-                      className="rounded border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {items.length === 0 && !loadError && (
+                </li>
+              ))}
+            </ul>
+          )}
+          {items.length === 0 && !alignmentQuery.isPending && !queryError && (
             <p className="text-gray-500">No rows yet. Create one above.</p>
           )}
         </section>

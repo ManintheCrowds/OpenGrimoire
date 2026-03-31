@@ -1,60 +1,56 @@
 "use client";
-import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { ShapedBy } from '@/lib/types/database';
 
-interface ShapedByStepProps {
-  formData: SurveyFormData;
-  updateFormData: (data: Partial<SurveyFormData>) => void;
+import React from 'react';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
+import type { MotivationType } from '@/lib/types/database';
+
+interface MotivationStepProps {
+  formData: SyncSessionFormData;
+  updateFormData: (data: Partial<SyncSessionFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const shapedByOptions: { value: ShapedBy; label: string; description: string }[] = [
+const motivationTypes: { value: MotivationType; label: string; description: string }[] = [
   {
-    value: 'mentor',
-    label: 'Mentorship',
-    description: 'A mentor or role model who guided and inspired you',
+    value: 'impact',
+    label: 'Making an Impact',
+    description: 'Contributing to meaningful change and positive outcomes',
   },
   {
-    value: 'challenge',
-    label: 'Challenge',
-    description: 'A significant challenge or obstacle you overcame',
+    value: 'growth',
+    label: 'Personal Growth',
+    description: 'Learning, developing skills, and expanding capabilities',
   },
   {
-    value: 'failure',
-    label: 'Failure',
-    description: 'A failure that taught you valuable lessons',
+    value: 'recognition',
+    label: 'Recognition',
+    description: 'Being acknowledged and valued for contributions',
   },
   {
-    value: 'success',
-    label: 'Success',
-    description: 'A significant achievement or success that motivated you',
+    value: 'autonomy',
+    label: 'Autonomy',
+    description: 'Having independence and control over work',
   },
   {
-    value: 'team',
-    label: 'Team',
-    description: 'Collaboration and support from your team members',
-  },
-  {
-    value: 'other',
-    label: 'Other',
-    description: 'Another significant influence not listed above',
+    value: 'purpose',
+    label: 'Purpose & Mission',
+    description: 'Aligning with organizational values and mission',
   },
 ];
 
-export function ShapedByStep({
+export function MotivationStep({
   formData,
   updateFormData,
   nextStep,
   prevStep,
-}: ShapedByStepProps) {
+}: MotivationStepProps) {
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.shaped_by) {
-      setError('Please select what has shaped your career journey');
+    if (!formData.motivation) {
+      setError('Please select what motivates you most');
       return;
     }
     nextStep();
@@ -62,34 +58,34 @@ export function ShapedByStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div aria-invalid={!!error} aria-describedby={error ? 'shaped_by_error' : undefined}>
+      <div aria-invalid={!!error} aria-describedby={error ? 'motivation_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What has most significantly shaped your career journey here?
+          What motivates you most in your work here?
         </label>
         <div className="grid grid-cols-1 gap-4">
-          {shapedByOptions.map((option) => (
+          {motivationTypes.map((type) => (
             <button
-              key={option.value}
+              key={type.value}
               type="button"
               onClick={() => {
                 setError(null);
-                updateFormData({ shaped_by: option.value });
+                updateFormData({ motivation: type.value });
               }}
               className={`
                 p-4 text-left rounded-lg border-2 transition-colors
                 ${
-                  formData.shaped_by === option.value
+                  formData.motivation === type.value
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-200'
                 }
               `}
             >
-              <div className="font-medium">{option.label}</div>
-              <div className="mt-1 text-sm text-gray-500">{option.description}</div>
+              <div className="font-medium">{type.label}</div>
+              <div className="mt-1 text-sm text-gray-500">{type.description}</div>
             </button>
           ))}
         </div>
-        {error && <p id="shaped_by_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
+        {error && <p id="motivation_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between">

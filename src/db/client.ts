@@ -94,6 +94,20 @@ function runBootstrap(sqlite: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_alignment_context_items_status ON alignment_context_items(status);
     CREATE INDEX IF NOT EXISTS idx_alignment_context_items_created_at ON alignment_context_items(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS clarification_requests (
+      id TEXT PRIMARY KEY NOT NULL,
+      question_spec TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      resolution TEXT,
+      agent_metadata TEXT NOT NULL DEFAULT '{}',
+      linked_node_id TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      resolved_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_clarification_requests_status ON clarification_requests(status);
+    CREATE INDEX IF NOT EXISTS idx_clarification_requests_created_at ON clarification_requests(created_at DESC);
   `);
 
   const now = new Date().toISOString();

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AdminPanel } from '@/components/AdminPanel/index';
+import { ApiDiscoveryMirror } from '@/components/ApiDiscoveryMirror';
 import Layout from '@/components/Layout';
 import { isOpenGrimoireAdminSessionUser } from '@/lib/opengrimoire-admin';
 
@@ -56,8 +57,14 @@ export default function AdminPage() {
             <a className="text-blue-600 underline hover:text-blue-800" href="/admin/alignment">
               Alignment context (operator CRUD)
             </a>
+            {' · '}
+            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/clarification-queue">
+              Clarification queue (async agent questions)
+            </a>
           </p>
         </div>
+
+        <ApiDiscoveryMirror />
 
         <AdminPanel />
       </div>

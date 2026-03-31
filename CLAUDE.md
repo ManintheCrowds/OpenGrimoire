@@ -14,9 +14,11 @@ This file provides guidance for AI assistants working in this repository.
 - **Data:** Static JSON — `public/brain-map-graph.json`, or gitignored `public/brain-map-graph.local.json` when present.
 - **API:** `GET /api/brain-map/graph` serves the graph (do not use bare `/brain-map-graph.json` URLs — blocked). **No database file required** for this path beyond static JSON.
 - **Agents:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md).
-- **Regeneration:** From portfolio-harness (or repo root with scripts), run `python .cursor/scripts/build_brain_map.py` with `CURSOR_STATE_DIR` / `CURSOR_STATE_DIRS` as documented in README.
+- **Regeneration:** `cd` into sibling **MiscRepos** (see [README.md](README.md)), then run `python .cursor/scripts/build_brain_map.py` with `CURSOR_STATE_DIR` / `CURSOR_STATE_DIRS` as documented in README.
 
 ## SQLite + operator session (alignment, survey, admin)
+
+**Dual label:** **Sync Session** is the UX name for the survey flows at `/operator-intake` and `/survey` (submissions → `POST /api/survey`). **Alignment Context** is the alignment-item API and persistence (`/api/alignment-context`, alignment CLI)—a separate path from the survey form submit.
 
 - **Routes:** `/operator-intake`, `/survey`, `/login`, `/admin/*`, visualization data — persistence in **`OPENGRIMOIRE_DB_PATH`** (default `data/opengrimoire.sqlite`; directory gitignored).
 - **Admin auth:** `POST /api/auth/login` sets an HTTP-only signed cookie (`opengrimoire_session`). Configure **`OPENGRIMOIRE_ADMIN_PASSWORD`** or **`OPENGRIMOIRE_ADMIN_PASSWORD_HASH`** and **`OPENGRIMOIRE_SESSION_SECRET`** (see `.env.example`).
@@ -62,3 +64,4 @@ This file provides guidance for AI assistants working in this repository.
 
 - Sample/mock data: `src/data/`, `sample-survey-data.json`, etc.
 - E2E: Playwright (`npm run test:e2e`); see `playwright.config.ts`.
+- Tagged releases: [RELEASING.md](RELEASING.md) — optional `npm run test:maestro` when Maestro is installed.

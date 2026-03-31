@@ -1,9 +1,9 @@
 "use client";
 import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
 
 interface SuccessStepProps {
-  formData: SurveyFormData;
+  formData: SyncSessionFormData;
 }
 
 export function SuccessStep({ formData }: SuccessStepProps) {

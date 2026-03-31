@@ -2,6 +2,11 @@ import Database from 'better-sqlite3';
 import { NextResponse } from 'next/server';
 import { createAttendee, createSurveyResponse } from '@/lib/storage/repositories/survey';
 import { mapAnswersToSurveyResponsePayload } from '@/lib/survey/mapAnswersToSurveyResponse';
+import { isSurveyPostCaptchaRequired, verifyTurnstileToken } from '@/lib/survey/survey-post-captcha';
+import {
+  isSurveyPostTokenRequired,
+  verifySurveyPostBootstrapToken,
+} from '@/lib/survey/survey-post-bootstrap';
 import { surveyPostBodySchema } from '@/lib/survey/schemas';
 
 function isUniqueConstraintError(e: unknown): boolean {
@@ -13,6 +18,22 @@ function isUniqueConstraintError(e: unknown): boolean {
 }
 
 export async function POST(request: Request) {
+  if (isSurveyPostTokenRequired()) {
+    if (!process.env.SURVEY_POST_BOOTSTRAP_SECRET?.trim()) {
+      return NextResponse.json(
+        { error: 'Survey post token required but server is not configured (SURVEY_POST_BOOTSTRAP_SECRET)' },
+        { status: 503 }
+      );
+    }
+    const ok = await verifySurveyPostBootstrapToken(request.headers.get('x-survey-post-token'));
+    if (!ok) {
+      return NextResponse.json(
+        { error: 'Invalid or missing survey post token', detail: 'Fetch GET /api/survey/bootstrap-token first' },
+        { status: 401 }
+      );
+    }
+  }
+
   let json: unknown;
   try {
     json = await request.json();
@@ -29,6 +50,23 @@ export async function POST(request: Request) {
   }
 
   const body = parsed.data;
+
+  if (isSurveyPostCaptchaRequired()) {
+    if (!process.env.TURNSTILE_SECRET_KEY?.trim()) {
+      return NextResponse.json(
+        { error: 'Captcha required but TURNSTILE_SECRET_KEY is not set' },
+        { status: 503 }
+      );
+    }
+    const captchaOk = await verifyTurnstileToken(body.turnstileToken);
+    if (!captchaOk) {
+      return NextResponse.json(
+        { error: 'Validation failed', message: 'Invalid or missing Turnstile token' },
+        { status: 400 }
+      );
+    }
+  }
+
   const mapped = mapAnswersToSurveyResponsePayload(body.answers);
   if (!mapped.ok) {
     return NextResponse.json(
@@ -49,7 +87,7 @@ export async function POST(request: Request) {
       is_anonymous: body.isAnonymous,
     });
 
-    createSurveyResponse({
+    const surveyResponse = createSurveyResponse({
       attendee_id: attendee.id,
       ...mapped.data,
     });
@@ -57,6 +95,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: 'Survey submitted successfully',
+      attendeeId: attendee.id,
+      surveyResponseId: surveyResponse.id,
     });
   } catch (error: unknown) {
     console.error('Error submitting survey:', error);

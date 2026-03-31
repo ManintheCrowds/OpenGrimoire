@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import React from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 interface QueueItem {
@@ -17,40 +20,31 @@ interface QueueItem {
 }
 
 export function AdminPanel() {
-  const [queue, setQueue] = useState<QueueItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const queryClient = useQueryClient();
   const router = useRouter();
 
-  const loadQueue = async () => {
-    const res = await fetch('/api/admin/moderation-queue', { credentials: 'include' });
-    if (!res.ok) {
-      throw new Error(`Failed to load queue (${res.status})`);
-    }
-    const data = (await res.json()) as { items?: QueueItem[] };
-    setQueue(data.items ?? []);
-  };
-
-  useEffect(() => {
-    const run = async () => {
-      try {
-        await loadQueue();
-      } catch (err) {
-        console.error('Error fetching queue:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load moderation queue');
-      } finally {
-        setLoading(false);
+  const queueQuery = useQuery({
+    queryKey: ['admin', 'moderation-queue'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/moderation-queue', { credentials: 'include' });
+      if (!res.ok) {
+        throw new Error(`Failed to load queue (${res.status})`);
       }
-    };
-    void run();
-  }, []);
+      const data = (await res.json()) as { items?: QueueItem[] };
+      return data.items ?? [];
+    },
+  });
 
-  const handleModeration = async (
-    responseId: string,
-    status: 'approved' | 'rejected',
-    notes?: string
-  ) => {
-    try {
+  const moderationMutation = useMutation({
+    mutationFn: async ({
+      responseId,
+      status,
+      notes,
+    }: {
+      responseId: string;
+      status: 'approved' | 'rejected';
+      notes?: string;
+    }) => {
       const res = await fetch(`/api/admin/moderation/${responseId}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -59,22 +53,67 @@ export function AdminPanel() {
       });
       if (!res.ok) {
         const text = await res.text();
-        setError(`Moderation failed (${res.status}): ${text}`);
-        return;
+        throw new Error(`Moderation failed (${res.status}): ${text}`);
       }
-      setLoading(true);
-      await loadQueue();
-      setLoading(false);
-    } catch (err) {
-      console.error('Moderation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update moderation status');
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] });
+    },
+  });
+
+  const error =
+    queueQuery.error instanceof Error
+      ? queueQuery.error.message
+      : queueQuery.isError
+        ? 'Failed to load moderation queue'
+        : moderationMutation.error instanceof Error
+          ? moderationMutation.error.message
+          : moderationMutation.isError
+            ? 'Failed to update moderation status'
+            : undefined;
+
+  React.useEffect(() => {
+    if (queueQuery.error) {
+      console.error('Error fetching queue:', queueQuery.error);
     }
+  }, [queueQuery.error]);
+
+  React.useEffect(() => {
+    if (moderationMutation.error) {
+      console.error('Moderation error:', moderationMutation.error);
+    }
+  }, [moderationMutation.error]);
+
+  React.useEffect(() => {
+    const inv = () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] });
+    };
+    const onVis = () => {
+      if (document.visibilityState === 'visible') inv();
+    };
+    window.addEventListener('focus', inv);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('focus', inv);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [queryClient]);
+
+  const handleModeration = (
+    responseId: string,
+    status: 'approved' | 'rejected',
+    notes?: string
+  ) => {
+    moderationMutation.mutate({ responseId, status, notes });
   };
 
   const signOut = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
+
+  const queue = queueQuery.data ?? [];
+  const loading = queueQuery.isPending;
 
   if (loading) {
     return (
@@ -90,6 +129,15 @@ export function AdminPanel() {
         <h2 className="text-2xl font-bold text-gray-900">Response Moderation Queue</h2>
         <div className="flex items-center space-x-2">
           <button
+            type="button"
+            onClick={() =>
+              void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] })
+            }
+            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+          >
+            Refresh
+          </button>
+          <button
             onClick={async () => {
               const res = await fetch('/api/admin/debug-survey', { credentials: 'include' });
               const body = await res.json();
@@ -100,6 +148,7 @@ export function AdminPanel() {
             Debug Data
           </button>
           <button
+            type="button"
             onClick={() => void signOut()}
             className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -133,14 +182,18 @@ export function AdminPanel() {
                 <div className="w-full sm:w-auto mt-4 sm:mt-0">
                   <div className="flex flex-row space-x-2 w-full">
                     <button
+                      type="button"
+                      disabled={moderationMutation.isPending}
                       onClick={() => void handleModeration(item.id, 'approved')}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 w-1/2 sm:w-auto"
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 w-1/2 sm:w-auto disabled:opacity-50"
                     >
                       Approve
                     </button>
                     <button
+                      type="button"
+                      disabled={moderationMutation.isPending}
                       onClick={() => void handleModeration(item.id, 'rejected')}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 w-1/2 sm:w-auto"
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 w-1/2 sm:w-auto disabled:opacity-50"
                     >
                       Reject
                     </button>

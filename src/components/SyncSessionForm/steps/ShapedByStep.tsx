@@ -1,51 +1,60 @@
 "use client";
-
 import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
-import type { LearningStyle } from '@/lib/types/database';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
+import type { ShapedBy } from '@/lib/types/database';
 
-interface LearningStyleStepProps {
-  formData: SurveyFormData;
-  updateFormData: (data: Partial<SurveyFormData>) => void;
+interface ShapedByStepProps {
+  formData: SyncSessionFormData;
+  updateFormData: (data: Partial<SyncSessionFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const learningStyles: { value: LearningStyle; label: string; description: string }[] = [
+const shapedByOptions: { value: ShapedBy; label: string; description: string }[] = [
   {
-    value: 'visual',
-    label: 'Visual',
-    description: 'You learn best through images, diagrams, and spatial understanding',
+    value: 'mentor',
+    label: 'Mentorship',
+    description: 'A mentor or role model who guided and inspired you',
   },
   {
-    value: 'auditory',
-    label: 'Auditory',
-    description: 'You learn best through listening and verbal communication',
+    value: 'challenge',
+    label: 'Challenge',
+    description: 'A significant challenge or obstacle you overcame',
   },
   {
-    value: 'kinesthetic',
-    label: 'Kinesthetic',
-    description: 'You learn best through physical activities and hands-on experience',
+    value: 'failure',
+    label: 'Failure',
+    description: 'A failure that taught you valuable lessons',
   },
   {
-    value: 'reading_writing',
-    label: 'Reading/Writing',
-    description: 'You learn best through written words and text-based materials',
+    value: 'success',
+    label: 'Success',
+    description: 'A significant achievement or success that motivated you',
+  },
+  {
+    value: 'team',
+    label: 'Team',
+    description: 'Collaboration and support from your team members',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    description: 'Another significant influence not listed above',
   },
 ];
 
-export function LearningStyleStep({
+export function ShapedByStep({
   formData,
   updateFormData,
   nextStep,
   prevStep,
-}: LearningStyleStepProps) {
+}: ShapedByStepProps) {
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.learning_style) {
-      setError('Please select your preferred learning style');
+    if (!formData.shaped_by) {
+      setError('Please select what has shaped your career journey');
       return;
     }
     nextStep();
@@ -53,34 +62,34 @@ export function LearningStyleStep({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div aria-invalid={!!error} aria-describedby={error ? 'learning_style_error' : undefined}>
+      <div aria-invalid={!!error} aria-describedby={error ? 'shaped_by_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What is your preferred learning style?
+          What has most significantly shaped your career journey here?
         </label>
         <div className="grid grid-cols-1 gap-4">
-          {learningStyles.map((style) => (
+          {shapedByOptions.map((option) => (
             <button
-              key={style.value}
+              key={option.value}
               type="button"
               onClick={() => {
                 setError(null);
-                updateFormData({ learning_style: style.value });
+                updateFormData({ shaped_by: option.value });
               }}
               className={`
                 p-4 text-left rounded-lg border-2 transition-colors
                 ${
-                  formData.learning_style === style.value
+                  formData.shaped_by === option.value
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-200'
                 }
               `}
             >
-              <div className="font-medium">{style.label}</div>
-              <div className="mt-1 text-sm text-gray-500">{style.description}</div>
+              <div className="font-medium">{option.label}</div>
+              <div className="mt-1 text-sm text-gray-500">{option.description}</div>
             </button>
           ))}
         </div>
-        {error && <p id="learning_style_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
+        {error && <p id="shaped_by_error" className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
       </div>
 
       <div className="flex justify-between">

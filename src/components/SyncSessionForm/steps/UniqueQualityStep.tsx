@@ -1,11 +1,11 @@
 "use client";
 
 import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
 
 interface UniqueQualityStepProps {
-  formData: SurveyFormData;
-  updateFormData: (data: Partial<SurveyFormData>) => void;
+  formData: SyncSessionFormData;
+  updateFormData: (data: Partial<SyncSessionFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
   submitForm: () => void;
@@ -41,7 +41,7 @@ export function UniqueQualityStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-lg font-medium text-gray-900 mb-4">
+        <label htmlFor="unique_quality" className="block text-lg font-medium text-gray-900 mb-4">
           What unique quality or perspective do you bring to your team?
         </label>
         <div className="mt-2">

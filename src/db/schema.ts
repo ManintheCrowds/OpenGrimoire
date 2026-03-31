@@ -100,3 +100,28 @@ export const alignmentContextItems = sqliteTable(
     index('idx_alignment_context_items_created_at').on(t.createdAt),
   ]
 );
+
+/** Async agent clarification queue (distinct from Sync Session / survey POST). */
+export const clarificationRequests = sqliteTable(
+  'clarification_requests',
+  {
+    id: text('id').primaryKey(),
+    /** JSON: ClarificationQuestionSpec */
+    questionSpec: text('question_spec').notNull(),
+    status: text('status', { enum: ['pending', 'answered', 'superseded'] })
+      .notNull()
+      .default('pending'),
+    /** JSON: ClarificationResolution */
+    resolution: text('resolution'),
+    /** JSON: ClarificationAgentMetadata */
+    agentMetadata: text('agent_metadata').notNull().default('{}'),
+    linkedNodeId: text('linked_node_id'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    resolvedAt: text('resolved_at'),
+  },
+  (t) => [
+    index('idx_clarification_requests_status').on(t.status),
+    index('idx_clarification_requests_created_at').on(t.createdAt),
+  ]
+);

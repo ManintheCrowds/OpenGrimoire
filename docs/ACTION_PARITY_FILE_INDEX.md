@@ -1,5 +1,7 @@
 # Grep-driven file list: action parity (starter set)
 
+**Scope:** **Query 3** and tables that link to `../../.cursor/docs/*`, `../../.cursor/state/*`, and similar `../../...` paths assume a **multi-repo workspace** where those files exist—for example a **MiscRepos** clone with `.cursor/docs/…` as a **sibling** of OpenAtlas under the same parent (e.g. `Documents/GitHub/MiscRepos` next to `Documents/GitHub/OpenAtlas`). With an **OpenAtlas-only** clone, those links do not resolve; open **MiscRepos** or **OpenHarness** in their own repos.
+
 Repeatable inventories for **Principle 1 (action parity)** work: agent-native framing, REST/MCP surface, and harness MCP docs. Complements the hand-maintained manifest in [`src/app/api/capabilities/route.ts`](../src/app/api/capabilities/route.ts) (OA-REST-2).
 
 **Verify manifest vs filesystem:** `npm run verify:capabilities` (from repo root).
@@ -56,7 +58,7 @@ rg -l "MCP|tool" docs .cursor
 | Path | Note |
 |------|------|
 | [src/app/api/capabilities/route.ts](../src/app/api/capabilities/route.ts) | Canonical **capabilities manifest**. |
-| [src/components/SurveyForm/steps/MotivationStep.tsx](../src/components/SurveyForm/steps/MotivationStep.tsx) | Weak signal: likely “capabilities” in survey copy, not REST parity. Optional for audits. |
+| [src/components/SyncSessionForm/steps/MotivationStep.tsx](../src/components/SyncSessionForm/steps/MotivationStep.tsx) | Weak signal: likely “capabilities” in survey copy, not REST parity. Optional for audits. |
 
 **Stricter TS/TSX pattern (optional):** drop UI-only matches:
 
@@ -123,6 +125,13 @@ Paths are relative to `portfolio-harness/`:
 
 ---
 
+## Point-in-time audit snapshots
+
+| Path | Role |
+|------|------|
+| [audit/agent_native_opengrimoire_2026-03-31.md](./audit/agent_native_opengrimoire_2026-03-31.md) | Summary table + Part B pointer; canonical detail remains in `AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md`. |
+| [audit/agent_native_opengrimoire_2026-03-24.md](./audit/agent_native_opengrimoire_2026-03-24.md) | Earlier MVP backlog-style audit. |
+
 ## Anchor files
 
 | Anchor | Role |
@@ -135,7 +144,7 @@ Paths are relative to `portfolio-harness/`:
 
 ```mermaid
 flowchart LR
-  audit[AGENT_NATIVE_AUDIT_OPENATLAS]
+  audit[AGENT_NATIVE_AUDIT_OPENGRIMOIRE]
   capRoute[capabilities/route.ts]
   rest[ARCHITECTURE_REST_CONTRACT]
   mcpMap[MCP_CAPABILITY_MAP]

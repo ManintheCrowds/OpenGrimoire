@@ -1,8 +1,8 @@
 'use client';
 
-import { SurveyForm } from '@/components/SurveyForm';
+import { SyncSessionForm } from '@/components/SyncSessionForm';
 
 /** Legacy URL; canonical route is `/operator-intake` (Sync Session UI). */
 export default function SurveyPage() {
-  return <SurveyForm />;
-} 
+  return <SyncSessionForm />;
+}

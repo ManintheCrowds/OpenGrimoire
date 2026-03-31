@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import type { SurveyFormData } from '@/lib/hooks/useSurveyForm';
+import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
 import type { PeakPerformanceType } from '@/lib/types/database';
 
 interface PeakPerformanceStepProps {
-  formData: SurveyFormData;
-  updateFormData: (data: Partial<SurveyFormData>) => void;
+  formData: SyncSessionFormData;
+  updateFormData: (data: Partial<SyncSessionFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }

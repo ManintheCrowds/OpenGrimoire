@@ -17,11 +17,19 @@ test.describe('Smoke tests', () => {
     await expect(page).toHaveURL(/\/visualization/);
     await expect(page.getByTestId('alluvial-diagram')).toBeVisible({ timeout: 10000 });
 
-    // Operator intake
+    // Operator intake (home grid card)
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
-    await page.getByTestId('nav-link-operator-intake').click();
+    await page.getByTestId('home-card-operator-intake').click();
     await expect(page).toHaveURL(/\/operator-intake/);
+    await expect(page.getByTestId('survey-form-container')).toBeVisible();
+
+    // Operator intake via top nav (OA-2 — not only home cards)
+    await page.goto('/context-atlas');
+    await Promise.all([
+      page.waitForURL(/\/operator-intake/),
+      page.getByTestId('nav-link-operator-intake').click(),
+    ]);
     await expect(page.getByTestId('survey-form-container')).toBeVisible();
 
     // Admin controls

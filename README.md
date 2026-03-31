@@ -1,6 +1,6 @@
-# OpenGrimoire — Operator context graph and brain-map visualization
+# OpenGrimoire — Local-first context graph and Sync Session platform
 
-Next.js app for co-access across `.cursor/state` handoffs and daily notes; D3/Three.js; static JSON graph, no Supabase required. Part of portfolio-harness **Build** (see Guard–Guide–Build taxonomy).
+OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution; outcomes are persisted as alignment context records.
 
 **Product:** OpenGrimoire. **Package name:** `open-grimoire`. **Repo folder:** often still `OpenAtlas` on disk (legacy name; renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical folder path until you rename the clone.
 
@@ -12,6 +12,8 @@ Next.js app for co-access across `.cursor/state` handoffs and daily notes; D3/Th
 | **Brain-map** | D3/Three.js visualization of operator context; nodes from `.cursor/state` markdown |
 | **Handoff-derived nodes** | Graph nodes extracted from handoff files and daily notes via `build_brain_map.py` |
 | **Static JSON contract** | Graph data as JSON file (`brain-map-graph.json`); no database required |
+| **Sync Session (UX)** | User-facing alignment workflow for human-to-agent one-on-ones |
+| **Alignment Context (system)** | Persisted artifacts produced and consumed by Sync Sessions |
 
 ## Context graph (no Supabase required)
 
@@ -44,7 +46,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 |------|---------|
 | `/` | Home |
 | `/context-atlas`, `/brain-map` | Context graph (same UI) |
-| `/operator-intake`, `/survey` | Legacy intake form (same UI) |
+| `/operator-intake`, `/survey` | Sync Session form (`/survey` is legacy alias of the same UI) |
 | `/visualization` | D3 demos |
 | `/login`, `/admin/*` | Operator password + session cookie (see `.env.example`: `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or hash) |
 
@@ -52,7 +54,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 
 - D3 / Three.js visualizations (Sankey, chord, constellation, etc.).
 - Context graph from handoff/daily/decision-log derived paths.
-- Multi-step form posting to `POST /api/survey` (SQLite on the server).
+- Sync Session form posting to `POST /api/survey` (SQLite on the server).
 - Admin / theme controls after operator login.
 
 ### Agents and APIs

@@ -15,6 +15,12 @@
 | Admin / operator | **`POST /api/auth/login`** with password; session cookie (**`OPENGRIMOIRE_SESSION_SECRET`**, **`OPENGRIMOIRE_ADMIN_PASSWORD`** or hash) — see [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
 | Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. |
 
+## Canonical naming (UX vs system)
+
+- **Sync Session (UX):** User-facing workflow label for the structured alignment one-on-one.
+- **Alignment Context (system):** Persisted artifacts and API resources used by Sync Sessions.
+- **Sync Session Record (entity language):** A single captured outcome, stored in alignment-context data.
+
 ## Base URL and port
 
 | Environment | Origin |

@@ -2,7 +2,7 @@
 
 import { SurveyForm } from '@/components/SurveyForm';
 
-/** Legacy URL; canonical route is `/operator-intake`. */
+/** Legacy URL; canonical route is `/operator-intake` (Sync Session UI). */
 export default function SurveyPage() {
   return <SurveyForm />;
 } 

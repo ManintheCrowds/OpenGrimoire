@@ -43,10 +43,10 @@ export function SurveyForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[var(--brand-navy-blue)] mb-2" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
-            Operator intake
+            Sync Session
           </h1>
           <p className="text-[var(--brand-secondary-text)] text-sm mb-2" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
-            Legacy portfolio sample (anonymized event-style flow). Use for demos; not medical or clinical use.
+            Structured human-to-agent one-on-one for alignment context capture.
           </p>
         </div>
 

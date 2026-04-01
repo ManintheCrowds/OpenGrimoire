@@ -55,3 +55,9 @@ Keep all new fields optional and ignore-unknown in UI.
 - Existing graph files still render unchanged.
 - New optional fields do not break API responses.
 - UI degrades gracefully when fields are absent.
+
+## Historical audits (OG-1)
+
+- **[OG-1 naming audit (archived)](../../MiscRepos/docs/archive/og1_opencompass_opengrimoire_audit.md)** — OpenGrimoire vs OpenCompass initiative wording (2026-03-24). Stub: [`MiscRepos/.cursor/state/og1_opencompass_opengrimoire_audit.md`](../../MiscRepos/.cursor/state/og1_opencompass_opengrimoire_audit.md).
+- **[OG-1 narrative sweep (2026-04-01)](./engineering/OG1_NARRATIVE_SWEEP_2026-04-01.md)** — grep follow-up; no REFRAME issues in `OpenAtlas/docs`.
+- **Workspace layout decision:** [WORKSPACE_REPO_LAYOUT.md](./WORKSPACE_REPO_LAYOUT.md) · [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md).

@@ -1,6 +1,6 @@
 # Brain map / context graph JSON schema
 
-This document describes the payload returned by `GET /api/brain-map/graph`. The API prefers **`public/brain-map-graph.local.json`** when that file exists (personal or vault-inclusive builds; gitignored by default), otherwise **`public/brain-map-graph.json`**. The file is produced by `portfolio-harness/.cursor/scripts/build_brain_map.py` (or `BRAIN_MAP_OUTPUT`).
+This document describes the payload returned by `GET /api/brain-map/graph`. The API prefers **`public/brain-map-graph.local.json`** when that file exists (personal or vault-inclusive builds; gitignored by default), otherwise **`public/brain-map-graph.json`**. The file is produced by **`MiscRepos/.cursor/scripts/build_brain_map.py`** (sibling repo; legacy docs may say `portfolio-harness/.cursor/...` for the same script) or by `BRAIN_MAP_OUTPUT` / trustgraph merge steps—see [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md) and [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md).
 
 ## Top-level object
 

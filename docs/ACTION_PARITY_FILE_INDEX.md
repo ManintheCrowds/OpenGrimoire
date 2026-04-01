@@ -1,6 +1,6 @@
 # Grep-driven file list: action parity (starter set)
 
-**Scope:** **Query 3** and tables that link to `../../.cursor/docs/*`, `../../.cursor/state/*`, and similar `../../...` paths assume a **multi-repo workspace** where those files exist—for example a **MiscRepos** clone with `.cursor/docs/…` as a **sibling** of OpenAtlas under the same parent (e.g. `Documents/GitHub/MiscRepos` next to `Documents/GitHub/OpenAtlas`). With an **OpenAtlas-only** clone, those links do not resolve; open **MiscRepos** or **OpenHarness** in their own repos.
+**Scope:** **Query 3** and tables that link to `../../MiscRepos/.cursor/docs/*`, `../../MiscRepos/.cursor/state/*`, and similar paths assume a **MiscRepos** clone as a **sibling** of OpenAtlas (e.g. `Documents/GitHub/MiscRepos` next to `Documents/GitHub/OpenAtlas`). See [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md). With an **OpenAtlas-only** clone, those links do not resolve; open **MiscRepos** or **OpenHarness** in their own repos.
 
 Repeatable inventories for **Principle 1 (action parity)** work: agent-native framing, REST/MCP surface, and harness MCP docs. Complements the hand-maintained manifest in [`src/app/api/capabilities/route.ts`](../src/app/api/capabilities/route.ts) (OA-REST-2).
 
@@ -10,7 +10,7 @@ Repeatable inventories for **Principle 1 (action parity)** work: agent-native fr
 
 ## Commands (bash vs Windows)
 
-Run from **`OpenAtlas/`** for queries 1–2, and **`portfolio-harness/`** (parent of OpenAtlas) for query 3.
+Run from **`OpenAtlas/`** for queries 1–2, and **`MiscRepos/`** (sibling repo) for query 3.
 
 ### Bash / Git Bash
 
@@ -27,10 +27,10 @@ rg -l "MCP|tool" docs .cursor
 Use `;` not `&&`. Use `2>$null` instead of `2>nul` if redirecting stderr.
 
 ```powershell
-Set-Location D:\portfolio-harness\OpenAtlas
+Set-Location C:\Users\YOU\Documents\GitHub\OpenAtlas
 rg -l "agent-native|parity|capabilities" --glob "*.md" --glob "*.{ts,tsx}"
 rg -l "api/capabilities|/api/" src/app/api
-Set-Location D:\portfolio-harness
+Set-Location C:\Users\YOU\Documents\GitHub\MiscRepos
 rg -l "MCP|tool" docs .cursor
 ```
 
@@ -80,7 +80,7 @@ For **every** App Router handler, use `rg --files src/app/api` / glob `**/route.
 
 ---
 
-## Query 3: `MCP|tool` in `docs` + `.cursor` (portfolio-harness)
+## Query 3: `MCP|tool` in `docs` + `.cursor` (MiscRepos)
 
 The unfiltered query matches **200+ files** (including `.cursor/state/ai_trends/raw/`, `.cursor/temp/`, ad-hoc state).
 
@@ -89,7 +89,7 @@ The unfiltered query matches **200+ files** (including `.cursor/state/ai_trends/
 Excludes noisy paths:
 
 ```bash
-cd portfolio-harness
+cd MiscRepos
 rg -l "MCP|tool" docs .cursor \
   --glob '!.cursor/state/ai_trends/**' \
   --glob '!.cursor/temp/**'
@@ -98,7 +98,7 @@ rg -l "MCP|tool" docs .cursor \
 **PowerShell** (ripgrep glob syntax):
 
 ```powershell
-Set-Location D:\portfolio-harness
+Set-Location C:\Users\YOU\Documents\GitHub\MiscRepos
 rg -l "MCP|tool" docs .cursor --glob '!**/.cursor/state/ai_trends/**' --glob '!**/.cursor/temp/**'
 ```
 
@@ -110,18 +110,18 @@ rg -l "MCP|tool" .cursor/docs docs/cognitive-ergonomics-seed
 
 ### Curated starter subset (high-signal)
 
-Paths are relative to `portfolio-harness/`:
+Paths are relative to the **MiscRepos** repo root:
 
 | File | Role |
 |------|------|
-| [.cursor/docs/MCP_CAPABILITY_MAP.md](../../.cursor/docs/MCP_CAPABILITY_MAP.md) | Tool-to-action mapping; references CM-3 audit. |
-| [.cursor/docs/MCP_SKILL_ROUTING.md](../../.cursor/docs/MCP_SKILL_ROUTING.md) | Skill ↔ MCP routing. |
-| [.cursor/docs/AGENT_NATIVE_CHECKLIST.md](../../.cursor/docs/AGENT_NATIVE_CHECKLIST.md) | Cross-stack agent-native checklist. |
-| [.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md](../../.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md) | Evidence template (`action_parity_audit_cm3_*.md`). |
-| [.cursor/docs/DAGGR_MCP.md](../../.cursor/docs/DAGGR_MCP.md) | Daggr MCP usage. |
-| [.cursor/docs/TOOL_SAFEGUARDS.md](../../.cursor/docs/TOOL_SAFEGUARDS.md) | Tool safety / gates. |
-| [docs/cognitive-ergonomics-seed/MCP_OPERATION.md](../../docs/cognitive-ergonomics-seed/MCP_OPERATION.md) | MCP operation (cognitive-ergonomics seed). |
-| [.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md](../../.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md) | Point-in-time CM-3 table; superseded for Daggr by MCP map per its banner. |
+| [.cursor/docs/MCP_CAPABILITY_MAP.md](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) | Tool-to-action mapping; references CM-3 audit. |
+| [.cursor/docs/MCP_SKILL_ROUTING.md](../../MiscRepos/.cursor/docs/MCP_SKILL_ROUTING.md) | Skill ↔ MCP routing. |
+| [.cursor/docs/AGENT_NATIVE_CHECKLIST.md](../../MiscRepos/.cursor/docs/AGENT_NATIVE_CHECKLIST.md) | Cross-stack agent-native checklist. |
+| [.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md](../../MiscRepos/.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md) | Evidence template (`action_parity_audit_cm3_*.md`). |
+| [.cursor/docs/DAGGR_MCP.md](../../MiscRepos/.cursor/docs/DAGGR_MCP.md) | Daggr MCP usage. |
+| [.cursor/docs/TOOL_SAFEGUARDS.md](../../MiscRepos/.cursor/docs/TOOL_SAFEGUARDS.md) | Tool safety / gates. |
+| [docs/cognitive-ergonomics-seed/MCP_OPERATION.md](../../MiscRepos/docs/cognitive-ergonomics-seed/MCP_OPERATION.md) | MCP operation (cognitive-ergonomics seed). |
+| [.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md](../../MiscRepos/.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md) | Point-in-time CM-3 table; superseded for Daggr by MCP map per its banner. |
 
 ---
 
@@ -139,8 +139,8 @@ Paths are relative to `portfolio-harness/`:
 | [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](./AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) | Gap report; §1 Action parity. |
 | [capabilities/route.ts](../src/app/api/capabilities/route.ts) | Machine-readable route manifest. |
 | [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) | Normative REST contract. |
-| [portfolio-harness/.cursor/docs/MCP_CAPABILITY_MAP.md](../../.cursor/docs/MCP_CAPABILITY_MAP.md) | Harness-wide MCP ↔ actions. |
-| [action_parity_audit_cm3_2026-03-16.md](../../.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md) | Historical CM-3 parity table. |
+| [MiscRepos `.cursor/docs/MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) | Harness-wide MCP ↔ actions. |
+| [action_parity_audit_cm3_2026-03-16.md](../../MiscRepos/.cursor/state/adhoc/action_parity_audit_cm3_2026-03-16.md) | Historical CM-3 parity table. |
 
 ```mermaid
 flowchart LR
@@ -161,4 +161,4 @@ flowchart LR
 
 1. **PRs touching `src/app/api/`:** Update [`capabilities/route.ts`](../src/app/api/capabilities/route.ts) and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) in the same PR ([CONTRIBUTING.md](../CONTRIBUTING.md)). Run `npm run verify:capabilities`.
 2. **Parity review:** Start from §1 in the agent-native audit; cross-check `CAPABILITIES.routes` vs `verify:capabilities` and Query 1–2 for stale docs.
-3. **Multi-stack (WatchTower / campaign_kb):** Prefer [MCP_CAPABILITY_MAP.md](../../.cursor/docs/MCP_CAPABILITY_MAP.md) over stale CM-3 counts; use CM-3 for historical narrative only.
+3. **Multi-stack (WatchTower / campaign_kb):** Prefer [MCP_CAPABILITY_MAP.md](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) over stale CM-3 counts; use CM-3 for historical narrative only.

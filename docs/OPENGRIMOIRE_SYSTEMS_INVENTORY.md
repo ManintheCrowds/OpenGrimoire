@@ -8,11 +8,17 @@
 
 ---
 
+## Workspace paths (flat `GitHub` folder)
+
+Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness\OpenAtlas`**. In this workspace, use **sibling repos** under one parent (e.g. `C:\Users\YOU\Documents\GitHub\`) with the same relative layout—see [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md) and [WORKSPACE_REPO_LAYOUT.md](./WORKSPACE_REPO_LAYOUT.md). **`MiscRepos/.cursor/scripts/build_brain_map.py`** is the canonical brain-map builder (not a generic `portfolio-harness/.cursor/...` path).
+
+---
+
 ## Relationship to OpenHarness
 
 | Piece | Role |
 |-------|------|
-| **OpenHarness** (`D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
+| **OpenHarness** (e.g. `C:\Users\YOU\Documents\GitHub\OpenHarness`; legacy examples used `D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
 | **OpenGrimoire** (this app; repo folder often `OpenAtlas`) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
 
 **This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../OpenHarness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
@@ -78,6 +84,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | API | `GET /api/brain-map/graph` | Serves graph JSON |
 | API | Alignment context | See [`docs/agent/ALIGNMENT_CONTEXT_API.md`](./agent/ALIGNMENT_CONTEXT_API.md) (`GET`/`POST`/`PATCH` `/api/alignment-context`, secret header when configured). Data in **SQLite** (`OPENGRIMOIRE_DB_PATH`). Misconfiguration may yield **503**. |
 | API | Clarification queue | [`docs/agent/CLARIFICATION_QUEUE_API.md`](./agent/CLARIFICATION_QUEUE_API.md) — `clarification_requests` table; same shared-secret gate as alignment for public routes. |
+| API | Study decks / SRS (optional) | `GET`/`POST` `/api/study/*` — spaced-repetition cards and reviews in SQLite; operator session or alignment header. See [`docs/learning/README.md`](./learning/README.md). Export: `npm run study:export`. |
 | API | `GET /api/capabilities` | Hand-maintained JSON index of public API surface (agents); see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) |
 | Auth (optional) | `BRAIN_MAP_SECRET` / `NEXT_PUBLIC_BRAIN_MAP_SECRET` | See [`docs/security/NEXT_PUBLIC_AND_SECRETS.md`](./security/NEXT_PUBLIC_AND_SECRETS.md) |
 | Auth (admin) | `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or hash | [`docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md`](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
@@ -101,6 +108,14 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `docker-compose.yml` | Local stack (see `DEPLOYMENT.md`) |
 
 Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BRAIN_MAP_VAULT_ROOTS`, `BRAIN_MAP_OUTPUT`, etc. (see `build_brain_map.py` module docstring). **stderr** may list skipped files (SCP injection or read errors).
+
+---
+
+## Spaced repetition (canonical references + CSV pipeline)
+
+**Canonical pointers** (SuperMemo twenty rules, Anki import expectations, `validate_flashcards.py`) live in the sibling **MiscRepos** clone: [`portable-skills/docs/SPACED_REPETITION_REFERENCES.md`](../../MiscRepos/portable-skills/docs/SPACED_REPETITION_REFERENCES.md). OpenGrimoire does not duplicate that prose; use it when generating repo-grounded flashcards in agents or harnesses.
+
+**This repo:** [`docs/learning/README.md`](./learning/README.md) — study API summary and CSV export for Anki.
 
 ---
 

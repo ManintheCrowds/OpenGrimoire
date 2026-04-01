@@ -40,11 +40,9 @@ Use the **opening paragraph** from the copy pack as your script verbatim if you 
 
 ## Changelog bullets (paste under your post)
 
-Replace `(commit)` with the SHA after you push.
-
-- README: **One-path smoke (local demo)** — numbered path for Sync Session, brain map, admin, Alignment Context. `(commit)`
-- Docs: [docs/community/OPENGRIMOIRE_COMMUNITY_POST_2026-04-01.md](./OPENGRIMOIRE_COMMUNITY_POST_2026-04-01.md) — Discord + optional video draft. `(commit)`
-- Docs: [docs/engineering/HANDOFF_FOLLOWUP_TRIAGE_2026-04-01.md](../engineering/HANDOFF_FOLLOWUP_TRIAGE_2026-04-01.md) — engineering follow-up triage (defer MCP; next: optional `GET` by id). `(commit)`
+- README: **One-path smoke (local demo)** — numbered path for Sync Session, brain map, admin, Alignment Context.
+- This file — Discord + optional video draft.
+- [HANDOFF_FOLLOWUP_TRIAGE_2026-04-01.md](../engineering/HANDOFF_FOLLOWUP_TRIAGE_2026-04-01.md) — engineering follow-up triage (defer MCP; next: optional `GET` by id).
 
 ---
 

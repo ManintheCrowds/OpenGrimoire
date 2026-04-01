@@ -84,7 +84,17 @@ npm run dev
 
 **Windows (PowerShell):** Use `;` not `&&` to chain commands, e.g. `Set-Location OpenAtlas; npm run dev`.
 
-Open [http://localhost:3001](http://localhost:3001). Visit `/context-atlas` after generating `public/brain-map-graph.json`.
+### One-path smoke (local demo)
+
+Follow this once after `npm run dev` so you have a **single runnable story** for newcomers (human-interactable MVP):
+
+1. **Open the app:** [http://localhost:3001](http://localhost:3001) (dev server uses port **3001** per `package.json`).
+2. **Sync Session (primary UX):** Go to **`/operator-intake`** (canonical) or **`/survey`** (legacy alias; same UI). Submit the form — responses persist via **`POST /api/survey`** into the local SQLite DB (`OPENGRIMOIRE_DB_PATH`, default under `data/` when configured).
+3. **Context graph:** Open **`/context-atlas`** or **`/brain-map`** (same viewer). The graph is served from **`GET /api/brain-map/graph`** using `public/brain-map-graph.local.json` if present, else `public/brain-map-graph.json`. To populate a richer graph from handoff/state markdown, run **`build_brain_map.py`** from sibling **MiscRepos** (see **Context graph** above).
+4. **Where to see operator data:** Sign in at **`/login`** (requires `.env.local` admin password + session secret), then use **`/admin/*`** for moderation and operator tools. Survey visualization and gated reads are documented in [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md).
+5. **Alignment Context (system, separate from the Sync Session form):** Alignment items use **`/api/alignment-context`** and the alignment CLI — not the survey submit path. See [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
+
+**Community copy (Discord / announcements):** Canonical taglines and a paste-ready post live in [docs/community/OPENGRIMOIRE_COMMUNITY_POST_2026-04-01.md](docs/community/OPENGRIMOIRE_COMMUNITY_POST_2026-04-01.md).
 
 ## Scripts
 

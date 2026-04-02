@@ -25,6 +25,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:maestro": "maestro test e2e/maestro/smoke_web.yaml",
     "alignment:cli": "node scripts/alignment-context-cli.mjs",
+    "study:export": "node scripts/study-export.mjs",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },

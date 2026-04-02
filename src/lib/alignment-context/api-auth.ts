@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
 
 /** Result of checking the shared-secret gate for public alignment-context API routes. */
@@ -58,4 +59,15 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
       { status: 503 }
     ),
   };
+}
+
+/**
+ * Study / export APIs: allow operator session (browser) **or** alignment shared-secret (agents).
+ */
+export async function checkAlignmentOrAdminSession(request: Request): Promise<AlignmentContextGateResult> {
+  const admin = await requireOpenGrimoireAdminRoute();
+  if (admin.ok) {
+    return { ok: true };
+  }
+  return checkAlignmentContextApiGate(request);
 }

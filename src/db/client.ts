@@ -108,6 +108,44 @@ function runBootstrap(sqlite: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_clarification_requests_status ON clarification_requests(status);
     CREATE INDEX IF NOT EXISTS idx_clarification_requests_created_at ON clarification_requests(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS study_decks (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_study_decks_created_at ON study_decks(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS study_cards (
+      id TEXT PRIMARY KEY NOT NULL,
+      deck_id TEXT NOT NULL REFERENCES study_decks(id) ON DELETE CASCADE,
+      front TEXT NOT NULL,
+      back TEXT NOT NULL,
+      source_url TEXT,
+      repo_path TEXT,
+      alignment_context_item_id TEXT REFERENCES alignment_context_items(id) ON DELETE SET NULL,
+      ease REAL NOT NULL DEFAULT 2.5,
+      interval_days INTEGER NOT NULL DEFAULT 0,
+      repetitions INTEGER NOT NULL DEFAULT 0,
+      due_at TEXT NOT NULL,
+      last_reviewed_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_study_cards_deck_id ON study_cards(deck_id);
+    CREATE INDEX IF NOT EXISTS idx_study_cards_due_at ON study_cards(due_at);
+
+    CREATE TABLE IF NOT EXISTS study_reviews (
+      id TEXT PRIMARY KEY NOT NULL,
+      card_id TEXT NOT NULL REFERENCES study_cards(id) ON DELETE CASCADE,
+      rating TEXT NOT NULL,
+      reviewed_at TEXT NOT NULL,
+      ease_after REAL NOT NULL,
+      interval_days_after INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_study_reviews_card_id ON study_reviews(card_id);
+    CREATE INDEX IF NOT EXISTS idx_study_reviews_reviewed_at ON study_reviews(reviewed_at DESC);
   `);
 
   const now = new Date().toISOString();

@@ -203,6 +203,40 @@ export const openApiDocument = {
         },
       },
     },
+    '/api/study/decks': {
+      get: {
+        summary: 'List study decks (SRS / flashcards)',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        responses: { '200': { description: 'decks[]' } },
+      },
+      post: {
+        summary: 'Create study deck',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        responses: { '201': { description: 'deck' } },
+      },
+    },
+    '/api/study/decks/{deckId}/cards': {
+      get: {
+        summary: 'List cards in deck; query due=1 limits to due cards',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'deckId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'cards[]' } },
+      },
+      post: {
+        summary: 'Create study card',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'deckId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '201': { description: 'card' } },
+      },
+    },
+    '/api/study/cards/{cardId}/review': {
+      post: {
+        summary: 'Submit SM-2 review (again | hard | good | easy)',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'cardId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'card' } },
+      },
+    },
     '/api/test-data/{dataset}': {
       get: {
         summary: 'Stub test dataset JSON (dev/tests)',

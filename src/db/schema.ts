@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const attendees = sqliteTable(
   'attendees',
@@ -123,5 +123,62 @@ export const clarificationRequests = sqliteTable(
   (t) => [
     index('idx_clarification_requests_status').on(t.status),
     index('idx_clarification_requests_created_at').on(t.createdAt),
+  ]
+);
+
+export const studyDecks = sqliteTable(
+  'study_decks',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_study_decks_created_at').on(t.createdAt)]
+);
+
+export const studyCards = sqliteTable(
+  'study_cards',
+  {
+    id: text('id').primaryKey(),
+    deckId: text('deck_id')
+      .notNull()
+      .references(() => studyDecks.id, { onDelete: 'cascade' }),
+    front: text('front').notNull(),
+    back: text('back').notNull(),
+    sourceUrl: text('source_url'),
+    repoPath: text('repo_path'),
+    alignmentContextItemId: text('alignment_context_item_id').references(() => alignmentContextItems.id, {
+      onDelete: 'set null',
+    }),
+    ease: real('ease').notNull().default(2.5),
+    intervalDays: integer('interval_days').notNull().default(0),
+    repetitions: integer('repetitions').notNull().default(0),
+    dueAt: text('due_at').notNull(),
+    lastReviewedAt: text('last_reviewed_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    index('idx_study_cards_deck_id').on(t.deckId),
+    index('idx_study_cards_due_at').on(t.dueAt),
+  ]
+);
+
+export const studyReviews = sqliteTable(
+  'study_reviews',
+  {
+    id: text('id').primaryKey(),
+    cardId: text('card_id')
+      .notNull()
+      .references(() => studyCards.id, { onDelete: 'cascade' }),
+    rating: text('rating', { enum: ['again', 'hard', 'good', 'easy'] }).notNull(),
+    reviewedAt: text('reviewed_at').notNull(),
+    easeAfter: real('ease_after').notNull(),
+    intervalDaysAfter: integer('interval_days_after').notNull(),
+  },
+  (t) => [
+    index('idx_study_reviews_card_id').on(t.cardId),
+    index('idx_study_reviews_reviewed_at').on(t.reviewedAt),
   ]
 );

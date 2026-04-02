@@ -105,6 +105,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `npm run test:e2e` | Playwright only |
 | `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenAtlas** repo root with sibling **MiscRepos**; see OpenAtlas README) |
 | `node scripts/alignment-context-cli.mjs` | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENATLAS_BASE_URL`) |
+| `npm run study:export -- --output ./export.csv` | Export `study_cards` to CSV for Anki (`OPENGRIMOIRE_DB_PATH`) — see [docs/learning/README.md](./learning/README.md) |
 | `docker-compose.yml` | Local stack (see `DEPLOYMENT.md`) |
 
 Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BRAIN_MAP_VAULT_ROOTS`, `BRAIN_MAP_OUTPUT`, etc. (see `build_brain_map.py` module docstring). **stderr** may list skipped files (SCP injection or read errors).
@@ -135,6 +136,7 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 | `docs/security/*` | Public surface, secrets |
 | `docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md` | Agent-native gap report vs contract |
 | `docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md` | OpenGrimoire trust/context local-first integration blueprint |
+| `docs/learning/README.md` | Study / SRS API + CSV export for Anki; links to MiscRepos spaced-repetition references |
 | `DEPLOYMENT.md` | Deploy notes |
 
 ---

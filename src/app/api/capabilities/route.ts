@@ -109,6 +109,21 @@ const CAPABILITIES = {
       auth: 'Session cookie; returns 401 if not logged in',
     },
     {
+      path: '/api/study/decks',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key (same gate as alignment API)',
+    },
+    {
+      path: '/api/study/decks/:deckId/cards',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key',
+    },
+    {
+      path: '/api/study/cards/:cardId/review',
+      methods: ['POST'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key',
+    },
+    {
       path: '/api/brain-map/graph',
       methods: ['GET'],
       auth:

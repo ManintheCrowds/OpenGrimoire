@@ -13,8 +13,20 @@ OpenGrimoire follows a **strict public REST contract** for domain entities. Befo
 7. Update [src/lib/openapi/openapi-document.ts](src/lib/openapi/openapi-document.ts) when adding public API paths (partial OpenAPI).
 8. Run `npm run verify:openapi` so partial OpenAPI paths stay aligned with `CAPABILITIES.routes` (see [docs/engineering/DISCOVERY_STABILITY_GATE.md](docs/engineering/DISCOVERY_STABILITY_GATE.md)).
 9. Consider updating [docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md](docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md) if application surfaces or scripts change.
+10. Update [docs/AGENT_TOOL_MANIFEST.md](docs/AGENT_TOOL_MANIFEST.md) when adding an agent-visible HTTP route or changing how MCP/harness tools map to this repo.
+11. Add a **changelog** entry under **[Unreleased]** in [CHANGELOG.md](CHANGELOG.md) when the change is user- or integrator-visible (especially **REST contract matrix** or **`/api/capabilities`** changes). For tagged releases, mirror the relevant bullets into **GitHub Releases** for [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire/releases). The PR description **Summary** may duplicate the changelog line for reviewers. Policy: [docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md](docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
 
 **Grep-driven action-parity inventory (ripgrep recipes and harness MCP doc pointers):** [docs/ACTION_PARITY_FILE_INDEX.md](docs/ACTION_PARITY_FILE_INDEX.md).
+
+## Code review — agent harness (meta-principles)
+
+For PRs that add **MCP tools**, **new API routes**, **agent-facing docs**, or **multi-step workflows**, reviewers should align with the **Phase 1** guardrails in [docs/research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md](docs/research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md) (section **Meta-principles & process hooks**):
+
+- **Registry / scope:** No new externally visible tool or route without updating [docs/AGENT_TOOL_MANIFEST.md](docs/AGENT_TOOL_MANIFEST.md) and the `src/app/api/capabilities` story (steps above). Issue stubs: [docs/research/AGENT_HARNESS_PHASE1_ISSUES.md](docs/research/AGENT_HARNESS_PHASE1_ISSUES.md).
+- **Velocity vs drift:** Contract and capabilities changes stay in the same PR as the matrix and `route.ts` updates (steps 1–11, including manifest and changelog when applicable); add the **changelog / release-note line** required in step 11 when the contract or capabilities manifest changes.
+- **Intent vs premature complexity:** Prefer single-agent flows and idempotent docs before expanding orchestration; see **Risks** in the improvement program for P11 vs P4 ordering.
+
+Sibling harness repos (MiscRepos / OpenHarness) may use **critic loop**, **intent-alignment gate**, and **checksum** scripts as their own hooks; this section is OpenGrimoire-repo review.
 
 ## Tests
 

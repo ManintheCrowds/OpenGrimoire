@@ -2,7 +2,7 @@
 
 **Scope:** Optional follow-up to [OG-1 (archived)](../../../MiscRepos/docs/archive/og1_opencompass_opengrimoire_audit.md): find **initiative-as-OpenCompass** phrasing outside upstream/tool/MCP identifiers.
 
-**Method:** Search `OpenAtlas/docs/**/*.md` for `OpenCompass`.
+**Method:** Search `OpenGrimoire/docs/**/*.md` for `OpenCompass`.
 
 **Result:** No **REFRAME** issues. Remaining mentions are **KEEP**-class per OG-1:
 

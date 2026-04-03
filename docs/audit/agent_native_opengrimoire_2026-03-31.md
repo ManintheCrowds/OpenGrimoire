@@ -23,7 +23,7 @@
 
 **Process:** API or discovery changes → update [`src/app/api/capabilities/route.ts`](../../src/app/api/capabilities/route.ts) and contract per [CONTRIBUTING](../../CONTRIBUTING.md); run `npm run verify`.
 
-**Verification:** `npm run verify` passed locally at OpenAtlas repo root on **2026-03-31** during this audit refresh (lint, type-check, unit tests, `verify:capabilities`, `verify:openapi`, `verify:route-index`). Re-run before release if the branch drifted.
+**Verification:** `npm run verify` passed locally at OpenGrimoire repo root on **2026-03-31** during this audit refresh (lint, type-check, unit tests, `verify:capabilities`, `verify:openapi`, `verify:route-index`). Re-run before release if the branch drifted.
 
 ---
 

@@ -11,7 +11,7 @@
 | Supabase client | `src/lib/supabase/client.ts` | Anon client, debug gating |
 | Types | `src/lib/supabase/types.ts` (generated) | Typed rows |
 | Brain map ingest | `GET /api/brain-map/graph`, `public/brain-map-graph.json` | Static operator context graph |
-| Harness state | `portfolio-harness/.cursor/state/*` | Handoff, preferences, decision log (outside OpenAtlas DB) |
+| Harness state | `portfolio-harness/.cursor/state/*` | Handoff, preferences, decision log (outside OpenGrimoire DB) |
 
 ## Overlap analysis
 

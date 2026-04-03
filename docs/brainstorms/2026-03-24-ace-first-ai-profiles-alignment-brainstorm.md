@@ -104,7 +104,7 @@ See [Resolved 2.4 / 3.4](#resolved-24--34).
 |-------|----------|------|------|
 | **A. Single `ACE_PROFILE.md` (or `PROFILE.md`)** | One file, **six top-level headings** matching ACE layers + a short “Cross-cutting: failures” subsection | One place to read; easy grep; matches “ACE as primary” | Large file in big repos; merge conflicts if many editors |
 | **B. Split: `profile/aspirational.md` … `profile/task-prosecution.md`** | One file per layer under `profile/` or `.cursor/profile/` | Parallel editing; clearer ownership per layer | More clicks; needs an **index** (`profile/README.md`) listing order and inheritance |
-| **C. Alignment-context items (OpenAtlas API)** | Rows for milestones, operator-visible intent, `linked_node_id` to graph | Great for **human-visible** and **API** consumers; audit trail | Bad as the **only** store for layers 4–6 (too chatty, wrong granularity); **supplement**, not replace A or B |
+| **C. Alignment-context items (OpenGrimoire API)** | Rows for milestones, operator-visible intent, `linked_node_id` to graph | Great for **human-visible** and **API** consumers; audit trail | Bad as the **only** store for layers 4–6 (too chatty, wrong granularity); **supplement**, not replace A or B |
 
 **Practical default:** **A for MVP** (single file, six headings). Move to **B** when multiple people own different layers or files exceed ~400–600 lines.
 
@@ -117,7 +117,7 @@ See [Resolved 2.4 / 3.4](#resolved-24--34).
 - **Cognitive control:** What happens on failure (retry budget, handoff to human, known-issues pointer).
 - **Task prosecution:** Naming/linking to repo scripts, conventions, definition of done.
 
-### 3.3 Relationship to OpenAtlas alignment API
+### 3.3 Relationship to OpenGrimoire alignment API
 
 - Use **alignment context** for **items that need visibility in the app** or **machine CRUD** (milestones, drift warnings, operator commitments).
 - Use **markdown profile** for **authoring** and **version control** of the full ACE stack; sync **summaries** or **links** into alignment items if needed—avoid duplicating six layers twice without automation.
@@ -139,7 +139,7 @@ See [Resolved 2.4 / 3.4](#resolved-24--34).
 | **Canonical path** | **`docs/ACE_PROFILE.md`** is canonical; **`.cursor/ACE_PROFILE.md`** is a **pointer** or **symlink** to that file (single source of truth). |
 | **YAML** | Optional front matter on the canonical file: `inherits_portfolio`, `role_overlay`, `ace_profile_version`. |
 
-**Note:** Relative links above assume `OpenAtlas` and `MiscRepos` are **sibling** directories under the same parent (e.g. `Documents/GitHub/`). Adjust if your checkout layout differs.
+**Note:** Relative links above assume **`OpenGrimoire`** (this app) and **`MiscRepos`** are **sibling** directories under the same parent (e.g. `Documents/GitHub/`). If your clone is still named `OpenAtlas`, adjust paths. See [OPENGRIMOIRE_NAMING_AND_URLS.md](../engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
 
 ---
 

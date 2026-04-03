@@ -37,7 +37,7 @@ Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50%
 | Clarification queue (agent poll + create; operator/admin) | **`GET`/`POST` `/api/clarification-requests`**, **`GET`/`PATCH` `/api/clarification-requests/:id`** with shared-secret headers; admin BFF under `/api/admin/clarification-requests/*`; UI [`/admin/clarification-queue`](../src/app/admin/clarification-queue/page.tsx) | Yes for HTTP-shaped actions (see [`CLARIFICATION_QUEUE_API.md`](./agent/CLARIFICATION_QUEUE_API.md)) |
 | Auth-gated flows | Depends on env (`ALIGNMENT_CONTEXT_API_SECRET`, admin session for UI) | Same gates for agent |
 
-**Gaps:** No dedicated “OpenAtlas MCP server” listing app-specific tools; agents rely on **generic** MCP (browser, fetch) + CLI. **Rubric note:** Low “named tool” counts do **not** mean HTTP parity is absent—alignment/clarification/survey surfaces are reachable via documented routes and secrets.
+**Gaps:** No dedicated “OpenGrimoire MCP server” listing app-specific tools; agents rely on **generic** MCP (browser, fetch) + CLI. **Rubric note:** Low “named tool” counts do **not** mean HTTP parity is absent—alignment/clarification/survey surfaces are reachable via documented routes and secrets.
 
 **Score:** **6 / 12** — six of **twelve** fixed parity slots (checklist below) are assessed as having **programmatic** parity (documented REST + headers, [`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs), or contract-backed `fetch`) without relying solely on browser automation; the rest are **generic UI automation**, **operator-session-only** surfaces, or **no public agent mirror** per [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md). Clarification queue APIs and Playwright coverage ([`e2e/clarification-queue.spec.ts`](../e2e/clarification-queue.spec.ts)) improve parity vs browser-only.
 
@@ -84,7 +84,7 @@ Normative integration surfaces: [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE
 
 **Gaps:** No in-app “agent context panel” or exported prompt bundle for sessions.
 
-**Non-goal (by design):** In-app agent context / prompt bundles are **out of scope** for OpenAtlas; see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
+**Non-goal (by design):** In-app agent context / prompt bundles are **out of scope** for OpenGrimoire; see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
 
 **Score:** 3 / 8 — relevant to harness wiring outside this repo.
 
@@ -174,7 +174,7 @@ Use Playwright for CI truth; Maestro for cross-tool YAML experiments or future m
 1. **Agent entry + contract:** [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) (single index), README, and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENGRIMOIRE_BASE_URL` or legacy `OPENATLAS_BASE_URL` should match dev port **3001**; CLI default aligns with README).
 2. **Optional:** Thin MCP over REST only — see [`agent/INTEGRATION_PATHS.md`](./agent/INTEGRATION_PATHS.md) (no duplicate business layer).
 3. **CRUD matrix:** Maintained in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md); update in same PR as API changes ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
-4. **SCP:** Content pasted into alignment fields from untrusted sources should be gated upstream in the **agent harness** (see **`MiscRepos/local-proto/docs/TOOL_SAFEGUARDS.md`** in a sibling **MiscRepos** clone next to **OpenAtlas**, e.g. `GitHub/MiscRepos` beside `GitHub/OpenAtlas` — no stable relative link from this repo), not inside OpenAtlas alone — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
+4. **SCP:** Content pasted into alignment fields from untrusted sources should be gated upstream in the **agent harness** (see **`MiscRepos/local-proto/docs/TOOL_SAFEGUARDS.md`** in a sibling **MiscRepos** clone next to **OpenGrimoire**, e.g. `GitHub/MiscRepos` beside `GitHub/OpenGrimoire` — no stable relative link from this repo), not inside OpenGrimoire alone — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
 
 ---
 

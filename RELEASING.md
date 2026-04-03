@@ -1,4 +1,4 @@
-# Releasing OpenGrimoire (OpenAtlas)
+# Releasing OpenGrimoire
 
 ## Before tagging a release
 
@@ -16,4 +16,4 @@
 
 ## Portfolio SSOT
 
-OpenAtlas waves and OA-* IDs: [`../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml`](../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml) (typical sibling clone layout).
+OpenGrimoire waves and OA-* IDs: [`../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml`](../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml) (typical sibling clone layout).

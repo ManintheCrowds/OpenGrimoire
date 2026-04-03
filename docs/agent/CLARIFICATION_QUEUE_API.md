@@ -4,6 +4,8 @@
 
 **Distinct from:** Sync Session (`POST /api/survey`, fixed profile wizard) — see [HITL_INTENT_SURVEY_BACKLOG.md](../HITL_INTENT_SURVEY_BACKLOG.md).
 
+**Retries:** `POST` creates a **new** item each time (not idempotent). `GET` and idempotent `PATCH` transitions are safer to repeat. See [ADR_IDEMPOTENCY_AND_RETRY.md](./ADR_IDEMPOTENCY_AND_RETRY.md).
+
 ## Auth
 
 Same gate as [`/api/alignment-context`](./ALIGNMENT_CONTEXT_API.md): when `ALIGNMENT_CONTEXT_API_SECRET` is set, send header `x-alignment-context-key` on every request. Local dev: `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` (never on public hosts).

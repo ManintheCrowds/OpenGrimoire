@@ -1,4 +1,4 @@
-# Backup strategy — OpenAtlas (survey + visualization app)
+# Backup strategy — OpenGrimoire (survey + visualization app)
 
 **Note:** The GitHub repository slug may still be `Med-Vis` until you rename the repo on GitHub; `git remote -v` can show `.../Med-Vis.git` while the local app folder is `OpenAtlas`.
 
@@ -37,13 +37,13 @@ git push origin feature/new-visualization
 #### A. Local Backup Script (Create daily backups)
 ```bash
 # Create backup directory
-mkdir -p ~/backups/openatlas/$(date +%Y-%m-%d)
+mkdir -p ~/backups/OpenGrimoire/$(date +%Y-%m-%d)
 
 # Copy entire project (adjust source path to your local clone)
-cp -r /path/to/OpenAtlas ~/backups/openatlas/$(date +%Y-%m-%d)/
+cp -r /path/to/OpenGrimoire ~/backups/OpenGrimoire/$(date +%Y-%m-%d)/
 
 # Or use robocopy on Windows
-robocopy "D:\portfolio-harness\OpenAtlas" "D:\backups\openatlas\%date%" /E /XD .next node_modules
+robocopy "D:\portfolio-harness\OpenGrimoire" "D:\backups\OpenGrimoire\%date%" /E /XD .next node_modules
 ```
 
 #### B. Cloud Storage Sync
@@ -54,7 +54,7 @@ robocopy "D:\portfolio-harness\OpenAtlas" "D:\backups\openatlas\%date%" /E /XD .
 #### C. ZIP Archives (Weekly)
 ```bash
 # Create compressed backup
-7z a openatlas-backup-$(date +%Y%m%d).7z . -xr!.next -xr!node_modules
+7z a OpenGrimoire-backup-$(date +%Y%m%d).7z . -xr!.next -xr!node_modules
 ```
 
 ## Important Files to Always Backup
@@ -76,7 +76,7 @@ robocopy "D:\portfolio-harness\OpenAtlas" "D:\backups\openatlas\%date%" /E /XD .
 ### 1. Fresh Clone from GitHub
 ```bash
 git clone https://github.com/ManintheCrowds/Med-Vis.git
-cd Med-Vis   # or rename checkout folder to OpenAtlas to match portfolio-harness layout
+cd Med-Vis   # or rename checkout folder to OpenGrimoire to match portfolio-harness layout
 npm install
 npm run dev
 ```
@@ -84,7 +84,7 @@ npm run dev
 ### 2. Restore from Local Backup
 ```bash
 # Navigate to backup location
-cd ~/backups/openatlas/[DATE]
+cd ~/backups/OpenGrimoire/[DATE]
 cp -r . /path/to/new/location
 cd /path/to/new/location
 npm install
@@ -123,7 +123,7 @@ npm run dev
 
 ### Repository Information
 - **GitHub Username**: ManintheCrowds
-- **Repository Name** (remote): Med-Vis (may differ from local folder name OpenAtlas)
+- **Repository Name** (remote): Med-Vis (may differ from local folder name OpenGrimoire)
 - **Primary Branch**: master
 - **Clone URL**: https://github.com/ManintheCrowds/Med-Vis.git
 

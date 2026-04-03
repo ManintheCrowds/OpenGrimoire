@@ -1,4 +1,4 @@
-# OpenAtlas Troubleshooting
+# OpenGrimoire Troubleshooting
 
 Symptom / Cause / Fix format. See [.cursor/docs/TROUBLESHOOTING_AND_PLAYBOOKS.md](../.cursor/docs/TROUBLESHOOTING_AND_PLAYBOOKS.md) for the index.
 
@@ -33,19 +33,19 @@ Or use `npm run dev:clean` to clean and start in one step.
 
 ## PowerShell: The token '&&' is not a valid statement separator
 
-**Symptom:** `cd D:\portfolio-harness\OpenAtlas && npm run dev` fails with parser error.
+**Symptom:** `cd D:\portfolio-harness\OpenGrimoire && npm run dev` fails with parser error.
 
 **Cause:** PowerShell does not support `&&` for chaining commands (unlike Bash).
 
 **Fix:** Use `;` instead of `&&`, or run commands separately:
 
 ```powershell
-Set-Location D:\portfolio-harness\OpenAtlas; npm run dev
+Set-Location D:\portfolio-harness\OpenGrimoire; npm run dev
 ```
 
 Or:
 
 ```powershell
-cd D:\portfolio-harness\OpenAtlas
+cd D:\portfolio-harness\OpenGrimoire
 npm run dev
 ```

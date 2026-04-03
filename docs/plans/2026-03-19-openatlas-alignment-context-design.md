@@ -1,11 +1,11 @@
-# Design: alignment and context questions (OpenAtlas + Supabase)
+# Design: alignment and context questions (OpenGrimoire + Supabase)
 
 **Status:** Approved — **Approach B** (new `alignment_context_items` table).  
 **Date:** 2026-03-19 (design); approval recorded when alignment was confirmed as a first-class product surface with agent-facing read/CRUD.
 
 ## Goal
 
-Use OpenAtlas and its data plane (survey + related tables) as a **structured channel** for alignment and context questions: capture operator or user intent, constraints, and priorities so humans **and** agents can consume the same canonical store (not only charts).
+Use OpenGrimoire and its data plane (survey + related tables) as a **structured channel** for alignment and context questions: capture operator or user intent, constraints, and priorities so humans **and** agents can consume the same canonical store (not only charts).
 
 ## Requirements (numbered)
 
@@ -46,7 +46,7 @@ Use OpenAtlas and its data plane (survey + related tables) as a **structured cha
 
 ## Approach C — Harness files as source of truth (`.cursor/state`)
 
-**Idea:** Keep alignment in markdown/JSON under `portfolio-harness/.cursor/state/`; OpenAtlas reads via export or sync job into static JSON (like brain map).
+**Idea:** Keep alignment in markdown/JSON under `portfolio-harness/.cursor/state/`; OpenGrimoire reads via export or sync job into static JSON (like brain map).
 
 **Pros:** No Supabase dependency for operators; git-auditable.  
 **Cons:** Not editable by non-technical users via the web app; sync complexity; two sources of truth unless Supabase is write-through.

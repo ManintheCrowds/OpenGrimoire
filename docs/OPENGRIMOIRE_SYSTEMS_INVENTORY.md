@@ -10,7 +10,7 @@
 
 ## Workspace paths (flat `GitHub` folder)
 
-Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness\OpenAtlas`**. In this workspace, use **sibling repos** under one parent (e.g. `C:\Users\YOU\Documents\GitHub\`) with the same relative layout—see [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md) and [WORKSPACE_REPO_LAYOUT.md](./WORKSPACE_REPO_LAYOUT.md). **`MiscRepos/.cursor/scripts/build_brain_map.py`** is the canonical brain-map builder (not a generic `portfolio-harness/.cursor/...` path).
+Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness\OpenGrimoire`**. In this workspace, use **sibling repos** under one parent (e.g. `C:\Users\YOU\Documents\GitHub\`) with the same relative layout—see [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md) and [WORKSPACE_REPO_LAYOUT.md](./WORKSPACE_REPO_LAYOUT.md). **`MiscRepos/.cursor/scripts/build_brain_map.py`** is the canonical brain-map builder (not a generic `portfolio-harness/.cursor/...` path).
 
 ---
 
@@ -19,7 +19,7 @@ Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness
 | Piece | Role |
 |-------|------|
 | **OpenHarness** (e.g. `C:\Users\YOU\Documents\GitHub\OpenHarness`; legacy examples used `D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
-| **OpenGrimoire** (this app; repo folder often `OpenAtlas`) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
+| **OpenGrimoire** (this app; clone folder should be `OpenGrimoire`; legacy `OpenAtlas` possible) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
 
 **This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../OpenHarness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
 
@@ -29,10 +29,10 @@ Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness
 
 | Location | Use when |
 |----------|-----------|
-| [`MiscRepos/.cursor/scripts/build_brain_map.py`](../../MiscRepos/.cursor/scripts/build_brain_map.py) | **Default for OpenGrimoire:** multi-root state, optional Obsidian vault roots, SCP gating, default output to `OpenAtlas/public/brain-map-graph.local.json`. |
+| [`MiscRepos/.cursor/scripts/build_brain_map.py`](../../MiscRepos/.cursor/scripts/build_brain_map.py) | **Default for OpenGrimoire:** multi-root state, optional Obsidian vault roots, SCP gating, default output to `OpenGrimoire/public/brain-map-graph.local.json`. |
 | [`OpenHarness/scripts/build_brain_map.py`](../../OpenHarness/scripts/build_brain_map.py) | **Harness-only** checkout: minimal portable builder; no vault multi-root features. |
 
-Paths assume **sibling repos** under the same parent folder (e.g. `Documents/GitHub/{OpenAtlas,MiscRepos,OpenHarness}`).
+Paths assume **sibling repos** under the same parent folder (e.g. `Documents/GitHub/{OpenGrimoire,MiscRepos,OpenHarness}`).
 
 ---
 
@@ -72,7 +72,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 
 ---
 
-## OpenAtlas — application surfaces
+## OpenGrimoire — application surfaces
 
 | Kind | Name / path | Notes |
 |------|-------------|--------|
@@ -103,7 +103,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `npm run verify` | **`lint` + `type-check` + `test`** — one command for agents / CI |
 | `npm run verify:e2e` | `verify` then Playwright E2E (uses `playwright.config.ts` `webServer`) |
 | `npm run test:e2e` | Playwright only |
-| `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenAtlas** repo root with sibling **MiscRepos**; see OpenAtlas README) |
+| `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenGrimoire** repo root with sibling **MiscRepos**; see OpenGrimoire README) |
 | `node scripts/alignment-context-cli.mjs` | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENATLAS_BASE_URL`) |
 | `npm run study:export -- --output ./export.csv` | Export `study_cards` to CSV for Anki (`OPENGRIMOIRE_DB_PATH`) — see [docs/learning/README.md](./learning/README.md) |
 | `docker-compose.yml` | Local stack (see `DEPLOYMENT.md`) |
@@ -120,7 +120,7 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 
 ---
 
-## Documentation map (OpenAtlas tree)
+## Documentation map (OpenGrimoire tree)
 
 | Doc | Topic |
 |-----|--------|
@@ -141,17 +141,17 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 
 ---
 
-## Workspace tools that interact with OpenAtlas (agents)
+## Workspace tools that interact with OpenGrimoire (agents)
 
 Use **one** primary path per task ([`MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md)):
 
 | Need | Primary |
 |------|---------|
 | Manual UI review in Cursor | `cursor-ide-browser` + [`browser-review-protocol` skill](../../MiscRepos/.cursor/skills/browser-review-protocol/SKILL.md) |
-| CI / headless E2E | Playwright (`npm run test:e2e` in OpenAtlas) |
+| CI / headless E2E | Playwright (`npm run test:e2e` in OpenGrimoire) |
 | Third-party docs | context7 |
 | Repo symbols / search | jcodemunch, codebase_search |
-| Daggr / campaign_kb / WatchTower | daggr MCP (workspace); not embedded in OpenAtlas |
+| Daggr / campaign_kb / WatchTower | daggr MCP (workspace); not embedded in OpenGrimoire |
 
 ---
 

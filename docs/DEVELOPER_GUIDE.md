@@ -33,7 +33,7 @@
    ```bash
    # Clone and install
    git clone <repository-url>
-   cd OpenAtlas
+   cd OpenGrimoire
    npm install
    
    # Copy environment template
@@ -1085,4 +1085,4 @@ const color = getNodeColor(
 3. Update type definitions in `types/survey.ts`
 4. Ensure all visualizations use `getNodeColor()` for consistency
 
-This developer guide provides a comprehensive foundation for working with the OpenAtlas (Agent Context Atlas) visualization stack. Follow these patterns and practices to maintain code quality and consistency across the project. 
+This developer guide provides a comprehensive foundation for working with the OpenGrimoire (Agent Context Atlas) visualization stack. Follow these patterns and practices to maintain code quality and consistency across the project. 

@@ -2,7 +2,7 @@
 
 OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution. **Sync Session** submissions use `POST /api/survey` (survey rows in SQLite); **Alignment Context** is a separate surface—alignment items persisted and served via `/api/alignment-context` and the alignment CLI, not the form submit path.
 
-**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **Repo folder:** often still `OpenAtlas` on disk (legacy name; renamed from `Med-Vis`). If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder—use **`OpenAtlas`** as the canonical folder path until you rename the clone.
+**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **GitHub:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire). **Local clone folder:** use **`OpenGrimoire`** (recommended). If your checkout is still named **`OpenAtlas`**, that is a **legacy** folder name only—rename when practical so sibling-repo paths in docs match. If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder.
 
 ## Key Concepts
 
@@ -26,9 +26,9 @@ OpenGrimoire is a local-first context graph and alignment workspace for human-to
   python .cursor/scripts/build_brain_map.py
   ```
 
-  **Which `build_brain_map.py`?** Use **[MiscRepos `.cursor/scripts/build_brain_map.py`](../MiscRepos/.cursor/scripts/build_brain_map.py)** for OpenGrimoire work: multi-root `CURSOR_STATE_DIRS`, vault roots, SCP screening, default output to `OpenAtlas/public/brain-map-graph.local.json`. **[OpenHarness `scripts/build_brain_map.py`](../OpenHarness/scripts/build_brain_map.py)** is a smaller, portable copy for harness-only trees without those extras.
+  **Which `build_brain_map.py`?** Use **[MiscRepos `.cursor/scripts/build_brain_map.py`](../MiscRepos/.cursor/scripts/build_brain_map.py)** for OpenGrimoire work: multi-root `CURSOR_STATE_DIRS`, vault roots, SCP screening, default output to `OpenGrimoire/public/brain-map-graph.local.json`. **[OpenHarness `scripts/build_brain_map.py`](../OpenHarness/scripts/build_brain_map.py)** is a smaller, portable copy for harness-only trees without those extras.
 
-  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenAtlas/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`). Example env for **OpenHarness + other state trees**: [`../MiscRepos/.cursor/brain-map.env.example`](../MiscRepos/.cursor/brain-map.env.example) (set vars then run the same `python` command from `MiscRepos`).
+  Optional env: `CURSOR_STATE_DIR` (one root), **`CURSOR_STATE_DIRS`** (merge several; use `;` on Windows or `,` between paths), **`CURSOR_STATE_DIR_LABELS`** (prefixes for `sessions` in JSON), **`BRAIN_MAP_VAULT_ROOTS`** / **`BRAIN_MAP_VAULT_LABELS`** (Obsidian/Foam vault roots; when vault roots are set and `BRAIN_MAP_OUTPUT` is unset, default output is `OpenGrimoire/public/brain-map-graph.local.json`), `BRAIN_MAP_OUTPUT`. CLI: repeated `--state-dir` / `--label`, **`--vault-root`** / **`--vault-label`** (see script `--help`). Example env for **OpenHarness + other state trees**: [`../MiscRepos/.cursor/brain-map.env.example`](../MiscRepos/.cursor/brain-map.env.example) (set vars then run the same `python` command from `MiscRepos`).
 
 - **Optional auth:** set `BRAIN_MAP_SECRET` on the server. If the UI must send a header, `NEXT_PUBLIC_BRAIN_MAP_SECRET` is supported — **that value is embedded in the browser bundle** (obfuscation only, not a true secret). See [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
 
@@ -63,26 +63,27 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 ### Agents and APIs
 
 - **Start here:** [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) — **Quick reference** table at the top, then base URL, headers, survey read rules in production, CLI.
+- **Unified tool manifest (HTTP + MCP):** [docs/AGENT_TOOL_MANIFEST.md](docs/AGENT_TOOL_MANIFEST.md) · **Action tiers + curl:** [docs/agent/HARNESS_ACTION_TIERS.md](docs/agent/HARNESS_ACTION_TIERS.md).
 - **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
 - **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
 - **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy alias `OPENATLAS_BASE_URL`; local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
 - **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md).
 - **OpenGrimoire MVP (scope + audit + pack):** [docs/scope_opengrimoire_mvp_agent_native.md](docs/scope_opengrimoire_mvp_agent_native.md), [docs/audit/agent_native_opengrimoire_2026-03-24.md](docs/audit/agent_native_opengrimoire_2026-03-24.md), [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md).
 - **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENGRIMOIRE.md](docs/MONITORING_OPENGRIMOIRE.md).
-- **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md). **Changelog / releases:** [CHANGELOG.md](CHANGELOG.md), [GitHub Releases](https://github.com/ManintheCrowds/OpenGrimoire/releases). **Naming & URLs:** [docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md](docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
 
 ## Quick start
 
 **Prerequisites:** Node 18+, npm.
 
 ```bash
-cd OpenAtlas   # e.g. Documents/GitHub/OpenAtlas (sibling of MiscRepos, OpenHarness)
+cd OpenGrimoire   # e.g. Documents/GitHub/OpenGrimoire (sibling of MiscRepos, OpenHarness)
 npm install
 cp .env.example .env.local   # set OPENGRIMOIRE_SESSION_SECRET and OPENGRIMOIRE_ADMIN_PASSWORD (or hash) for `/login` and `/admin`. For alignment API without a shared secret in local dev, set ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true (see docs/AGENT_INTEGRATION.md).
 npm run dev
 ```
 
-**Windows (PowerShell):** Use `;` not `&&` to chain commands, e.g. `Set-Location OpenAtlas; npm run dev`.
+**Windows (PowerShell):** Use `;` not `&&` to chain commands, e.g. `Set-Location OpenGrimoire; npm run dev`.
 
 ### One-path smoke (local demo)
 

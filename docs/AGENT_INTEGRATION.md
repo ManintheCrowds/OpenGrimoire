@@ -16,6 +16,8 @@ When anything conflicts, resolve in this order:
 
 **Harness integration paths (HTTP vs optional MCP):** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) — primary stack is **REST + thin CLI**; optional future MCP must be thin wrappers over existing endpoints only (no second business layer). Optional stub notes: [`scripts/mcp-opengrimoire/README.md`](../scripts/mcp-opengrimoire/README.md).
 
+**Unified tool manifest (HTTP + workspace MCP):** [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md). **Trust tiers + curl examples:** [agent/HARNESS_ACTION_TIERS.md](./agent/HARNESS_ACTION_TIERS.md). **Retries:** [agent/ADR_IDEMPOTENCY_AND_RETRY.md](./agent/ADR_IDEMPOTENCY_AND_RETRY.md).
+
 ## Quick reference
 
 | Item | Value |
@@ -120,6 +122,7 @@ See [agent/ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md) for `PATC
 
 - **Admin** (`/admin`, `/admin/alignment`): Browser session via signed cookie after **`POST /api/auth/login`** (operator password from env). See [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md).
 - **Public alignment API:** shared-secret header (not the browser session).
+- **`linked_node_id` (optional):** Alignment items may reference a brain-map node **`id`** (same string as in `GET /api/brain-map/graph` → `nodes[].id`). Set via API, CLI, or admin. The **`/context-atlas`** viewer does **not** list alignment rows or deep-link into admin from a node — blueprint: [OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md](./OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md) (Phase 3).
 
 ## Clarification queue (async HITL)
 
@@ -135,6 +138,11 @@ Alignment `body` / `title` may originate from external agents or pasted text; tr
 
 ## Related docs
 
+- [research/AGENT_HARNESS_PRIMITIVES_2026-04-03.md](./research/AGENT_HARNESS_PRIMITIVES_2026-04-03.md) — Agent harness primitives checklist (secondary-source synthesis; gap matrix and P1–P12 backlog seeds).
+- [research/AGENT_HARNESS_IMPROVEMENT_PROMPT.md](./research/AGENT_HARNESS_IMPROVEMENT_PROMPT.md) — Reusable prompt to turn this checklist into a phased improvement program; paired [filled snapshot](./research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md).
+- [research/AGENT_HARNESS_PHASE1_ISSUES.md](./research/AGENT_HARNESS_PHASE1_ISSUES.md) — Phase 1 (P1/P2/P4/P12) GitHub issue bodies and dependency order; run [scripts/README_GH_PHASE1.md](../scripts/README_GH_PHASE1.md) to create labels and issues via `gh`.
+- [research/AGENT_HARNESS_REGENERATION_CHECKLIST.md](./research/AGENT_HARNESS_REGENERATION_CHECKLIST.md) — bump improvement program when the gap matrix changes.
+- [OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md](./OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md) — OpenGrimoire optional graph metadata + Phase 3 alignment linkage (what the graph UI does and does not show).
 - [agent/ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md)
 - [agent/CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md)
 - [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md)

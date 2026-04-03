@@ -11,6 +11,10 @@
 
 Do **not** overload `POST /api/survey` with ad-hoc `questionId`s without a migration plan (see [`HITL_INTENT_SURVEY_BACKLOG.md`](../HITL_INTENT_SURVEY_BACKLOG.md)).
 
+## Retry semantics
+
+Blind retries of `POST /api/survey` can **duplicate** rows. See [ADR_IDEMPOTENCY_AND_RETRY.md](./ADR_IDEMPOTENCY_AND_RETRY.md). Prefer confirming whether a prior attempt returned **200** before resubmitting the same payload.
+
 ## Successful submit: correlation IDs
 
 On **200 OK**, the response includes server-issued UUIDs (camelCase):

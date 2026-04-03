@@ -1,7 +1,7 @@
-# Agent-Native Architecture Review: OpenAtlas (OpenGrimoire)
+# Agent-Native Architecture Review: OpenGrimoire (OpenGrimoire)
 
 **Date:** 2026-03-26  
-**Scope:** `c:\Users\Dell\Documents\GitHub\OpenAtlas` (Next.js app + APIs + docs).  
+**Scope:** `c:\Users\Dell\Documents\GitHub\OpenGrimoire` (Next.js app + APIs + docs).  
 **Method:** Eight parallel codebase audits (one per principle), then compiled here.
 
 ---

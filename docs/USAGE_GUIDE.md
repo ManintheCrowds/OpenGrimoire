@@ -359,13 +359,13 @@ describe('/api/survey', () => {
 #### Docker Deployment
 ```bash
 # Build image
-docker build -t openatlas .
+docker build -t OpenGrimoire .
 
 # Run container (paste values from Supabase Project Settings → API; never commit real keys)
 docker run -p 3000:3000 \
   -e NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
   -e NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key> \
-  openatlas
+  OpenGrimoire
 ```
 
 See [docs/security/PUBLIC_SURFACE_AUDIT.md](security/PUBLIC_SURFACE_AUDIT.md).

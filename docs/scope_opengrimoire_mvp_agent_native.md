@@ -1,7 +1,7 @@
 # Product scope: OpenGrimoire MVP (agent-native readiness)
 
 **Date:** 2026-03-24  
-**Product:** OpenGrimoire; **npm package** `open-grimoire`; **repo folder** on disk may still be **`OpenAtlas`** (legacy path).  
+**Product:** OpenGrimoire; **npm package** `open-grimoire`; **GitHub** `ManintheCrowds/OpenGrimoire`; **local clone folder** should be **`OpenGrimoire`** (legacy `OpenAtlas` folder name still supported until renames complete).  
 **Related:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md), [BRAIN_MAP_SCHEMA.md](./BRAIN_MAP_SCHEMA.md), [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md).
 
 ---
@@ -19,7 +19,7 @@
 3. **R3 — Alignment CRUD** — Operators with credentials can create/read/update/delete alignment items via **public API** (`x-alignment-context-key`) or **admin UI** (`/admin/alignment`) per contract; behavior matches [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md).
 4. **R4 — Capability discovery** — `GET /api/capabilities` and human page `/capabilities` stay in sync with routes (hand-maintained); [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md) remains the single integration entry.
 5. **R5 — Monitoring (split)**  
-   - **OpenAtlas app:** Observable dev/prod health (process up, HTTP errors on API routes used by operators).  
+   - **OpenGrimoire app:** Observable dev/prod health (process up, HTTP errors on API routes used by operators).  
    - **Portfolio automation:** Orchestrator scripts, MCP usage, `build_brain_map.py` runs—**documented separately** (MiscRepos / local-proto); not conflated with Next.js-only metrics.
 6. **R6 — Runbooks** — Operator-facing docs for primary GUI flows (open viewer, refresh graph, alignment admin, secrets/env names only).
 7. **R7 — Verification** — Playwright smoke for `/context-atlas` and critical routes; contract tests or manual matrix against [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). A2UI/design: **one vertical slice** (e.g. `/capabilities` + alignment path) per portfolio A2UI guidance—not full-app visual audit in MVP.
@@ -58,7 +58,7 @@ The Table view in [`src/components/BrainMap/BrainMapGraph.tsx`](../src/component
 
 | Layer | Owns | Examples |
 |-------|------|----------|
-| **OpenAtlas** | HTTP API health, Next.js logs, `middleware` behavior, rate limits | 401/503 on misconfig; 429 on survey limit |
+| **OpenGrimoire** | HTTP API health, Next.js logs, `middleware` behavior, rate limits | 401/503 on misconfig; 429 on survey limit |
 | **Portfolio / MiscRepos** | Orchestrator, scheduled scripts, MCP process logs, brain-map build CI | `orchestrator_config.json`, `run_*` scripts |
 | **OpenHarness** | Handoff integrity, local scripts | `validate_handoff_scp.py`, copy prompts |
 

@@ -1,4 +1,4 @@
-# OpenAtlas — full product-scope review (charter)
+# OpenGrimoire — full product-scope review (charter)
 
 **Status:** Draft — fill during OA-FR-SCOPE.  
 **Harness tasks:** [.cursor/state/pending_tasks.md](../../../.cursor/state/pending_tasks.md) § **OPENATLAS_FULL_REVIEW**.
@@ -28,5 +28,5 @@ For each system, capture:
 ## Cross-cutting
 
 - Deployment: [DEPLOYMENT.md](../../DEPLOYMENT.md), Docker, env matrix ([.env.example](../../.env.example)).  
-- Agent-native parity: [MCP_CAPABILITY_MAP](../../../.cursor/docs/MCP_CAPABILITY_MAP.md) § OpenAtlas.  
+- Agent-native parity: [MCP_CAPABILITY_MAP](../../../.cursor/docs/MCP_CAPABILITY_MAP.md) § OpenGrimoire.  
 - **Goal–constraint conflicts:** escalate; do not silently narrow scope.

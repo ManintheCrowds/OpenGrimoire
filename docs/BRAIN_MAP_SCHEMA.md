@@ -63,7 +63,7 @@ The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenan
 ## Backward compatibility
 
 - Consumers must ignore unknown fields.
-- New optional fields must not be required by the UI; the OpenAtlas viewer tolerates their absence.
+- New optional fields must not be required by the UI; the OpenGrimoire viewer tolerates their absence.
 
 ## State ingest (builder)
 
@@ -90,7 +90,7 @@ There is **no** `POST` / patch API for the graph today. `GET /api/brain-map/grap
 1. After an OpenCompass run, take the default summarizer CSV: `{work_dir}/summary/summary_{YYYYMMDD_HHMMSS}.csv` (see upstream `opencompass/summarizers/default.py`).
 2. From the MiscRepos **trustgraph-local-repo** checkout, generate a stub JSON (stdout):  
    `python scripts/opencompass_summary_to_brain_map_stub.py path/to/summary_*.csv > oc_stub.json`
-3. Merge into your OpenAtlas graph file (run from OpenAtlas repo root, paths adjusted):  
+3. Merge into your OpenGrimoire graph file (run from OpenGrimoire repo root, paths adjusted):  
    `python /path/to/trustgraph-local-repo/scripts/merge_brain_map_stub.py --base public/brain-map-graph.local.json --stub oc_stub.json --out public/brain-map-graph.local.json`  
    The merge script reads stub JSON as **utf-8-sig**, so stubs saved with a UTF-8 **BOM** (e.g. PowerShell `Set-Content -Encoding utf8`) still work.
 4. Reload the app (or refresh the brain-map view). Unknown top-level fields on the JSON (e.g. stub `meta`) are ignored by the viewer; only `nodes` / `edges` / `generated` / `sessionCount` / `sourceRoots` are part of the stable contract.

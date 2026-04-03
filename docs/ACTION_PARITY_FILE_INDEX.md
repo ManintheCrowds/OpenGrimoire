@@ -1,8 +1,8 @@
 # Grep-driven file list: action parity (starter set)
 
-**Scope:** **Query 3** and tables that link to `../../MiscRepos/.cursor/docs/*`, `../../MiscRepos/.cursor/state/*`, and similar paths assume a **MiscRepos** clone as a **sibling** of OpenAtlas (e.g. `Documents/GitHub/MiscRepos` next to `Documents/GitHub/OpenAtlas`). See [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md). With an **OpenAtlas-only** clone, those links do not resolve; open **MiscRepos** or **OpenHarness** in their own repos.
+**Scope:** **Query 3** and tables that link to `../../MiscRepos/.cursor/docs/*`, `../../MiscRepos/.cursor/state/*`, and similar paths assume a **MiscRepos** clone as a **sibling** of OpenGrimoire (e.g. `Documents/GitHub/MiscRepos` next to `Documents/GitHub/OpenGrimoire`). See [GitHub `README-WORKSPACE.md`](../../README-WORKSPACE.md). With an **OpenGrimoire-only** clone, those links do not resolve; open **MiscRepos** or **OpenHarness** in their own repos.
 
-Repeatable inventories for **Principle 1 (action parity)** work: agent-native framing, REST/MCP surface, and harness MCP docs. Complements the hand-maintained manifest in [`src/app/api/capabilities/route.ts`](../src/app/api/capabilities/route.ts) (OA-REST-2).
+Repeatable inventories for **Principle 1 (action parity)** work: agent-native framing, REST/MCP surface, and harness MCP docs. Complements the hand-maintained manifest in [`src/app/api/capabilities/route.ts`](../src/app/api/capabilities/route.ts) (OA-REST-2) and the human-readable **[`docs/AGENT_TOOL_MANIFEST.md`](../AGENT_TOOL_MANIFEST.md)** (HTTP + workspace MCP tiers).
 
 **Verify manifest vs filesystem:** `npm run verify:capabilities` (from repo root).
 
@@ -10,12 +10,12 @@ Repeatable inventories for **Principle 1 (action parity)** work: agent-native fr
 
 ## Commands (bash vs Windows)
 
-Run from **`OpenAtlas/`** for queries 1–2, and **`MiscRepos/`** (sibling repo) for query 3.
+Run from **`OpenGrimoire/`** for queries 1–2, and **`MiscRepos/`** (sibling repo) for query 3.
 
 ### Bash / Git Bash
 
 ```bash
-cd OpenAtlas
+cd OpenGrimoire
 rg -l "agent-native|parity|capabilities" --glob "*.md" --glob "*.{ts,tsx}"
 rg -l "api/capabilities|/api/" src/app/api
 cd ..
@@ -27,7 +27,7 @@ rg -l "MCP|tool" docs .cursor
 Use `;` not `&&`. Use `2>$null` instead of `2>nul` if redirecting stderr.
 
 ```powershell
-Set-Location C:\Users\YOU\Documents\GitHub\OpenAtlas
+Set-Location C:\Users\YOU\Documents\GitHub\OpenGrimoire
 rg -l "agent-native|parity|capabilities" --glob "*.md" --glob "*.{ts,tsx}"
 rg -l "api/capabilities|/api/" src/app/api
 Set-Location C:\Users\YOU\Documents\GitHub\MiscRepos
@@ -38,7 +38,7 @@ rg -l "MCP|tool" docs .cursor
 
 ## Query 1: `agent-native|parity|capabilities` (`.md` + `.ts`/`.tsx`)
 
-### Markdown (OpenAtlas)
+### Markdown (OpenGrimoire)
 
 | Path |
 |------|
@@ -49,8 +49,8 @@ rg -l "MCP|tool" docs .cursor
 | [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md) |
 | [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) |
 | [plans/SCOPE_OPENATLAS_FULL_REVIEW.md](./plans/SCOPE_OPENATLAS_FULL_REVIEW.md) |
-| [plans/2026-03-19-openatlas-alignment-context-design.md](./plans/2026-03-19-openatlas-alignment-context-design.md) |
-| [plans/2026-03-19-openatlas-agent-native-audit.md](./plans/2026-03-19-openatlas-agent-native-audit.md) |
+| [plans/2026-03-19-OpenGrimoire-alignment-context-design.md](./plans/2026-03-19-OpenGrimoire-alignment-context-design.md) |
+| [plans/2026-03-19-OpenGrimoire-agent-native-audit.md](./plans/2026-03-19-OpenGrimoire-agent-native-audit.md) |
 | [e2e/maestro/README.md](../e2e/maestro/README.md) |
 
 ### TypeScript / TSX

@@ -1,6 +1,6 @@
-# Agent-native architecture review: OpenAtlas
+# Agent-native architecture review: OpenGrimoire
 
-**Scope:** [OpenAtlas](../..) only (not full portfolio-harness). **Date:** 2026-03-19.
+**Scope:** [OpenGrimoire](../..) only (not full portfolio-harness). **Date:** 2026-03-19.
 
 ## Overall score summary
 
@@ -44,7 +44,7 @@
 
 ## 2. Tools as primitives
 
-No first-class agent tools ship with OpenAtlas. **Score: N/A (0 tools).**  
+No first-class agent tools ship with OpenGrimoire. **Score: N/A (0 tools).**  
 **Guidance:** When adding automation, prefer small tools (`list_alignment`, `get_survey_summary`) over monolithic “run full analysis” workflows.
 
 ---

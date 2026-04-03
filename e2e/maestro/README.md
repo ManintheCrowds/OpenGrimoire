@@ -13,7 +13,7 @@ Optional YAML-based E2E using [Maestro](https://github.com/mobile-dev-inc/Maestr
 ## Run
 
 ```bash
-cd OpenAtlas
+cd OpenGrimoire
 npm run dev -- -p 3001
 # other terminal:
 npm run test:maestro

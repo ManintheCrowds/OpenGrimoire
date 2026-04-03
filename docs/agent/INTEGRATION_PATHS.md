@@ -19,7 +19,7 @@ Set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`) to your app origin 
 
 ## Browser automation (UI-only paths)
 
-Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and sibling-harness [Agent-Native-Testing.md](../../../docs/Agent-Native-Testing.md) (when `docs/` exists beside OpenAtlas under `GitHub/`).
+Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and sibling-harness [Agent-Native-Testing.md](../../../docs/Agent-Native-Testing.md) (when `docs/` exists beside OpenGrimoire under `GitHub/`).
 
 ---
 

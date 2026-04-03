@@ -33,7 +33,7 @@ If a new entity gains an API, it must appear in the [entity × HTTP × auth matr
 The following belong **outside** OpenGrimoire unless the product direction changes:
 
 - **In-app “agent context” or exported prompt bundles** for Cursor/LLM sessions. System prompts, rules, and harness session context live in **MiscRepos / OpenHarness-style harnesses**, **Cursor**, and **local-proto**. OpenGrimoire exposes **data** (e.g. alignment context) that a harness **may** fetch and inject upstream.
-- **Embedding SCP (secure-contain-protect) inside the app** as the only line of defense. Untrusted content pasted into alignment or other fields should be gated in the **agent harness** per **`MiscRepos/local-proto/docs/TOOL_SAFEGUARDS.md`** (sibling **MiscRepos** clone next to **OpenAtlas**; no stable relative link from this repo) and the **secure-contain-protect** skill at **`MiscRepos/.cursor/skills/secure-contain-protect/SKILL.md`**. If you only have a standalone `local-proto` clone elsewhere, open `docs/TOOL_SAFEGUARDS.md` there—the document is the same source of truth.
+- **Embedding SCP (secure-contain-protect) inside the app** as the only line of defense. Untrusted content pasted into alignment or other fields should be gated in the **agent harness** per **`MiscRepos/local-proto/docs/TOOL_SAFEGUARDS.md`** (sibling **MiscRepos** clone next to **OpenGrimoire**; no stable relative link from this repo) and the **secure-contain-protect** skill at **`MiscRepos/.cursor/skills/secure-contain-protect/SKILL.md`**. If you only have a standalone `local-proto` clone elsewhere, open `docs/TOOL_SAFEGUARDS.md` there—the document is the same source of truth.
 
 ---
 

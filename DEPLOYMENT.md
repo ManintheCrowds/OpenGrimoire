@@ -1,4 +1,4 @@
-# OpenAtlas — survey & moderation — deployment guide
+# OpenGrimoire — survey & moderation — deployment guide
 
 ## OpenGrimoire (current stack) — agent API keys
 
@@ -27,7 +27,7 @@ This deployment guide focuses on the two essential features:
 ### Step 1: Clone Repository
 ```bash
 git clone <your-repo-url>
-cd OpenAtlas
+cd OpenGrimoire
 ```
 
 ### Step 2: Environment Setup
@@ -88,7 +88,7 @@ In Supabase Auth dashboard:
 
 Essential files you need:
 ```
-OpenAtlas/
+OpenGrimoire/
 ├── src/
 │   ├── app/
 │   │   ├── api/survey/route.ts           # Survey submission API

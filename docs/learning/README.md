@@ -6,7 +6,7 @@ Flashcard quality rules, Anki CSV import notes, and the shared `validate_flashca
 
 - [`../../MiscRepos/portable-skills/docs/SPACED_REPETITION_REFERENCES.md`](../../MiscRepos/portable-skills/docs/SPACED_REPETITION_REFERENCES.md)
 
-Paths assume **sibling repos** (e.g. `Documents/GitHub/{OpenAtlas,MiscRepos}`).
+Paths assume **sibling repos** (e.g. `Documents/GitHub/{OpenGrimoire,MiscRepos}`).
 
 ## OpenGrimoire persistence
 

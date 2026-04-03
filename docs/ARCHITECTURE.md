@@ -2,7 +2,7 @@
 
 ## Overview
 
-The OpenAtlas (Agent Context Atlas) visualization platform is built using a modern, scalable architecture that prioritizes performance, maintainability, and user experience. This document provides a comprehensive overview of the system architecture, design patterns, and technical decisions.
+The OpenGrimoire (Agent Context Atlas) visualization platform is built using a modern, scalable architecture that prioritizes performance, maintainability, and user experience. This document provides a comprehensive overview of the system architecture, design patterns, and technical decisions.
 
 ## High-Level Architecture
 
@@ -424,7 +424,7 @@ class ErrorBoundary extends React.Component {
 
 ## Conclusion
 
-This architecture provides a solid foundation for OpenAtlas, balancing performance, maintainability, and scalability. The modular design allows for easy extension and modification while maintaining code quality and user experience standards.
+This architecture provides a solid foundation for OpenGrimoire, balancing performance, maintainability, and scalability. The modular design allows for easy extension and modification while maintaining code quality and user experience standards.
 
 ### Survey Response Data Model
 ```typescript

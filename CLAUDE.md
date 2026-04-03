@@ -4,7 +4,7 @@ This file provides guidance for AI assistants working in this repository.
 
 ## Project overview
 
-**OpenGrimoire** (Agent Context Atlas; repo folder often `OpenAtlas`): a Next.js app with a **local-first context graph** (brain map) plus survey, alignment, and admin flows backed by a **gitignored SQLite** file (`data/opengrimoire.sqlite` by default). Product copy targets **OpenGrimoire**, not a specific client event. The Git remote may still use the `Med-Vis` slug until renamed.
+**OpenGrimoire** (Agent Context Atlas): a Next.js app with a **local-first context graph** (brain map) plus survey, alignment, and admin flows backed by a **gitignored SQLite** file (`data/opengrimoire.sqlite` by default). Product copy targets **OpenGrimoire**, not a specific client event. **GitHub:** `ManintheCrowds/OpenGrimoire`. **Local clone folder:** prefer **`OpenGrimoire`**; legacy folder name **`OpenAtlas`** still appears in older docs and paths until everyone renames.
 
 **Canonical persistence story:** See [README.md](README.md). **Route × persistence × tools** inventory: [docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md](docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md).
 

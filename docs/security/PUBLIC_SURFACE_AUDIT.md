@@ -12,7 +12,7 @@
 | Critical | 1 | Client console logged survey row samples (PII) — gated / removed |
 | High     | 2 | JWT-shaped examples in `DEPLOYMENT.md`; `NEXT_PUBLIC_BRAIN_MAP_SECRET` exposes “secret” in browser bundle |
 | Medium   | 3 | Verbose `console.*` in visualization path; schema history naming; operator risk copying real keys into docs |
-| Low      | 2 | No OpenAtlas-local CI workflows; `.gitignore` already excludes `.env*` |
+| Low      | 2 | No OpenGrimoire-local CI workflows; `.gitignore` already excludes `.env*` |
 
 ## Findings table
 
@@ -24,8 +24,8 @@
 | F4 | Medium | `useVisualizationData.ts` | Multiple unconditional `console.log` / `warn` in client | Same debug gate as F1 | Same as F1 |
 | F5 | Medium | `console.error` paths | Logging full `Error` objects can surface internal details | Log `err.message` only when not in viz debug mode | Spot-check console on forced failure |
 | F6 | Medium | `supabase/migrations/*` | Historical column `years_at_medtronic` (renamed to `tenure_years`) | Leave migrations as-is (reproducibility); optional cosmetic rename of filename only if team agrees | N/A |
-| F7 | Low | `.env.local` (disk) | Real keys may exist locally | Never commit; `.gitignore` lists `.env`, `.env.local` | `git ls-files OpenAtlas/.env.local` → empty |
-| F8 | Low | CI | No `.github/workflows` under `OpenAtlas/` | When adding CI, use `secrets.*` only; do not echo env in logs | Manual review on first workflow |
+| F7 | Low | `.env.local` (disk) | Real keys may exist locally | Never commit; `.gitignore` lists `.env`, `.env.local` | `git ls-files OpenGrimoire/.env.local` → empty |
+| F8 | Low | CI | No `.github/workflows` under `OpenGrimoire/` | When adding CI, use `secrets.*` only; do not echo env in logs | Manual review on first workflow |
 
 ## `NEXT_PUBLIC_*` inventory (threat model)
 
@@ -42,8 +42,8 @@
 Run from repo root (exclude build output):
 
 ```powershell
-rg "eyJ[A-Za-z0-9_-]{20,}" OpenAtlas --glob '!**/.next/**' --glob '!**/node_modules/**'
-rg "SUPABASE_SERVICE_ROLE" OpenAtlas/src OpenAtlas/docs OpenAtlas/*.md --glob '!**/node_modules/**'
+rg "eyJ[A-Za-z0-9_-]{20,}" OpenGrimoire --glob '!**/.next/**' --glob '!**/node_modules/**'
+rg "SUPABASE_SERVICE_ROLE" OpenGrimoire/src OpenGrimoire/docs OpenGrimoire/*.md --glob '!**/node_modules/**'
 ```
 
 Expect: no real JWT material in tracked sources after remediation.

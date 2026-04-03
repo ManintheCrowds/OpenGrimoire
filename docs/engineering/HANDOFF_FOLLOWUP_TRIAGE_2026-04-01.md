@@ -1,6 +1,6 @@
 # Handoff follow-up triage (2026-04-01)
 
-Source: sibling **MiscRepos** repo — `.cursor/state/handoff_latest.md` (OpenAtlas “Next” bullets: thin MCP, `GET /api/alignment-context/[id]`, `/help`, rate limits).
+Source: sibling **MiscRepos** repo — `.cursor/state/handoff_latest.md` (OpenGrimoire “Next” bullets: thin MCP, `GET /api/alignment-context/[id]`, `/help`, rate limits).
 
 ## Decision
 

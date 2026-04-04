@@ -40,7 +40,7 @@ test.describe('Sync Session flow', () => {
     await page.getByTestId('unique-quality-input').fill('I bring creativity and collaboration.');
     await page.getByTestId('submit-button').click();
 
-    // SuccessStep (requires Supabase) or form-level error (no Supabase) - either validates flow
+    // SuccessStep (when SQLite + API succeed) or form-level error — either validates flow
     await expect(
       page.getByTestId('success-step').or(page.locator('.message-error'))
     ).toBeVisible({ timeout: 15000 });

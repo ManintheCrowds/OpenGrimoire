@@ -1,49 +1,46 @@
-# Operator: alignment context (Supabase + secrets)
+# Operator: alignment context (SQLite + secrets)
 
-Steps for **Track 0** before relying on `/api/alignment-context` in production.
+Steps before relying on `/api/alignment-context` in production.
 
-## 1. Verify or apply migration
+## 1. Database
 
-In Supabase **SQL Editor**, check the table exists:
+Alignment rows live in **local SQLite** (same DB as survey data). Ensure the app has run at least once so Drizzle has created tables, or run your usual deploy that starts `next start` / Docker.
 
-```sql
-SELECT table_name
-FROM information_schema.tables
-WHERE table_schema = 'public' AND table_name = 'alignment_context_items';
-```
-
-If empty, run the full file:
-
-- [`supabase/migrations/20260319140000_alignment_context_items.sql`](../../supabase/migrations/20260319140000_alignment_context_items.sql)
+Default path: `data/opengrimoire.sqlite` (override with `OPENGRIMOIRE_DB_PATH`).
 
 ## 2. Server environment
 
-Required on the Next.js host (see [DEPLOYMENT.md](../../DEPLOYMENT.md)):
+On the Next.js host (see [DEPLOYMENT.md](../../DEPLOYMENT.md) and [.env.example](../../.env.example)):
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
 - **Production:** non-empty `ALIGNMENT_CONTEXT_API_SECRET`
+- **`OPENGRIMOIRE_SESSION_SECRET`** + admin password for `/admin/alignment` UI (session cookie)
+
+There are **no** Supabase or `NEXT_PUBLIC_SUPABASE_*` variables for alignment.
 
 ## 3. Caller header
 
-When `ALIGNMENT_CONTEXT_API_SECRET` is set (including production), every request must include:
+When `ALIGNMENT_CONTEXT_API_SECRET` is set, every programmatic request must include:
 
 ```http
 x-alignment-context-key: <same value as ALIGNMENT_CONTEXT_API_SECRET>
 ```
 
+Optional dedicated secret for clarification only: `CLARIFICATION_QUEUE_API_SECRET` + `x-clarification-queue-key` — see [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md).
+
 ## 4. Smoke checks
 
+Local dev default port is **3001** (`npm run dev`).
+
 ```bash
-# Dev (no secret): list
-curl -sS "http://localhost:3000/api/alignment-context?limit=5"
+# Dev with ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true: list
+curl -sS "http://localhost:3001/api/alignment-context?limit=5"
 
 # With secret:
-curl -sS -H "x-alignment-context-key: YOUR_SECRET" "http://localhost:3000/api/alignment-context"
+curl -sS -H "x-alignment-context-key: YOUR_SECRET" "http://localhost:3001/api/alignment-context"
 ```
 
 Production without secret: expect **503** `Misconfigured`. Wrong key: **401**.
 
 ## 5. Admin UI (human operators)
 
-Logged-in **admin** users can use **Alignment context** at `/admin/alignment` (session cookie; no shared secret in the browser). See [ALIGNMENT_CONTEXT_API.md](./ALIGNMENT_CONTEXT_API.md).
+Sign in at `/login` (operator session cookie), then open **`/admin/alignment`**. No shared secret in the browser for the UI path. See [ALIGNMENT_CONTEXT_API.md](./ALIGNMENT_CONTEXT_API.md).

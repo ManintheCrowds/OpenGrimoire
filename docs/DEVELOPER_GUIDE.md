@@ -25,8 +25,7 @@
    # Check npm version
    npm --version
    
-   # Install global dependencies
-   npm install -g @supabase/cli
+   # Optional: Playwright for E2E (usually via npx / devDependencies)
    ```
 
 2. **Project Setup**
@@ -46,20 +45,19 @@
 3. **Development Tools**
    - **VS Code Extensions**: ESLint, Prettier, TypeScript, Tailwind CSS IntelliSense
    - **Browser Extensions**: React DevTools, Redux DevTools
-   - **Database Tools**: Supabase Studio, pgAdmin
+   - **Database tools**: SQLite file viewer (optional) for `data/opengrimoire.sqlite` or `OPENGRIMOIRE_DB_PATH`
 
 ### Environment Configuration
 
-Never commit `.env.local`. Placeholders only below — copy real values from the Supabase dashboard.
+Never commit `.env.local`. Use [.env.example](../../.env.example) as the source of truth — SQLite + operator session + optional alignment API secret.
 
 ```env
-# .env.local
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# .env.local (examples — see .env.example)
+NEXT_PUBLIC_APP_URL=http://localhost:3001
+OPENGRIMOIRE_SESSION_SECRET=change-me-long-random
+OPENGRIMOIRE_ADMIN_PASSWORD=change-me
+ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true
 NODE_ENV=development
-DEBUG=true
 ```
 
 ## Code Organization
@@ -887,41 +885,9 @@ function SafeHTML({ content }: { content: string }) {
 }
 ```
 
-### Authentication & Authorization
+### Authentication and authorization
 
-```typescript
-// Middleware for API route protection
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-
-export async function middleware(request: NextRequest) {
-  const response = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res: response });
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (!session) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    
-    // Check admin role
-    const { data: profile } = await supabase
-      .from('attendees')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-      
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-  }
-
-  return response;
-}
-```
+Operator **`/admin/*`** routes use a **signed HTTP-only cookie** after `POST /api/auth/login` (see [`middleware.ts`](../../middleware.ts) for rate limits and dev-route gating only — admin protection is enforced in layouts/route handlers). Agent-facing APIs use **`x-alignment-context-key`** and related headers per [ARCHITECTURE_REST_CONTRACT.md](ARCHITECTURE_REST_CONTRACT.md). Do not add Supabase auth helpers for new work.
 
 ## Deployment
 
@@ -971,42 +937,9 @@ ENV HOSTNAME "0.0.0.0"
 CMD ["node", "server.js"]
 ```
 
-### Environment-Specific Configurations
+### Environment-specific configuration
 
-```typescript
-// lib/config.ts
-interface Config {
-  supabase: {
-    url: string;
-    anonKey: string;
-    serviceRoleKey?: string;
-  };
-  app: {
-    url: string;
-    environment: 'development' | 'staging' | 'production';
-  };
-  features: {
-    enableAnalytics: boolean;
-    enableTestData: boolean;
-  };
-}
-
-export const config: Config = {
-  supabase: {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  },
-  app: {
-    url: process.env.NEXT_PUBLIC_APP_URL!,
-    environment: (process.env.NODE_ENV as any) || 'development',
-  },
-  features: {
-    enableAnalytics: process.env.NODE_ENV === 'production',
-    enableTestData: process.env.NODE_ENV === 'development',
-  },
-};
-```
+Read secrets and feature flags from `process.env` in route handlers; there is no bundled `lib/config.ts` requirement. Prefer explicit checks (e.g. `ALIGNMENT_CONTEXT_API_SECRET` in production) as in existing API routes. See [.env.example](../../.env.example).
 
 ### CI/CD Pipeline
 

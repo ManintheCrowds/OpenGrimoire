@@ -1,5 +1,7 @@
 # Refactor-reuse memo: alignment / context channel
 
+> **Historical (2026-04):** References to `src/lib/supabase/*` describe an **earlier** stack; the app now uses **SQLite + Drizzle**.
+
 **Date:** 2026-03-19  
 **Question:** Before adding alignment/context storage, what can we reuse?
 

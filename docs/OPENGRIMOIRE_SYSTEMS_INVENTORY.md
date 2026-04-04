@@ -4,7 +4,9 @@
 
 **Normative API/agent rules:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) (strict public REST, entity × HTTP × auth matrix, UI freshness tiers, verification appendix). **Integration paths:** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
-**Last reviewed:** 2026-03-20
+**Last reviewed:** 2026-04-03
+
+**Persistence:** Survey, alignment, clarification, study, and moderation data use **local SQLite** only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). There is **no** Supabase or hosted Postgres in the supported runtime path.
 
 ---
 
@@ -78,7 +80,8 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 |------|-------------|--------|
 | Route | `/`, `/visualization`, `/login`, `/admin/*` | Admin needs `OPENGRIMOIRE_SESSION_SECRET` + operator password (see `.env.example`) |
 | Route | `/context-atlas`, `/brain-map` | Context graph UI (same app) |
-| Route | `/operator-intake`, `/survey` | Legacy sample form |
+| Route | `/operator-intake`, `/survey` | Sync Session form → `POST /api/survey` (SQLite) |
+| Route | `/test-sqlite` | Dev-only SQLite API smoke page (`/test-supabase` redirects here); gated in prod like other `/test*` routes |
 | Route | `/admin/clarification-queue` | Operator inbox for async **clarification queue** (agent questions); distinct from Sync Session |
 | Static data | `public/brain-map-graph.json` | Served to viewer; regenerate via build script |
 | API | `GET /api/brain-map/graph` | Serves graph JSON |
@@ -100,7 +103,8 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `npm run lint` | ESLint |
 | `npm run type-check` | `tsc --noEmit` |
 | `npm run test` | Placeholder until unit tests land |
-| `npm run verify` | **`lint` + `type-check` + `test`** — one command for agents / CI |
+| `npm run verify` | `lint` + `type-check` + `test` + `verify:capabilities` + `verify:openapi` + `verify:route-index` |
+| GitHub Actions | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — `verify` + `test:e2e` on `main`/`master` |
 | `npm run verify:e2e` | `verify` then Playwright E2E (uses `playwright.config.ts` `webServer`) |
 | `npm run test:e2e` | Playwright only |
 | `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenGrimoire** repo root with sibling **MiscRepos**; see OpenGrimoire README) |

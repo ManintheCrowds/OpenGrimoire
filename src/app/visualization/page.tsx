@@ -4,7 +4,7 @@ import Layout from '@/components/Layout';
 export default function VisualizationPage() {
   return (
     <Layout>
-      <div className="fixed inset-0 w-screen h-screen bg-gray-50 z-0">
+      <div className="relative z-0 h-[calc(100dvh-5rem)] min-h-[280px] w-full max-w-full overflow-hidden bg-gray-50 sm:min-h-[480px]">
         <DataVisualization />
       </div>
     </Layout>

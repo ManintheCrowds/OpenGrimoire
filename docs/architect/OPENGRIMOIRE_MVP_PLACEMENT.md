@@ -31,7 +31,7 @@
 | [e2e/survey.spec.ts](../../e2e/survey.spec.ts) | Survey route. |
 | [ARCHITECTURE_REST_CONTRACT.md](../ARCHITECTURE_REST_CONTRACT.md) | Normative matrix for REST vs UI. |
 
-**MVP stretch:** Add spec for `/capabilities` JSON snapshot or `/admin/alignment` happy path **only if** Supabase placeholders remain acceptable in CI (see playwright env).
+**MVP stretch:** Add spec for `/capabilities` JSON snapshot or `/admin/alignment` happy path in CI using **operator session + SQLite** (see Playwright `webServer` env in `playwright.config.ts`).
 
 ---
 

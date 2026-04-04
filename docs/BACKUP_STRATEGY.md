@@ -62,7 +62,7 @@ robocopy "D:\portfolio-harness\OpenGrimoire" "D:\backups\OpenGrimoire\%date%" /E
 ### Source Code (Critical)
 - `/src/` - All React components and application logic
 - `/public/` - Static assets and branding
-- `/supabase/` - Database migrations and configuration
+- `data/opengrimoire.sqlite` (or `OPENGRIMOIRE_DB_PATH`) — **SQLite** production data (gitignored by default)
 - Configuration files: `package.json`, `tailwind.config.ts`, `tsconfig.json`
 
 ### Exclude from Backups
@@ -132,7 +132,7 @@ npm run dev
 - Next.js 14
 - React 18
 - D3.js for visualizations
-- Supabase for data storage
+- SQLite (`better-sqlite3`) for survey + alignment persistence
 - Tailwind CSS for styling
 
 ### Key Features Implemented

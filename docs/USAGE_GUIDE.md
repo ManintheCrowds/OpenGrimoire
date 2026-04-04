@@ -193,18 +193,11 @@ npm install
 cp .env.example .env.local
 ```
 
-#### Database Setup
-```bash
-# Initialize Supabase
-npx supabase init
-npx supabase start
+#### Database setup (SQLite)
 
-# Run migrations
-npx supabase db push
+OpenGrimoire persists survey and alignment data in **local SQLite** (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). Start `npm run dev` once so the app can create the schema (Drizzle bootstrap). No Supabase CLI or hosted Postgres is required.
 
-# Generate types
-npx supabase gen types typescript --local > src/lib/supabase/types.ts
-```
+See [.env.example](../../.env.example) and [DEPLOYMENT.md](../../DEPLOYMENT.md).
 
 ### Creating Custom Visualizations
 
@@ -283,37 +276,9 @@ export function useCustomData(filters: any) {
 }
 ```
 
-#### Creating API Endpoints
-```typescript
-// src/app/api/custom-endpoint/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+#### Creating API endpoints
 
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const { searchParams } = new URL(request.url);
-    
-    // Extract query parameters
-    const filter = searchParams.get('filter');
-    
-    // Query database
-    const { data, error } = await supabase
-      .from('survey_responses')
-      .select('*')
-      .eq('some_field', filter);
-
-    if (error) throw error;
-
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch data' },
-      { status: 500 }
-    );
-  }
-}
-```
+Use **App Router** `route.ts` handlers and the shared **SQLite** access patterns in `src/lib/` (Drizzle). See existing routes under `src/app/api/survey/` and `src/app/api/alignment-context/` and the contract in [ARCHITECTURE_REST_CONTRACT.md](ARCHITECTURE_REST_CONTRACT.md).
 
 ### Testing
 
@@ -356,19 +321,17 @@ describe('/api/survey', () => {
 
 ### Deployment
 
-#### Docker Deployment
+#### Docker deployment
 ```bash
-# Build image
-docker build -t OpenGrimoire .
-
-# Run container (paste values from Supabase Project Settings → API; never commit real keys)
+docker build -t opengrimoire .
 docker run -p 3000:3000 \
-  -e NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
-  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key> \
-  OpenGrimoire
+  -e OPENGRIMOIRE_SESSION_SECRET=<secret> \
+  -e OPENGRIMOIRE_ADMIN_PASSWORD=<password> \
+  -e ALIGNMENT_CONTEXT_API_SECRET=<secret> \
+  opengrimoire
 ```
 
-See [docs/security/PUBLIC_SURFACE_AUDIT.md](security/PUBLIC_SURFACE_AUDIT.md).
+See [DEPLOYMENT.md](../../DEPLOYMENT.md) and [docs/security/PUBLIC_SURFACE_AUDIT.md](security/PUBLIC_SURFACE_AUDIT.md).
 
 #### Production Environment
 ```bash

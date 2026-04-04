@@ -15,7 +15,7 @@
 **Executive snapshot**
 
 - **Strengths:** Thin REST surface and hand-maintained [`GET /api/capabilities`](../../src/app/api/capabilities/route.ts); discovery via [`/capabilities`](../../src/app/capabilities/page.tsx), nav/footer, and [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md); honest CRUD story (alignment full CRUD; brain-map read-only at API).
-- **Bounded gaps:** Admin alignment uses Supabase session (agent parity via browser automation or human, vs shared-secret API + CLI); no SSE; optional follow-ups OA-OG-2 / OA-OG-5 remain deferred per harness backlog.
+- **Bounded gaps:** Admin alignment uses **operator session cookie** after `/login` (agent parity via Playwright or human, vs shared-secret API + CLI); no SSE; optional follow-ups OA-OG-2 / OA-OG-5 remain deferred per harness backlog.
 - **Security posture:** Static **security-sentinel** review in § **Part A — Security review** below—no high-severity findings; medium items (survey abuse surface, brain-map key + client bundle) documented there.
 
 ### Summary table
@@ -59,14 +59,14 @@ Use this table to drive follow-on work without re-scoring until changes ship. **
 ### 1. Action parity
 
 **Evidence:** Admin alignment CRUD via fetch ([`src/app/admin/alignment/page.tsx`](../../src/app/admin/alignment/page.tsx) L89–147); public API [`alignment-context/route.ts`](../../src/app/api/alignment-context/route.ts); CLI [`scripts/alignment-context-cli.mjs`](../../scripts/alignment-context-cli.mjs); **curl** for capabilities, brain-map, alignment in [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md).  
-**Gap:** No dedicated MCP server in-repo; admin UI paths need Supabase session (Playwright or human).  
+**Gap:** No dedicated MCP server in-repo; admin UI paths need **operator browser session** (Playwright or human).  
 **Score:** 7/12 — +1 vs prior pass for documented HTTP parity on core routes.  
 **P1:** Thin MCP wrapper documented in [INTEGRATION_PATHS.md](../agent/INTEGRATION_PATHS.md) if desired.
 
 **Parity at a glance**
 
 - **Alignment (public API + CLI):** `x-alignment-context-key` when `ALIGNMENT_CONTEXT_API_SECRET` is set; full CRUD via [`alignment-context-cli.mjs`](../../scripts/alignment-context-cli.mjs) and curl in [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md).
-- **Alignment (admin UI):** Supabase session + admin role—agent parity via **browser automation** (e.g. Playwright) or human, not the shared-secret API.
+- **Alignment (admin UI):** Operator session cookie after `/login`—agent parity via **browser automation** (e.g. Playwright) or human, not the shared-secret API.
 - **Brain map:** `GET /api/brain-map/graph` only; no POST without scope + AC per [INTEGRATION_PATHS.md](../agent/INTEGRATION_PATHS.md).
 
 ### 2. Tools as primitives
@@ -120,7 +120,7 @@ Static review of `src/app/api/**` and auth helpers; **no high-severity** issues 
 
 | Severity | Topic | Notes |
 |----------|--------|--------|
-| — | Alignment + admin gates | `checkAlignmentContextApiGate` (shared secret); `requireOpenGrimoireAdminRoute` (Supabase session + admin role). |
+| — | Alignment + admin gates | `checkAlignmentContextApiGate` (shared secret); `requireOpenGrimoireAdminRoute` (operator session cookie). |
 | Medium | Survey `POST /api/survey` | Unauthenticated by design; spam/abuse possible without edge rate limits or CAPTCHA (product decision). |
 | Medium | Brain-map key + public client | If `NEXT_PUBLIC_*` mirrors server secret, header is replayable from bundle—treat as casual gating or keep graph non-sensitive (see [NEXT_PUBLIC_AND_SECRETS.md](../security/NEXT_PUBLIC_AND_SECRETS.md)). |
 | Low | `GET /api/capabilities` | Public route list + auth hints—accepted for OA-REST-2 agent discovery; light reconnaissance surface. |

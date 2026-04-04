@@ -1,124 +1,78 @@
-# OpenGrimoire — survey & moderation — deployment guide
+# OpenGrimoire — deployment guide
 
-## OpenGrimoire (current stack) — agent API keys
+## Current stack (SQLite + Next.js)
 
-Runtime uses **local SQLite** (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`) for alignment + survey; Supabase sections below are **legacy reference** unless you still run that path.
+Runtime uses **local SQLite** only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`) for Sync Session (survey), alignment, and related operator data. The schema is created and migrated by the app (**Drizzle** bootstrap on startup). There is **no Supabase** or hosted Postgres requirement.
 
-**Production checklist for agent-facing routes:**
+**Production checklist:**
 
+- **`OPENGRIMOIRE_SESSION_SECRET`** — signed cookie for `/login` and `/admin/*`.
+- **`OPENGRIMOIRE_ADMIN_PASSWORD`** or **`OPENGRIMOIRE_ADMIN_PASSWORD_HASH`** — operator login.
 - **`ALIGNMENT_CONTEXT_API_SECRET`** — required in production for `/api/alignment-context`; callers send **`x-alignment-context-key`**.
-- **`CLARIFICATION_QUEUE_API_SECRET`** — **recommended** when harnesses or scripts only need the clarification queue: set a dedicated value and send **`x-clarification-queue-key`** on `/api/clarification-requests` (blast-radius separation from alignment automation). When unset, clarification accepts the same secret/header as alignment. See [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) and [.env.example](.env.example).
+- **`CLARIFICATION_QUEUE_API_SECRET`** (recommended for harness-only access) — **`x-clarification-queue-key`** on clarification routes when set. See [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) and [.env.example](.env.example).
 
-Operator login uses **`OPENGRIMOIRE_SESSION_SECRET`** and **`OPENGRIMOIRE_ADMIN_PASSWORD`** (or bcrypt hash). See [.env.example](.env.example) and [docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md](docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md).
+See [docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md](docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md) and [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md).
 
-## 🎯 MVP Focus: Survey & Moderation Only
-
-This deployment guide focuses on the two essential features:
-1. **Survey System** - Multi-step survey form
-2. **Moderation System** - Admin panel for content approval
-
-## 🚀 Quick Docker Deployment (Recommended for Proxmox VM)
+## Quick Docker deployment
 
 ### Prerequisites
-- Docker & Docker Compose installed
-- Supabase account
-- Domain name (optional but recommended)
 
-### Step 1: Clone Repository
+- Docker and Docker Compose
+- Domain name (optional)
+
+### Clone and env
+
 ```bash
 git clone <your-repo-url>
 cd OpenGrimoire
-```
-
-### Step 2: Environment Setup
-Create `.env.local` file:
-```bash
-# Copy the example and modify
 cp .env.example .env.local
-
-# Edit with your Supabase credentials
-nano .env.local
+# Edit .env.local — set secrets above; optional OPENGRIMOIRE_DB_PATH for a persistent volume path
 ```
 
-Required environment variables (use **your** values from Supabase **Project Settings → API** — do not paste real keys into git or tickets):
+Example production variables (placeholders only — never commit real secrets):
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key>
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-NEXT_PUBLIC_APP_URL=https://your-domain.com
 NODE_ENV=production
-# Required in production: GET /api/alignment-context returns 503 Misconfigured if missing/blank.
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+OPENGRIMOIRE_SESSION_SECRET=<long-random-secret>
+OPENGRIMOIRE_ADMIN_PASSWORD_HASH=<bcrypt-hash>
+OPENGRIMOIRE_DB_PATH=/data/opengrimoire.sqlite
 ALIGNMENT_CONTEXT_API_SECRET=<long-random-secret>
 ```
 
-Callers (agents, cron, internal tools) must send header `x-alignment-context-key: <same value>` on each request to that route.
+### Database
 
-See [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md) for what must never be committed or logged.
+No manual SQL: start the app once so SQLite is created under `OPENGRIMOIRE_DB_PATH` (or default `data/opengrimoire.sqlite`). Back up that file for disaster recovery.
 
-### Step 3: Database Setup
-1. Go to your Supabase project SQL editor
-2. Run the complete schema from `supabase/migrations/20240320000000_initial_schema.sql`
-3. Run the RLS fix from `supabase/migrations/20240320000001_fix_moderation_rls.sql`
+### Run
 
-### Step 4: Deploy with Docker
 ```bash
-# Build and start the application
-docker-compose up -d
-
-# Check logs
-docker-compose logs -f opengrimoire-survey
+docker compose up -d
+docker compose logs -f opengrimoire
 ```
 
-### Step 5: Create Admin User
-In Supabase Auth dashboard:
-1. Create a new user with admin email
-2. In Users table, set `user_metadata` to:
-   ```json
-   {"role": "admin"}
-   ```
+Default container listens on **3000** (see [docker-compose.yml](docker-compose.yml)). Local `npm run dev` uses **3001** per [package.json](package.json).
 
-## 🌐 Access Points
+### Operator admin
 
-- **Survey Form**: `https://your-domain.com/survey`
-- **Admin Panel**: `https://your-domain.com/admin`
-- **Main Dashboard**: `https://your-domain.com/`
+1. Open `https://your-domain.com/login`.
+2. Sign in with the password matching `OPENGRIMOIRE_ADMIN_PASSWORD` (or hash).
+3. Use `/admin/*` for moderation and alignment UI.
 
-## ⚡ Minimal File Structure for MVP
+## Access points
 
-Essential files you need:
-```
-OpenGrimoire/
-├── src/
-│   ├── app/
-│   │   ├── api/survey/route.ts           # Survey submission API
-│   │   ├── survey/page.tsx               # Survey form page
-│   │   ├── admin/page.tsx                # Admin dashboard
-│   │   └── login/page.tsx                # Admin login
-│   ├── components/
-│   │   ├── SyncSessionForm/              # Sync Session multi-step form
-│   │   ├── AdminPanel/                   # Moderation interface
-│   │   └── Layout/                       # Basic layout
-│   ├── lib/
-│   │   ├── supabase/                     # Database client
-│   │   └── hooks/                        # Form hooks
-│   └── types/                            # TypeScript definitions
-├── supabase/migrations/                  # Database schema
-├── package.json                          # Dependencies
-├── Dockerfile                            # Docker configuration
-├── docker-compose.yml                    # Container orchestration
-└── next.config.js                        # Next.js config
-```
+- **Sync Session:** `/operator-intake` or `/survey`
+- **Admin:** `/admin`, `/login`
+- **Context graph:** `/context-atlas` (static JSON + optional `GET /api/brain-map/graph`)
 
-## 🔧 Configuration for Production
+## Reverse proxy (Nginx)
 
-### Reverse Proxy (Nginx)
 ```nginx
 server {
     listen 80;
     listen 443 ssl;
     server_name your-domain.com;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -133,81 +87,25 @@ server {
 }
 ```
 
-### SSL with Let's Encrypt
-```bash
-# Install certbot
-sudo apt update
-sudo apt install certbot python3-certbot-nginx
+## Security
 
-# Generate certificate
-sudo certbot --nginx -d your-domain.com
+1. Never commit `.env.local`.
+2. Use opaque placeholders in docs and tickets — [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md).
+3. **`NEXT_PUBLIC_*`** values are visible in the browser bundle — see [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md).
+4. Enforce HTTPS in production.
 
-# Auto-renewal
-sudo systemctl enable certbot.timer
-```
+## Monitoring and backup
 
-## 🛡️ Security Considerations
+- Health: `curl -f http://localhost:3000/`
+- Logs: `docker compose logs --tail=100`
+- Backup: copy the SQLite file (`OPENGRIMOIRE_DB_PATH`) on a schedule.
 
-1. **Environment Variables**: Never commit `.env.local` to version control
-2. **Docs placeholders**: Use opaque placeholders in examples only — see [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md)
-3. **Brain map header**: `NEXT_PUBLIC_BRAIN_MAP_SECRET` is visible in the browser bundle (gate token, not a true secret). Prefer server-only `BRAIN_MAP_SECRET` verification; details in [docs/security/NEXT_PUBLIC_AND_SECRETS.md](docs/security/NEXT_PUBLIC_AND_SECRETS.md)
-4. **Database RLS**: Policies are configured for user data protection
-5. **Admin Access**: Only users with `role: "admin"` can access moderation
-6. **Alignment context API**: With `NODE_ENV=production`, `ALIGNMENT_CONTEXT_API_SECRET` must be set (non-empty). The route uses the service role server-side; without the secret the app refuses to serve reads (503). See API table in [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.md).
-7. **HTTPS**: Always use SSL/TLS in production
+## Troubleshooting
 
-## 🔍 Monitoring & Maintenance
+1. **503 on alignment API in production** — set non-empty `ALIGNMENT_CONTEXT_API_SECRET`.
+2. **Cannot log in** — verify `OPENGRIMOIRE_SESSION_SECRET` and password env vars.
+3. **Docker build** — ensure `better-sqlite3` native build succeeds in the image (see [Dockerfile](Dockerfile)).
 
-### Health Checks
-```bash
-# Check application status
-curl -f http://localhost:3000/
+## Historical note
 
-# Check Docker containers
-docker-compose ps
-
-# View logs
-docker-compose logs --tail=100 opengrimoire-survey
-```
-
-### Database Backup
-```bash
-# Export survey data
-# Use Supabase dashboard or API to export data periodically
-```
-
-## 🚨 Troubleshooting
-
-### Common Issues
-1. **Supabase Connection**: Verify environment variables
-2. **Admin Access**: Check user metadata in Supabase Auth
-3. **Docker Build**: Ensure all dependencies are in package.json
-4. **CORS Issues**: Check NEXT_PUBLIC_APP_URL matches domain
-
-### Debug Mode
-```bash
-# Run in development mode for debugging
-npm run dev
-```
-
-## 📊 MVP Features Verification
-
-### Survey System ✅
-- Multi-step form with 8 steps
-- Data validation with Zod
-- Anonymous submission option
-- Supabase integration
-
-### Moderation System ✅
-- Admin authentication
-- Pending responses queue
-- Approve/reject functionality
-- Notes and tagging
-
-### Missing from MVP
-- Data visualization components
-- Three.js visualizations
-- Advanced analytics
-- Export functionality
-
-This MVP focuses purely on data collection and content moderation, ready for immediate deployment. 
+Older docs referred to Postgres migrations under `supabase/migrations/` as a reference snapshot. **Runtime is SQLite only**; ignore Supabase CLI and JWT admin flows. See [CLAUDE.md](CLAUDE.md).

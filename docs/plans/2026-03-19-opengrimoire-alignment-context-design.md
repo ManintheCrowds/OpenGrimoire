@@ -1,5 +1,7 @@
 # Design: alignment and context questions (OpenGrimoire + Supabase)
 
+> **Historical (2026-04):** Runtime persistence is **SQLite**, not Supabase. Keep this file for design rationale; ignore Supabase-specific deployment steps.
+
 **Status:** Approved — **Approach B** (new `alignment_context_items` table).  
 **Date:** 2026-03-19 (design); approval recorded when alignment was confirmed as a first-class product surface with agent-facing read/CRUD.
 

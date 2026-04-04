@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-/** Legacy route name; exercises local SQLite via HTTP (no Supabase). */
-export default function LocalStorageApiTester() {
+/** Dev-only: exercises local SQLite via HTTP (`GET /api/survey/visualization`). */
+export default function SqliteSurveyApiTester() {
   const [vizResult, setVizResult] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,21 +24,21 @@ export default function LocalStorageApiTester() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-4 space-y-4">
+    <div className="max-w-lg mx-auto p-4 space-y-4 min-w-0">
       <h1 className="text-xl font-bold">Local SQLite API (survey visualization)</h1>
       <p className="text-sm text-gray-600">
-        Fetches <code className="text-xs">GET /api/survey/visualization?all=1</code> (OpenGrimoire uses SQLite, not
-        Supabase).
+        Fetches <code className="text-xs break-all">GET /api/survey/visualization?all=1</code> against the OpenGrimoire
+        SQLite database.
       </p>
-      <button type="button" onClick={() => void handleFetch()} className="px-4 py-2 bg-blue-500 text-white rounded">
+      <button type="button" onClick={() => void handleFetch()} className="px-4 py-2 min-h-[44px] bg-blue-500 text-white rounded">
         Fetch visualization JSON
       </button>
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-500">Error: {error}</div>}
       {vizResult != null && (
-        <div>
+        <div className="min-w-0">
           <h2 className="font-semibold mt-4">Result</h2>
-          <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto max-h-96">
+          <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto max-h-96 max-w-full">
             {JSON.stringify(vizResult, null, 2)}
           </pre>
         </div>

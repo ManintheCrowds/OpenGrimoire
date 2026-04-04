@@ -30,39 +30,32 @@ The OpenGrimoire (Agent Context Atlas) visualization platform is built using a m
 │  └── Custom Hooks (Business Logic)                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  Utilities & Services (src/lib/)                               │
-│  ├── Supabase Client                                          │
+│  ├── SQLite / Drizzle (survey + alignment)                     │
 │  ├── Data Processing                                           │
 │  ├── Visualization Utilities                                   │
 │  └── Helper Functions                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Backend Architecture
+### Persistence and API layer
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Supabase Backend                           │
+│  Next.js Route Handlers (src/app/api/)                          │
 ├─────────────────────────────────────────────────────────────────┤
-│  PostgreSQL Database                                            │
-│  ├── Survey Responses Table                                     │
-│  ├── Attendees Table                                           │
-│  ├── Moderation Table                                          │
-│  └── Analytics Views                                           │
+│  Local SQLite (better-sqlite3 + Drizzle)                        │
+│  ├── Survey / Sync Session rows                                 │
+│  ├── Alignment context items                                     │
+│  └── Moderation / operator tables as implemented                │
 ├─────────────────────────────────────────────────────────────────┤
 │  Authentication & Authorization                                 │
-│  ├── Row Level Security (RLS)                                  │
-│  ├── JWT Token Management                                      │
-│  └── Role-Based Access Control                                 │
+│  ├── Operator session cookie (/login)                           │
+│  ├── API keys (x-alignment-context-key, etc.) per contract      │
+│  └── No Postgres RLS — enforce in handlers                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  Real-time Features                                            │
-│  ├── WebSocket Connections                                     │
-│  ├── Live Data Synchronization                                 │
-│  └── Event Broadcasting                                        │
-├─────────────────────────────────────────────────────────────────┤
-│  Storage & CDN                                                 │
-│  ├── File Storage Buckets                                      │
-│  ├── Image Optimization                                        │
-│  └── Static Asset Delivery                                     │
+│  Static assets                                                  │
+│  ├── public/brain-map-graph.json (+ optional .local.json)      │
+│  └── GET /api/brain-map/graph                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -153,10 +146,9 @@ User Action → Component → Hook → API Call → Database
 State Update → Re-render → UI Update
 ```
 
-#### Real-time Data Synchronization
-```
-Database Change → Supabase Realtime → WebSocket → Client Update → UI Refresh
-```
+#### Data refresh
+
+Clients refetch via **HTTP** (fetch, React Query, or focus/visibility refetch). There is no first-party realtime WebSocket layer in the product contract.
 
 ## Component Structure
 
@@ -312,7 +304,7 @@ GROUP BY learning_style;
 
 ### Authentication Flow
 ```
-1. User Login → Supabase Auth → JWT Token
+1. User Login → `POST /api/auth/login` → signed session cookie (`opengrimoire_session`)
 2. Token Validation → RLS Policies → Data Access
 3. Session Management → Automatic Refresh → Secure Storage
 ```

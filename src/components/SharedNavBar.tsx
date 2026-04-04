@@ -18,7 +18,7 @@ export default function SharedNavBar() {
 
   return (
     <nav
-      className="flex items-center gap-4 border-b bg-white px-4 py-2"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b bg-white px-3 py-2 sm:gap-4 sm:px-4"
       aria-label="Main navigation"
     >
       {navItems.map(({ href, label, testId }) => {
@@ -28,7 +28,7 @@ export default function SharedNavBar() {
             key={href}
             href={href}
             data-testid={testId}
-            className={`text-sm font-medium ${
+            className={`inline-flex min-h-[44px] items-center text-sm font-medium ${
               isActive ? 'text-blue-600 underline' : 'text-gray-600 hover:text-gray-900 hover:underline'
             }`}
           >

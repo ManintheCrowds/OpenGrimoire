@@ -11,7 +11,7 @@ _Complete after stakeholder pass:_ e.g. production deploy confidence, operator w
 
 | # | System | Primary surfaces | Notes |
 |---|--------|------------------|--------|
-| 1 | **Survey & moderation** | `/survey`, `/admin`, `/login`, `POST /api/survey` | Supabase RLS, attendee/responses pipeline |
+| 1 | **Survey & moderation** | `/survey`, `/admin`, `/login`, `POST /api/survey` | SQLite + route-handler auth (no Postgres RLS) |
 | 2 | **Data visualization** | `/visualization`, `/visualization/*`, constellation/test pages | Alluvial/Chord, hooks, quotes, debug flags |
 | 3 | **Brain map / context atlas** | `build_brain_map.py` → JSON → `GET /api/brain-map/graph` → `/context-atlas` | Ports, `BRAIN_MAP_*`, EMPTY_GRAPH |
 | 4 | **Alignment & operator APIs** | `/api/alignment-context`, `/admin/alignment`, `docs/agent/*`, CLI | Migration, prod secret, agent parity |

@@ -360,10 +360,10 @@ export default function BrainMapGraph() {
     Boolean(data && data.nodes.length > 0 && filteredData && filteredData.nodes.length === 0);
 
   return (
-    <div className="flex h-full w-full flex-col bg-gray-50">
-      <div className="border-b bg-white px-4 py-2">
-        <h1 className="text-lg font-semibold text-gray-900">OpenGrimoire — context graph</h1>
-        <p className="text-sm text-gray-600">
+    <div className="flex h-full min-h-0 w-full max-w-full flex-col bg-gray-50">
+      <div className="min-w-0 shrink-0 border-b bg-white px-3 py-2 sm:px-4">
+        <h1 className="text-base font-semibold text-gray-900 sm:text-lg">OpenGrimoire — context graph</h1>
+        <p className="text-xs text-gray-600 sm:text-sm">
           Co-access across session journals and handoffs. After rebuilding JSON, use <strong>Refresh graph</strong>{' '}
           below (or reload the page). Rebuild with{' '}
           <code className="rounded bg-gray-100 px-1">python .cursor/scripts/build_brain_map.py</code> (from
@@ -393,54 +393,60 @@ export default function BrainMapGraph() {
             No nodes in this layer for the current filter. Choose <strong>All</strong> or another layer.
           </p>
         )}
-        <div className="mt-2 flex flex-wrap items-center gap-2" role="tablist" aria-label="View mode">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewMode === 'graph'}
-            aria-controls="brain-map-graph-panel"
-            id="tab-graph"
-            onClick={() => setViewMode('graph')}
-            className={`rounded px-3 py-1 text-sm font-medium ${
-              viewMode === 'graph' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            Graph
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewMode === 'table'}
-            aria-controls="brain-map-table-panel"
-            id="tab-table"
-            onClick={() => setViewMode('table')}
-            className={`rounded px-3 py-1 text-sm font-medium ${
-              viewMode === 'table' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            Table
-          </button>
-          <span className="mx-1 text-gray-300" aria-hidden>
-            |
-          </span>
-          <span className="text-xs font-medium uppercase tracking-wide text-gray-500">Layer</span>
-          {(['all', 'state', 'vault'] as const).map((lf) => (
+        <div
+          className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-2"
+          role="tablist"
+          aria-label="View mode"
+        >
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              key={lf}
               type="button"
               role="tab"
-              aria-selected={layerFilter === lf}
-              onClick={() => setLayerFilter(lf)}
-              className={`rounded px-3 py-1 text-sm font-medium ${
-                layerFilter === lf ? 'bg-slate-200 text-slate-900' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              aria-selected={viewMode === 'graph'}
+              aria-controls="brain-map-graph-panel"
+              id="tab-graph"
+              onClick={() => setViewMode('graph')}
+              className={`min-h-[40px] rounded px-3 py-2 text-sm font-medium sm:min-h-0 sm:py-1 ${
+                viewMode === 'graph' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {lf === 'all' ? 'All' : lf === 'state' ? 'State' : 'Vault'}
+              Graph
             </button>
-          ))}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'table'}
+              aria-controls="brain-map-table-panel"
+              id="tab-table"
+              onClick={() => setViewMode('table')}
+              className={`min-h-[40px] rounded px-3 py-2 text-sm font-medium sm:min-h-0 sm:py-1 ${
+                viewMode === 'table' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Table
+            </button>
+            <span className="hidden text-gray-300 sm:inline" aria-hidden>
+              |
+            </span>
+            <span className="w-full text-xs font-medium uppercase tracking-wide text-gray-500 sm:w-auto">Layer</span>
+            {(['all', 'state', 'vault'] as const).map((lf) => (
+              <button
+                key={lf}
+                type="button"
+                role="tab"
+                aria-selected={layerFilter === lf}
+                onClick={() => setLayerFilter(lf)}
+                className={`min-h-[40px] rounded px-3 py-2 text-sm font-medium sm:min-h-0 sm:py-1 ${
+                  layerFilter === lf ? 'bg-slate-200 text-slate-900' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {lf === 'all' ? 'All' : lf === 'state' ? 'State' : 'Vault'}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
-            className="ml-auto rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+            className="w-full min-h-[44px] rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 sm:ml-auto sm:w-auto sm:min-h-0 sm:py-1"
             onClick={() => setReloadToken((n) => n + 1)}
             disabled={loading}
             aria-label="Reload context graph from server after rebuilding brain-map-graph.json"
@@ -449,7 +455,7 @@ export default function BrainMapGraph() {
           </button>
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto" data-testid="brain-map-graph">
+      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto" data-testid="brain-map-graph">
         {viewMode === 'graph' && (
           <div id="brain-map-graph-panel" role="tabpanel" aria-labelledby="tab-graph" className="h-full w-full">
             <svg ref={svgRef} className="h-full w-full" aria-label="Context graph visualization" />

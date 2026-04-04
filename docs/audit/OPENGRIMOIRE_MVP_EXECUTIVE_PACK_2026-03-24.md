@@ -7,7 +7,7 @@
 
 ## Executive summary (≤10 bullets)
 
-1. **MVP sentence** (product): Operator loads **local-first brain map** in browser, uses **documented REST/CLI** for alignment when configured, **without Supabase** for the graph path alone.  
+1. **MVP sentence** (product): Operator loads **local-first brain map** in browser, uses **documented REST/CLI** for alignment when configured; persistence is **SQLite** (no hosted Postgres/Supabase).  
 2. **Visualization gap (P0):** Table view does not show optional schema fields (`trust_score`, `grimoire_tags`, etc.) — see `BrainMapGraph.tsx` vs [BRAIN_MAP_SCHEMA.md](../BRAIN_MAP_SCHEMA.md); AC2 open.  
 3. **OpenGrimoire** scores **partial–good** on API primitives, shared workspace, alignment CRUD, and **capabilities** discovery (`/api/capabilities` + page).  
 4. **Context injection / prompt-native** are **low by design** per REST contract non-goals—not bugs.  
@@ -80,6 +80,5 @@ From [agent_native_opengrimoire_2026-03-24.md](./agent_native_opengrimoire_2026-
 ## Open questions (≤5)
 
 1. **AC2:** Add columns for all optional fields, or subset + “more” drawer?  
-2. **Supabase:** Is MVP **demo** without hosted Supabase acceptable for alignment UI, or must admin path work in CI?  
-3. **OpenHarness:** Single combined operator doc vs per-repo runbooks?  
-4. **E2E:** Gate PRs on Playwright in CI or manual pre-release only?
+2. **OpenHarness:** Single combined operator doc vs per-repo runbooks?  
+3. **E2E:** CI runs `verify` + Playwright on default branch (see `.github/workflows/ci.yml`).

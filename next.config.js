@@ -15,6 +15,12 @@ const nextConfig = {
   async rewrites() {
     return [{ source: '/api/openapi.json', destination: '/api/openapi' }];
   },
+  async redirects() {
+    return [
+      { source: '/test-supabase', destination: '/test-sqlite', permanent: false },
+      { source: '/test-supabase/:path*', destination: '/test-sqlite/:path*', permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

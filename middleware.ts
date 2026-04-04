@@ -34,7 +34,7 @@ const DISCOVERY_GET_PATHS = new Set(['/api/capabilities', '/api/openapi', '/api/
  * treats `pathname === prefix` or `pathname.startsWith(prefix + '/')`. When adding a prefix,
  * update matcher + `e2e/test-routes.spec.ts` smoke for that route.
  */
-const TEST_ROUTE_PREFIXES = ['/test', '/test-chord', '/test-context', '/test-supabase'] as const;
+const TEST_ROUTE_PREFIXES = ['/test', '/test-chord', '/test-context', '/test-sqlite'] as const;
 
 function isTestDevRoute(pathname: string): boolean {
   return TEST_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -129,7 +129,7 @@ export const config = {
     '/test-chord/:path*',
     '/test-context',
     '/test-context/:path*',
-    '/test-supabase',
-    '/test-supabase/:path*',
+    '/test-sqlite',
+    '/test-sqlite/:path*',
   ],
 };

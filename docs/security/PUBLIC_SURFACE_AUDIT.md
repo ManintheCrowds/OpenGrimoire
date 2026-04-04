@@ -19,13 +19,13 @@
 | ID | Severity | Location | Issue | Fix | Verification |
 |----|----------|----------|-------|-----|--------------|
 | F1 | Critical | `src/components/DataVisualization/shared/useVisualizationData.ts` | `console.log` included `sampleData: validResponses.slice(0, 2)` (survey + nested `attendee`) | Remove row payloads from logs; gate remaining debug logs behind `NEXT_PUBLIC_DEBUG_VISUALIZATION=1` and `development` | Load `/visualization` with DevTools: default build shows no row dumps |
-| F2 | High | `DEPLOYMENT.md` | Example env block used JWT-looking truncated strings for anon/service keys | Use opaque placeholders (`<your-anon-public-key>`, `<your-service-role-key>`) and point to Supabase **Project Settings → API** | Run methodology § below: no JWT-shaped literals in tracked env examples |
+| F2 | High | `DEPLOYMENT.md` | (Historical) Example env block used JWT-shaped Supabase placeholders | **Remediated:** `DEPLOYMENT.md` is SQLite-first; no Supabase keys in primary path | Run methodology § below: no JWT-shaped literals in tracked env examples |
 | F3 | High | `README.md`, `BrainMapGraph.tsx`, `.env.example` | `NEXT_PUBLIC_BRAIN_MAP_SECRET` is compiled into the client; anyone can read it and replay `x-brain-map-key` | Document as **obfuscation only**; prefer server session/cookie or short-lived tokens for real protection; server checks `BRAIN_MAP_SECRET` only | Docs + `.env.example` warn; optional future route refactor |
 | F4 | Medium | `useVisualizationData.ts` | Multiple unconditional `console.log` / `warn` in client | Same debug gate as F1 | Same as F1 |
 | F5 | Medium | `console.error` paths | Logging full `Error` objects can surface internal details | Log `err.message` only when not in viz debug mode | Spot-check console on forced failure |
 | F6 | Medium | `supabase/migrations/*` | Historical column `years_at_medtronic` (renamed to `tenure_years`) | Leave migrations as-is (reproducibility); optional cosmetic rename of filename only if team agrees | N/A |
 | F7 | Low | `.env.local` (disk) | Real keys may exist locally | Never commit; `.gitignore` lists `.env`, `.env.local` | `git ls-files OpenGrimoire/.env.local` → empty |
-| F8 | Low | CI | No `.github/workflows` under `OpenGrimoire/` | When adding CI, use `secrets.*` only; do not echo env in logs | Manual review on first workflow |
+| F8 | Low | CI | `.github/workflows` added for verify + E2E | Use `secrets.*` only for future keys; do not echo env in logs | Manual review on workflow changes |
 
 ## `NEXT_PUBLIC_*` inventory (threat model)
 
@@ -52,10 +52,10 @@ Expect: no real JWT material in tracked sources after remediation.
 
 | Route | Auth / exposure | Notes |
 |-------|-----------------|-------|
-| `GET/POST /api/alignment-context` | `SUPABASE_SERVICE_ROLE_KEY` on server (bypasses RLS). **Production:** non-empty `ALIGNMENT_CONTEXT_API_SECRET` required (**503** if missing). With secret set: **`x-alignment-context-key`** must match (**401** otherwise). **Dev:** secret optional (localhost only). | GET `{ items }`. POST `{ item }` (201), `source` forced `api`. Zod validation → **400**. See [ALIGNMENT_CONTEXT_API.md](../agent/ALIGNMENT_CONTEXT_API.md). |
+| `GET/POST /api/alignment-context` | **SQLite** persistence. **Production:** non-empty `ALIGNMENT_CONTEXT_API_SECRET` required (**503** if missing). With secret set: **`x-alignment-context-key`** must match (**401** otherwise). **Dev:** secret optional with `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL` when documented. | GET `{ items }`. POST `{ item }` (201), `source` forced `api`. Zod validation → **400**. See [ALIGNMENT_CONTEXT_API.md](../agent/ALIGNMENT_CONTEXT_API.md). |
 | `PATCH/DELETE /api/alignment-context/[id]` | Same secret gate as GET/POST. | PATCH partial update; DELETE hard delete; **404** if id missing. |
-| `GET/POST /api/admin/alignment-context` | **Supabase session cookie** + `user_metadata.role === 'admin'`. **401/403** otherwise. Uses service role after auth — no shared secret in browser. | Operator UI at `/admin/alignment`. |
-| `PATCH/DELETE /api/admin/alignment-context/[id]` | Same admin session gate. | Same semantics as public PATCH/DELETE without header. |
+| `GET/POST /api/admin/alignment-context` | **Operator session cookie** (`opengrimoire_session` after `/login`). **401/403** otherwise. No shared alignment secret in the browser for this path. | Operator UI at `/admin/alignment`. |
+| `PATCH/DELETE /api/admin/alignment-context/[id]` | Same operator session gate. | Same semantics as public PATCH/DELETE without header. |
 | `GET /api/brain-map/graph` | Optional `BRAIN_MAP_SECRET` + `x-brain-map-key` | Static JSON file, not DB |
 
 ## Operator checklist

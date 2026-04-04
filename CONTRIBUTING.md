@@ -47,3 +47,13 @@ Sibling harness repos (MiscRepos / OpenHarness) may use **critic loop**, **inten
 ## Tooling
 
 - **Browserslist / `caniuse-lite`:** Occasionally run `npx update-browserslist-db@latest` so build tooling stays current; commit `package-lock.json` if it changes.
+
+## Semantic smoke (agent NL parity)
+
+After API or admin UI changes to alignment, run **one natural-language check** (human or agent) so mechanical tests are not the only proof:
+
+1. Start `npm run dev` with `.env.local` per [.env.example](.env.example) (operator password + `OPENGRIMOIRE_SESSION_SECRET`; for local API without a secret, `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true`).
+2. **Prompt (example):** “Create a new alignment context item via `POST /api/alignment-context` with a unique title, then open `/login`, sign in, go to `/admin/alignment`, and confirm that item appears in the list.”
+3. **Expected:** HTTP **201** from POST; item visible in admin list after login (or documented failure with exact status/body if misconfigured).
+
+This complements Playwright and `npm run verify`; it does not replace them. See also [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md).

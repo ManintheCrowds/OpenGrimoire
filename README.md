@@ -15,7 +15,7 @@ OpenGrimoire is a local-first context graph and alignment workspace for human-to
 | **Sync Session (UX)** | User-facing alignment workflow for human-to-agent one-on-ones |
 | **Alignment Context (system)** | Alignment items via `/api/alignment-context` (distinct from survey submit; see agent docs) |
 
-## Context graph (no Supabase required)
+## Context graph (SQLite / static JSON — no hosted DB required)
 
 - **Viewer:** `/context-atlas` (alias of the same UI as `/brain-map`).
 - **Data:** `GET /api/brain-map/graph` reads **`public/brain-map-graph.local.json` when that file exists** (personal / vault merges; gitignored), otherwise `public/brain-map-graph.json`.
@@ -36,7 +36,7 @@ Full JSON contract: [docs/BRAIN_MAP_SCHEMA.md](docs/BRAIN_MAP_SCHEMA.md). **Tool
 
 ### Local-first notes
 
-The graph path is **static JSON + optional secret**—you can run the viewer without configuring Supabase. For broader local-first patterns (sync, ownership, AI safety), see [Open Local First](https://openlocalfirst.org/) and optionally the sibling `local-first` workspace (`README.md`, `RESOURCES.md`, `AI_SECURITY.md`).
+The graph path is **static JSON + optional secret**—you can run the viewer without configuring a database for the graph file. Survey and alignment data use **local SQLite** on the server. For broader local-first patterns (sync, ownership, AI safety), see [Open Local First](https://openlocalfirst.org/) and optionally the sibling `local-first` workspace (`README.md`, `RESOURCES.md`, `AI_SECURITY.md`).
 
 ### Future ingest hooks
 
@@ -108,10 +108,12 @@ Follow this once after `npm run dev` so you have a **single runnable story** for
 | `npm run lint` | ESLint |
 | `npm run type-check` | `tsc --noEmit` |
 | `npm run test` | Placeholder (exits 0 until unit tests exist) |
-| `npm run verify` | **CI / agents:** `lint` + `type-check` + `test` (single pass/fail). |
+| `npm run verify` | **Merge gate:** `lint` + `type-check` + `test` + `verify:capabilities` + `verify:openapi` + `verify:route-index` |
 | `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
 | `npm run test:e2e` | Playwright |
 | `npm run test:maestro` | Maestro mobile smoke (optional; requires [Maestro](https://maestro.mobile.dev/) CLI) |
+
+**GitHub Actions:** On push/PR to `main` or `master`, [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs `npm run verify` and `npm run test:e2e`. See [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
 
 **Tagged releases:** See [RELEASING.md](RELEASING.md) (`verify`, E2E, optional Maestro).
 

@@ -7,17 +7,18 @@ The Event Visualization Platform provides a RESTful API for managing survey data
 ## Base URL
 
 ```
-Development: http://localhost:3000/api
+Development: http://localhost:3001/api   (npm run dev — see package.json)
 Production: https://your-domain.com/api
 ```
 
 ## Authentication
 
-The API uses Supabase authentication with JWT tokens. Include the token in the Authorization header:
+OpenGrimoire uses **route-specific** auth (no global Supabase JWT):
 
-```http
-Authorization: Bearer <jwt_token>
-```
+- **Operator admin UI:** session cookie after `POST /api/auth/login` (see [docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md](../admin/OPENGRIMOIRE_ADMIN_ROLE.md)).
+- **Alignment / clarification APIs:** header `x-alignment-context-key` (and optionally `x-clarification-queue-key`) when secrets are set — see [docs/ARCHITECTURE_REST_CONTRACT.md](../ARCHITECTURE_REST_CONTRACT.md) and [docs/AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md).
+
+For the normative matrix, prefer **ARCHITECTURE_REST_CONTRACT.md** over this file when they differ.
 
 ## Error Responses
 

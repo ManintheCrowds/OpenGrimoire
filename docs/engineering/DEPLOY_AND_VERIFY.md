@@ -17,11 +17,11 @@ This is the **merge-quality** bar for application and API contract changes ([CON
 This repository includes:
 
 - **[Dockerfile](../../Dockerfile)** — multi-stage build, `next build`, **`output: 'standalone'`** (`next.config.js`), production image runs `node server.js` as user `nextjs`, listens on **3000**.
-- **[docker-compose.yml](../../docker-compose.yml)** — builds the image, maps **`3000:3000`**, sets `NODE_ENV=production`, passes optional Supabase-related env. Service name **`opengrimoire`**; network **`opengrimoire-network`**. **This is the only first-party container definition in-repo**; treat it as the reference for “we use Docker” for self-hosted runs.
+- **[docker-compose.yml](../../docker-compose.yml)** — builds the image, maps **`3000:3000`**, sets `NODE_ENV=production`, passes SQLite + operator + alignment secrets (see compose file). Service name **`opengrimoire`**; network **`opengrimoire-network`**. **This is the only first-party container definition in-repo**; treat it as the reference for “we use Docker” for self-hosted runs.
 
 **Certainty statement:** There is **no** `vercel.json` in this repo; **Vercel or other PaaS** are not defined here. If you deploy elsewhere, document the host’s build command (typically `npm run build` or `next build`) in your ops runbook.
 
-**Gap:** `docker-compose.yml` is **not** wired to run `npm run verify` automatically. CI does not currently build the Docker image on every PR (verify manually or add a workflow when ready).
+**CI:** `.github/workflows/ci.yml` runs **`npm run verify`** and **`npm run test:e2e`** on push/PR to the default branch. Docker image build on every PR remains optional.
 
 ## Hosted deploy (general)
 
@@ -30,9 +30,9 @@ Production builds typically run **`npm run build`** (and may run a subset of tes
 - If your pipeline runs only **`build`**, document in the PR or ops runbook that **contract drift** is still gated by **`verify:capabilities`** and **`verify:openapi`** in CI or in pre-merge review.
 - Avoid **false green:** if deploy only runs `build`, state that explicitly next to release notes when shipping API changes.
 
-## Optional smoke
+## CI workflow
 
-[`.github/workflows/survey-visualization-prod-smoke.yml`](../../.github/workflows/survey-visualization-prod-smoke.yml) is an example of **post-deploy** smoke; it is **not** a substitute for `npm run verify`.
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs **`npm run verify`** and **`npm run test:e2e`** on push and pull request to the default branch. Add separate **post-deploy** smokes only if you need live-URL checks; they are not a substitute for `npm run verify`.
 
 ## Related
 

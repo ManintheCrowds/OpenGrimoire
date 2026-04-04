@@ -1,6 +1,6 @@
 # OpenGrimoire admin (local operator session)
 
-Admin UI (`/admin`, `/admin/alignment`, moderation, etc.) is gated by a **signed HTTP-only cookie** (`opengrimoire_session`), not Supabase or JWT app metadata.
+Admin UI (`/admin`, `/admin/alignment`, moderation, etc.) is gated by a **signed HTTP-only cookie** (`opengrimoire_session`) after operator login — not third-party hosted auth.
 
 ## Configure
 
@@ -18,9 +18,9 @@ See `.env.example` for names and notes.
 - **`POST /api/auth/logout`** clears it.
 - **`GET /api/auth/session`** returns whether a valid session exists (for client checks).
 
-## Legacy Supabase role model
+## Historical note
 
-Older deployments used **`app_metadata.opengrimoire_role === 'admin'`** in Supabase JWTs. That path has been **removed**; use env-based operator auth only.
+Older documentation referred to JWT / hosted-DB admin roles. The **only** supported model now is **env-based operator password** + **`opengrimoire_session`** cookie after `/login`.
 
 ## Backup
 

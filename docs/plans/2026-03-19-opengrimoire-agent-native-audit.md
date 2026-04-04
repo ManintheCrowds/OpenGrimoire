@@ -1,5 +1,7 @@
 # Agent-native architecture review: OpenGrimoire
 
+> **Historical (2026-04):** Scores and Supabase-centric notes predate **SQLite-only** runtime; see [agent_native_opengrimoire_2026-03-24.md](../audit/agent_native_opengrimoire_2026-03-24.md) for current audit.
+
 **Scope:** [OpenGrimoire](../..) only (not full portfolio-harness). **Date:** 2026-03-19.
 
 ## Overall score summary

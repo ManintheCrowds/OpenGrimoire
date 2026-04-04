@@ -20,10 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className="flex min-h-screen flex-col">
+      <body className="flex min-h-dvh flex-col">
         <ClientProviders>
           <SharedNavBar />
-          <main className="flex-1">{children}</main>
+          <main className="flex min-h-0 flex-1 flex-col">{children}</main>
           <SiteFooter />
         </ClientProviders>
       </body>

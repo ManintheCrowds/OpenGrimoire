@@ -19,7 +19,7 @@ Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness
 | Piece | Role |
 |-------|------|
 | **OpenHarness** (e.g. `C:\Users\YOU\Documents\GitHub\OpenHarness`; legacy examples used `D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
-| **OpenGrimoire** (this app; clone folder should be `OpenGrimoire`; legacy `OpenAtlas` possible) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
+| **OpenGrimoire** (this app; clone folder should be `OpenGrimoire`; legacy `OpenGrimoire` possible) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
 
 **This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../OpenHarness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
 
@@ -104,7 +104,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | `npm run verify:e2e` | `verify` then Playwright E2E (uses `playwright.config.ts` `webServer`) |
 | `npm run test:e2e` | Playwright only |
 | `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenGrimoire** repo root with sibling **MiscRepos**; see OpenGrimoire README) |
-| `node scripts/alignment-context-cli.mjs` | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENATLAS_BASE_URL`) |
+| `node scripts/alignment-context-cli.mjs` | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENGRIMOIRE_BASE_URL`) |
 | `npm run study:export -- --output ./export.csv` | Export `study_cards` to CSV for Anki (`OPENGRIMOIRE_DB_PATH`) — see [docs/learning/README.md](./learning/README.md) |
 | `docker-compose.yml` | Local stack (see `DEPLOYMENT.md`) |
 
@@ -157,6 +157,6 @@ Use **one** primary path per task ([`MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cu
 
 ## TODO / gaps (tracked in harness `pending_tasks`)
 
-See **PENDING_OPENATLAS_HARNESS** in [`MiscRepos/.cursor/state/pending_tasks.md`](../../MiscRepos/.cursor/state/pending_tasks.md): keep this inventory accurate when routes/APIs change; **OA-4 `npm run verify`** is the unified lint/type-check/test entry (E2E optional via `verify:e2e`).
+See **PENDING_OPENGRIMOIRE_HARNESS** in [`MiscRepos/.cursor/state/pending_tasks.md`](../../MiscRepos/.cursor/state/pending_tasks.md): keep this inventory accurate when routes/APIs change; **OA-4 `npm run verify`** is the unified lint/type-check/test entry (E2E optional via `verify:e2e`).
 
 - **Clarification queue:** [HITL_INTENT_SURVEY_BACKLOG.md](HITL_INTENT_SURVEY_BACKLOG.md) / [CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md) (AI-posted human questions; not the intake `POST /api/survey` flow).

@@ -13,7 +13,7 @@
 - **Alignment context:** Full list/create/patch/delete via [ALIGNMENT_CONTEXT_API.md](./ALIGNMENT_CONTEXT_API.md) and [`scripts/alignment-context-cli.mjs`](../../scripts/alignment-context-cli.mjs) (`list`, `create`, `patch`, `delete`).
 - **Brain-map graph:** `GET /api/brain-map/graph` for the JSON document consumed by the viewer.
 
-Set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`) to your app origin (local dev defaults to port **3001** — see README). Set `ALIGNMENT_CONTEXT_API_SECRET` when the server enforces `x-alignment-context-key`.
+Set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENGRIMOIRE_BASE_URL`) to your app origin (local dev defaults to port **3001** — see README). Set `ALIGNMENT_CONTEXT_API_SECRET` when the server enforces `x-alignment-context-key`.
 
 ---
 

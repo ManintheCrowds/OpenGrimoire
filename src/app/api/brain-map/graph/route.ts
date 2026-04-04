@@ -7,6 +7,7 @@ import {
   verifyAdminSessionToken,
 } from '@/lib/auth/session';
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
+import { logAccessDenied } from '@/lib/observability/access-denial-log';
 
 /**
  * Serves brain-map graph JSON. Prefers `public/brain-map-graph.local.json` when present
@@ -23,6 +24,12 @@ export async function GET(request: Request) {
     const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
     const sessionOk = (await verifyAdminSessionToken(token)) !== null;
     if (!headerOk && !sessionOk) {
+      logAccessDenied({
+        request,
+        gate: 'brain_map',
+        reason: key.trim() ? 'invalid_secret' : 'session_required',
+        status: 401,
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }

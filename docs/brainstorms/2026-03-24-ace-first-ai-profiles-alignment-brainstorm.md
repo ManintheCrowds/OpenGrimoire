@@ -139,7 +139,7 @@ See [Resolved 2.4 / 3.4](#resolved-24--34).
 | **Canonical path** | **`docs/ACE_PROFILE.md`** is canonical; **`.cursor/ACE_PROFILE.md`** is a **pointer** or **symlink** to that file (single source of truth). |
 | **YAML** | Optional front matter on the canonical file: `inherits_portfolio`, `role_overlay`, `ace_profile_version`. |
 
-**Note:** Relative links above assume **`OpenGrimoire`** (this app) and **`MiscRepos`** are **sibling** directories under the same parent (e.g. `Documents/GitHub/`). If your clone is still named `OpenAtlas`, adjust paths. See [OPENGRIMOIRE_NAMING_AND_URLS.md](../engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
+**Note:** Relative links above assume **`OpenGrimoire`** (this app) and **`MiscRepos`** are **sibling** directories under the same parent (e.g. `Documents/GitHub/`). If your clone is still named `OpenGrimoire`, adjust paths. See [OPENGRIMOIRE_NAMING_AND_URLS.md](../engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
 
 ---
 

@@ -95,7 +95,7 @@ There is **no** `POST` / patch API for the graph today. `GET /api/brain-map/grap
    The merge script reads stub JSON as **utf-8-sig**, so stubs saved with a UTF-8 **BOM** (e.g. PowerShell `Set-Content -Encoding utf8`) still work.
 4. Reload the app (or refresh the brain-map view). Unknown top-level fields on the JSON (e.g. stub `meta`) are ignored by the viewer; only `nodes` / `edges` / `generated` / `sessionCount` / `sourceRoots` are part of the stable contract.
 
-**Contract and field mapping** (canonical artifact, `context_entity` mapping, optional MCP notes): see the interop doc in `trustgraph-local-repo`: `interop/OPENCOMPASS_OPENATLAS_INTEROP.md` (sibling workspace to this repo in the portfolio layout). OpenGrimoire naming vs upstream OpenCompass: [`docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md`](./OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md).
+**Contract and field mapping** (canonical artifact, `context_entity` mapping, optional MCP notes): see the interop doc in `trustgraph-local-repo`: `interop/OPENCOMPASS_OPENGRIMOIRE_INTEROP.md` (sibling workspace to this repo in the portfolio layout). OpenGrimoire naming vs upstream OpenCompass: [`docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md`](./OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md).
 
 ## Backlog (not implemented)
 

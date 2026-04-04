@@ -37,9 +37,9 @@
 
 ## OpenHarness (no browser)
 
-OpenGrimoire (this repo; folder often still named `OpenAtlas`) is the **browser app**. **OpenHarness** is a separate repo: portable **markdown workflows**, `.cursor` rules/skills, and `state/`—not a React GUI. When your work is handoffs, scripts, or skills rather than the web UI, use the harness docs and paths below.
+OpenGrimoire (this repo; folder often still named `OpenGrimoire`) is the **browser app**. **OpenHarness** is a separate repo: portable **markdown workflows**, `.cursor` rules/skills, and `state/`—not a React GUI. When your work is handoffs, scripts, or skills rather than the web UI, use the harness docs and paths below.
 
-**Layout:** With a typical clone layout (`OpenAtlas` and `OpenHarness` as siblings under the same parent, e.g. `Documents/GitHub/`), paths from this repo are like `../../OpenHarness/...`.
+**Layout:** With a typical clone layout (`OpenGrimoire` and `OpenHarness` as siblings under the same parent, e.g. `Documents/GitHub/`), paths from this repo are like `../../OpenHarness/...`.
 
 | Topic | Where |
 |-------|--------|

@@ -12,8 +12,8 @@
 
    Flows live under `e2e/maestro/` (e.g. `smoke_web.yaml`). This is **not** required for every merge if Maestro is absent on the machine; document in the release notes when it was run.
 
-4. **GUI audit** — Keep [`docs/audit/gui-2026-03-26.md`](docs/audit/gui-2026-03-26.md) aligned with E2E coverage. From a sibling **MiscRepos** clone: `python .cursor/scripts/weekly_gui_wave_prompt.py --config docs/audit/gui_wave_rollout_openatlas.yaml` (see [MiscRepos `GUI_WAVE_TWO_LAYER_CONTRACT.md`](../MiscRepos/docs/audit/GUI_WAVE_TWO_LAYER_CONTRACT.md)).
+4. **GUI audit** — Keep [`docs/audit/gui-2026-03-26.md`](docs/audit/gui-2026-03-26.md) aligned with E2E coverage. From a sibling **MiscRepos** clone: `python .cursor/scripts/weekly_gui_wave_prompt.py --config docs/audit/gui_wave_rollout_opengrimoire.yaml` (see [MiscRepos `GUI_WAVE_TWO_LAYER_CONTRACT.md`](../MiscRepos/docs/audit/GUI_WAVE_TWO_LAYER_CONTRACT.md)).
 
 ## Portfolio SSOT
 
-OpenGrimoire waves and OA-* IDs: [`../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml`](../MiscRepos/docs/audit/gui_wave_rollout_openatlas.yaml) (typical sibling clone layout).
+OpenGrimoire waves and OA-* IDs: [`../MiscRepos/docs/audit/gui_wave_rollout_opengrimoire.yaml`](../MiscRepos/docs/audit/gui_wave_rollout_opengrimoire.yaml) (typical sibling clone layout).

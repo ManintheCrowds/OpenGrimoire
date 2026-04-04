@@ -14,16 +14,28 @@ When anything conflicts, resolve in this order:
 
 **Same PR as API changes:** Update the matrix and this index when you add or change routes ([CONTRIBUTING.md](../CONTRIBUTING.md)).
 
-**Harness integration paths (HTTP vs optional MCP):** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) — primary stack is **REST + thin CLI**; optional future MCP must be thin wrappers over existing endpoints only (no second business layer). Optional stub notes: [`scripts/mcp-opengrimoire/README.md`](../scripts/mcp-opengrimoire/README.md).
+**Harness integration paths (HTTP vs optional MCP):** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) — primary stack is **REST + thin CLI**. **Optional MCP is product-constrained:** any future or workspace-registered tools must be **thin wrappers** over existing HTTP routes or published CLIs only—**no** second domain layer, **no** alternate persistence, **no** business logic that bypasses the REST contract. Workspace **least-privilege** server set for OpenGrimoire work: [Arc_Forge `docs/MCP_PROFILE_OPENGRIMOIRE.md`](../../Arc_Forge/docs/MCP_PROFILE_OPENGRIMOIRE.md). Optional stub: [`scripts/mcp-opengrimoire/README.md`](../scripts/mcp-opengrimoire/README.md).
 
 **Unified tool manifest (HTTP + workspace MCP):** [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md). **Trust tiers + curl examples:** [agent/HARNESS_ACTION_TIERS.md](./agent/HARNESS_ACTION_TIERS.md). **Retries:** [agent/ADR_IDEMPOTENCY_AND_RETRY.md](./agent/ADR_IDEMPOTENCY_AND_RETRY.md).
+
+### Agent session boundary (in-app vs harness)
+
+OpenGrimoire **in-app** persistence is **domain data and operator auth** only: survey responses, alignment context, clarification queue, study entities, and signed operator session cookies—everything described in [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). The app is **not** a full agent-engine or transcript store; it does **not** persist arbitrary agent run state, chat logs, or IDE session dumps. **Harness-side** resume and correlation (session IDs, last successful HTTP call to this app, plan pointers, Sync Session handoff IDs) live in **MiscRepos + OpenHarness** artifacts; use the canonical template at [MiscRepos `docs/agent/SESSION_SNAPSHOT_TEMPLATE.md`](../../MiscRepos/docs/agent/SESSION_SNAPSHOT_TEMPLATE.md) (sibling clone under your GitHub folder).
+
+### Token budgets (caller / harness)
+
+OpenGrimoire **does not** enforce **LLM token budgets**, provider spend caps, or model output limits on the server. Any model calls happen in the **harness, IDE, or external daemons**—not as a billed sub-step of this HTTP API. **Env vars, soft vs hard truncation, and defaults** for scripts that invoke models: [MiscRepos `docs/agent/CALLER_SIDE_LLM_BUDGETS.md`](../../MiscRepos/docs/agent/CALLER_SIDE_LLM_BUDGETS.md). Policy framing (local-default vs remote-escalate): [MiscRepos `local-proto/docs/LOCAL_AI_TOKEN_OFFLOAD_POLICY.md`](../../MiscRepos/local-proto/docs/LOCAL_AI_TOKEN_OFFLOAD_POLICY.md). Summary row: [engineering/OPERATIONAL_TRADEOFFS.md](./engineering/OPERATIONAL_TRADEOFFS.md).
+
+### Agent transcripts (compaction)
+
+The Next.js app **does not** compact, summarize, or prune **agent or IDE chat transcripts** (**non-goal**; **no** transcript-compaction API or background job in-repo). Operators and agents reduce context **outside** the app via harness handoff rules: [MiscRepos `docs/agent/HANDOFF_COMPACTION.md`](../../MiscRepos/docs/agent/HANDOFF_COMPACTION.md). Same boundary in [engineering/OPERATIONAL_TRADEOFFS.md](./engineering/OPERATIONAL_TRADEOFFS.md).
 
 ## Quick reference
 
 | Item | Value |
 |------|--------|
 | Local dev URL | **`http://localhost:3001`** (`npm run dev` in this repo) |
-| Base URL for scripts | **`OPENGRIMOIRE_BASE_URL`** (legacy alias: **`OPENATLAS_BASE_URL`**) — must match origin including port |
+| Base URL for scripts | **`OPENGRIMOIRE_BASE_URL`** (legacy alias: **`OPENGRIMOIRE_BASE_URL`**) — must match origin including port |
 | Alignment CLI | **`node scripts/alignment-context-cli.mjs`** (`list`, `create`, `patch`, `delete`) |
 | Study / SRS (flashcards) | **`GET`/`POST` `/api/study/decks`**, **`GET`/`POST` `/api/study/decks/:deckId/cards`**, **`POST` `/api/study/cards/:cardId/review`** — operator session cookie **or** **`x-alignment-context-key`** when alignment secret is set. CSV export: **`npm run study:export -- --output ./export.csv`**. See [docs/learning/README.md](./learning/README.md). |
 | Clarification queue (async agent → human) | **`GET`/`POST` `/api/clarification-requests`**, **`GET`/`PATCH` `/api/clarification-requests/:id`** — **`x-alignment-context-key`** when using alignment secret, or **`x-clarification-queue-key`** when **`CLARIFICATION_QUEUE_API_SECRET`** is set (recommended for production harnesses that only poll clarification). Operator UI: **`/admin/clarification-queue`**. See [docs/agent/CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md). |
@@ -49,7 +61,7 @@ When anything conflicts, resolve in this order:
 | Local `npm run dev` | **`http://localhost:3001`** (see `package.json`) |
 | Production | Your deployed origin |
 
-Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). Legacy alias: **`OPENATLAS_BASE_URL`** (still read by the alignment CLI if unset).
+Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). Legacy alias: **`OPENGRIMOIRE_BASE_URL`** (still read by the alignment CLI if unset).
 
 ## Headers
 
@@ -74,6 +86,8 @@ Alternatively, set a real `ALIGNMENT_CONTEXT_API_SECRET` and send it on each req
 - **`GET /api/capabilities`** — routes, auth hints, workflow notes (hand-maintained; same PR as API changes when possible).
 - Human-friendly view: **`/capabilities`** in the app.
 
+**Observability (limited):** There is **no** typed agent event or progress stream from this app. Server-side audit for auth failures is **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). Roadmap honesty: [research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md](./research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md) § Phase 2 follow-ups. **Transcript compaction** is also **out of scope** for the server (see § Agent transcripts above).
+
 ## CLI (alignment context)
 
 ```bash
@@ -81,7 +95,7 @@ node scripts/alignment-context-cli.mjs list
 node scripts/alignment-context-cli.mjs create --title "Example" --body "Optional"
 ```
 
-Env: `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`), `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
+Env: `OPENGRIMOIRE_BASE_URL` (or legacy `OPENGRIMOIRE_BASE_URL`), `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
 
 ## HTTP examples (curl)
 
@@ -130,11 +144,11 @@ See [agent/ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md) for `PATC
 
 ## Optional: thin MCP over REST (backlog)
 
-No first-party OpenGrimoire MCP server ships in-repo. A **future** MCP could expose only thin wrappers (`alignment_context_list`, `alignment_context_create`, `brain_map_graph_get`) around existing HTTP routes — **no** second domain layer. **Reference pattern:** [scripts/mcp-opengrimoire/README.md](../scripts/mcp-opengrimoire/README.md). If you register tools in Cursor, add them to your workspace MCP capability map. See [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
+No first-party OpenGrimoire MCP server ships in-repo. A **future** MCP could expose only thin wrappers (`alignment_context_list`, `alignment_context_create`, `brain_map_graph_get`) around existing HTTP routes — **no** second domain layer, **no** shadow database, **no** transcript store. **Reference pattern:** [scripts/mcp-opengrimoire/README.md](../scripts/mcp-opengrimoire/README.md). If you register tools in Cursor, add them to your workspace MCP capability map ([MiscRepos MCP_CAPABILITY_MAP.md](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md)) and keep the enabled set minimal ([Arc_Forge `docs/MCP_PROFILE_OPENGRIMOIRE.md`](../../Arc_Forge/docs/MCP_PROFILE_OPENGRIMOIRE.md)). See [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
 ## Untrusted content (LLM safety)
 
-Alignment `body` / `title` may originate from external agents or pasted text; treat them as **untrusted** if a harness feeds them into an LLM or downstream tools. **OpenGrimoire does not replace harness-side screening:** apply **secure-contain-protect** and [TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md) (use your `local-proto` clone path; often a sibling of `OpenAtlas` under `GitHub/`). See also [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
+Alignment `body` / `title` may originate from external agents or pasted text; treat them as **untrusted** if a harness feeds them into an LLM or downstream tools. **OpenGrimoire does not replace harness-side screening:** apply **secure-contain-protect** and [TOOL_SAFEGUARDS.md](../../local-proto/docs/TOOL_SAFEGUARDS.md) (use your `local-proto` clone path; often a sibling of `OpenGrimoire` under `GitHub/`). See also [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
 
 ## Related docs
 

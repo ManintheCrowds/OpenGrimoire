@@ -146,7 +146,7 @@ Static review of `src/app/api/**` and auth helpers; **no high-severity** issues 
 | 4 | Shared workspace | 7/10 | Same files on disk for human + agent | Repo root; `docs/PUBLIC_AND_PRIVATE_HARNESS.md` |
 | 5 | CRUD completeness | N/A | No entity API—**honest N/A**; state files are CRUD via editor | — |
 | 6 | UI integration | N/A | No product UI | — |
-| 7 | Capability discovery | 7/10 | Skill list + README patterns | `README.md`; `.cursor/skills/*/SKILL.md`; `docs/AGENT_NATIVE_CHECKLIST.md` |
+| 7 | Capability discovery | 7/10 | Skill list + README patterns | `README.md`; `.cursor/skills/*/SKILL.md`; OpenHarness `docs/AGENT_NATIVE_CHECKLIST.md` (canonical SSOT); MiscRepos `.cursor/docs/AGENT_NATIVE_CHECKLIST.md` (portfolio **stub**) + `AGENT_NATIVE_CHECKLIST_MISCOPS.md` |
 | 8 | Prompt-native | 7/10 | Handoff/continue prompts are prompt-forward | `docs/HANDOFF_FLOW.md`; `state/continue_prompt.txt`; `scripts/copy_continue_prompt.*` |
 
 **P0 (OpenHarness):** Keep [HANDOFF_FLOW.md](../../../OpenHarness/docs/HANDOFF_FLOW.md) linked from OpenGrimoire runbook; optional cross-link [brain-map-visualization skill](../../../OpenHarness/.cursor/skills/brain-map-visualization/SKILL.md). **Done:** [OPERATOR_GUI_RUNBOOK.md](../OPERATOR_GUI_RUNBOOK.md) (OpenHarness section), [MONITORING_OPENGRIMOIRE.md](../MONITORING_OPENGRIMOIRE.md).

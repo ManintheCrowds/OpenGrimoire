@@ -1,6 +1,6 @@
 # Implementation plan: alignment context (Approach B)
 
-**Tracked task ID:** `OA-ALIGN-1` (see [pending_tasks.md](../../../.cursor/state/pending_tasks.md) § PENDING_OPENATLAS)  
+**Tracked task ID:** `OA-ALIGN-1` (see [pending_tasks.md](../../../.cursor/state/pending_tasks.md) § PENDING_OPENGRIMOIRE)  
 **Status:** Phases 1–4 **implemented in repo** (2026-03-19). **Operator step:** run the new migration against your Supabase project (`supabase db push` or SQL Editor). **UI polish** still deferred per plan.  
 **Design (approved):** [2026-03-19-OpenGrimoire-alignment-context-design.md](./2026-03-19-OpenGrimoire-alignment-context-design.md) — Approach B, `alignment_context_items` table.  
 **Reuse analysis (read first):** [2026-03-19-OpenGrimoire-refactor-reuse-alignment.md](./2026-03-19-OpenGrimoire-refactor-reuse-alignment.md)

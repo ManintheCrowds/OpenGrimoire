@@ -48,7 +48,7 @@ rg -l "MCP|tool" docs .cursor
 | [LOCAL_FIRST_NEWS_POINTER.md](./LOCAL_FIRST_NEWS_POINTER.md) |
 | [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md) |
 | [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) |
-| [plans/SCOPE_OPENATLAS_FULL_REVIEW.md](./plans/SCOPE_OPENATLAS_FULL_REVIEW.md) |
+| [plans/SCOPE_OPENGRIMOIRE_FULL_REVIEW.md](./plans/SCOPE_OPENGRIMOIRE_FULL_REVIEW.md) |
 | [plans/2026-03-19-OpenGrimoire-alignment-context-design.md](./plans/2026-03-19-OpenGrimoire-alignment-context-design.md) |
 | [plans/2026-03-19-OpenGrimoire-agent-native-audit.md](./plans/2026-03-19-OpenGrimoire-agent-native-audit.md) |
 | [e2e/maestro/README.md](../e2e/maestro/README.md) |
@@ -116,7 +116,7 @@ Paths are relative to the **MiscRepos** repo root:
 |------|------|
 | [.cursor/docs/MCP_CAPABILITY_MAP.md](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) | Tool-to-action mapping; references CM-3 audit. |
 | [.cursor/docs/MCP_SKILL_ROUTING.md](../../MiscRepos/.cursor/docs/MCP_SKILL_ROUTING.md) | Skill ↔ MCP routing. |
-| [.cursor/docs/AGENT_NATIVE_CHECKLIST.md](../../MiscRepos/.cursor/docs/AGENT_NATIVE_CHECKLIST.md) | Cross-stack agent-native checklist. |
+| [.cursor/docs/AGENT_NATIVE_CHECKLIST.md](../../MiscRepos/.cursor/docs/AGENT_NATIVE_CHECKLIST.md) | MiscRepos **entry stub** → canonical [OpenHarness `docs/AGENT_NATIVE_CHECKLIST.md`](../../OpenHarness/docs/AGENT_NATIVE_CHECKLIST.md) + portfolio [AGENT_NATIVE_CHECKLIST_MISCOPS.md](../../MiscRepos/.cursor/docs/AGENT_NATIVE_CHECKLIST_MISCOPS.md). |
 | [.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md](../../MiscRepos/.cursor/docs/MULTI_STACK_REVIEW_TEMPLATE.md) | Evidence template (`action_parity_audit_cm3_*.md`). |
 | [.cursor/docs/DAGGR_MCP.md](../../MiscRepos/.cursor/docs/DAGGR_MCP.md) | Daggr MCP usage. |
 | [.cursor/docs/TOOL_SAFEGUARDS.md](../../MiscRepos/.cursor/docs/TOOL_SAFEGUARDS.md) | Tool safety / gates. |

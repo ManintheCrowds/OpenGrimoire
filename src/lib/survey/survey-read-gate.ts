@@ -7,6 +7,7 @@ import {
   verifyAdminSessionToken,
 } from '@/lib/auth/session';
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
+import { logAccessDenied } from '@/lib/observability/access-denial-log';
 
 export type SurveyReadGateResult =
   | { ok: true }
@@ -51,6 +52,12 @@ export async function checkSurveyReadGate(request: Request): Promise<SurveyReadG
     }
   }
 
+  logAccessDenied({
+    request,
+    gate: 'survey_read',
+    reason: 'session_required',
+    status: 401,
+  });
   return {
     ok: false,
     response: NextResponse.json(

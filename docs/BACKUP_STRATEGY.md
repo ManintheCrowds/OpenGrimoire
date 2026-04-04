@@ -1,6 +1,6 @@
 # Backup strategy — OpenGrimoire (survey + visualization app)
 
-**Note:** The GitHub repository slug may still be `Med-Vis` until you rename the repo on GitHub; `git remote -v` can show `.../Med-Vis.git` while the local app folder is `OpenAtlas`.
+**Note:** The GitHub repository slug may still be `Med-Vis` until you rename the repo on GitHub; `git remote -v` can show `.../Med-Vis.git` while the local app folder is `OpenGrimoire`.
 
 ## GitHub Repository (Primary Backup) ✅ COMPLETED
 - **Repository URL**: https://github.com/ManintheCrowds/Med-Vis.git

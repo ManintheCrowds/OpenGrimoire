@@ -1,24 +1,24 @@
 # OpenGrimoire naming, GitHub URLs, and local folder policy
 
-**Status:** Active convention (2026-04). **Canonical GitHub repo:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire) (default branch `master`). GitHub redirects from the old `OpenAtlas` slug may still work; **do not** use `OpenAtlas` in new links or docs.
+**Status:** Active convention (2026-04). **Canonical GitHub repo:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire) (default branch `master`). GitHub redirects from the old `OpenGrimoire` slug may still work; **do not** use `OpenGrimoire` in new links or docs.
 
 ## Naming
 
 | Surface | Canonical | Legacy (allowed until cleaned up) |
 |---------|-----------|-------------------------------------|
 | Product / package | **OpenGrimoire** / `open-grimoire` | — |
-| GitHub `owner/repo` | **`ManintheCrowds/OpenGrimoire`** | Redirect from `…/OpenAtlas` |
-| Local clone folder | **`OpenGrimoire`** | **`OpenAtlas`** (rename when convenient) |
-| Env vars | `OPENGRIMOIRE_*` | `OPENATLAS_BASE_URL` and similar **aliases** (see [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)) — **do not remove** without migration note |
+| GitHub `owner/repo` | **`ManintheCrowds/OpenGrimoire`** | Redirect from `…/OpenGrimoire` |
+| Local clone folder | **`OpenGrimoire`** | **`OpenGrimoire`** (rename when convenient) |
+| Env vars | `OPENGRIMOIRE_*` | `OPENGRIMOIRE_BASE_URL` and similar **aliases** (see [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)) — **do not remove** without migration note |
 
 ## Tracking checklist (repo docs & automation)
 
-- [x] Replace `github.com/.../OpenAtlas/blob` with `.../OpenGrimoire/blob` in **scripts/gh-phase1-bodies/** and **gh-phase1-setup.ps1** defaults.
-- [x] Bulk doc pass: prose **OpenAtlas** → **OpenGrimoire** where it denoted the app/repo (env var names excluded).
+- [x] Replace `github.com/.../OpenGrimoire/blob` with `.../OpenGrimoire/blob` in **scripts/gh-phase1-bodies/** and **gh-phase1-setup.ps1** defaults.
+- [x] Bulk doc pass: prose **OpenGrimoire** → **OpenGrimoire** where it denoted the app/repo (env var names excluded).
 - [x] README / CLAUDE / workspace layout: canonical folder **OpenGrimoire**.
-- [ ] **Local:** Rename your disk folder from `OpenAtlas` → `OpenGrimoire` when ready; update sibling path habits (`cd`, IDE multi-root).
+- [ ] **Local:** Rename your disk folder from `OpenGrimoire` → `OpenGrimoire` when ready; update sibling path habits (`cd`, IDE multi-root).
 - [ ] **GitHub Issues #1–#8:** Bodies created earlier may still show old blob URLs in the UI; GitHub redirects often fix clicks. Optional: edit issue bodies or add a single comment pointing here.
-- [ ] **MiscRepos / OpenHarness:** Update cross-repo markdown that still says “OpenAtlas” for this product (portfolio sweep — separate PRs).
+- [ ] **MiscRepos / OpenHarness:** Update cross-repo markdown that still says “OpenGrimoire” for this product (portfolio sweep — separate PRs).
 
 ## Changelog and releases
 

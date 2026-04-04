@@ -135,14 +135,14 @@ Until tier 2/3 are implemented, treat “live co-editing across CLI and browser�
 | Item | Value |
 |------|--------|
 | Local dev URL | `http://localhost:3001` (see `package.json` / `npm run dev`) |
-| Alignment CLI | `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy `OPENATLAS_BASE_URL`; defaults match dev port in CLI) and `ALIGNMENT_CONTEXT_API_SECRET` when the server uses the secret |
+| Alignment CLI | `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy `OPENGRIMOIRE_BASE_URL`; defaults match dev port in CLI) and `ALIGNMENT_CONTEXT_API_SECRET` when the server uses the secret |
 | Integration paths | [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) |
 
 ---
 
 ## Harness task IDs (institutional / agents)
 
-Labeled follow-ups for this contract live under **PENDING_OPENATLAS_HARNESS** in [pending_tasks.md](../../.cursor/state/pending_tasks.md) (e.g. **OA-REST-***). Prefer that file for durable backlog; Cursor chat todos are session-only.
+Labeled follow-ups for this contract live under **PENDING_OPENGRIMOIRE_HARNESS** in [pending_tasks.md](../../.cursor/state/pending_tasks.md) (e.g. **OA-REST-***). Prefer that file for durable backlog; Cursor chat todos are session-only.
 
 | ID | Intent |
 |----|--------|

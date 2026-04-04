@@ -20,7 +20,7 @@
       "fix": "Linked HANDOFF_FLOW and skills in audit body; executive pack lists follow-up"
     }
   ],
-  "summary": "Pass: scores meet threshold; safety/correctness at 5. Completeness 4: multi-repo OpenHarness section is inherently thinner than OpenAtlas. Minimality 4: audit repeats some themes from AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md by reference—acceptable cross-link.",
+  "summary": "Pass: scores meet threshold; safety/correctness at 5. Completeness 4: multi-repo OpenHarness section is inherently thinner than OpenGrimoire. Minimality 4: audit repeats some themes from AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md by reference—acceptable cross-link.",
   "revised_artifact": null,
   "revision_note": "No revision required: first draft meets bar. Optional future revision if AC2 implementation changes UI."
 }

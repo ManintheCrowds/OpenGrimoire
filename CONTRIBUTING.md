@@ -1,5 +1,16 @@
 # Contributing to OpenGrimoire
 
+## Pre-push / local verification
+
+Before opening or updating a PR that touches **`src/`**, **`package.json`**, **API routes**, **capabilities**, **OpenAPI**, or **agent-facing docs** under `docs/`:
+
+1. From this repository root, run **`npm run verify`** (lint → type-check → unit tests → `verify:capabilities` → `verify:openapi` → `verify:route-index`). Same composition as [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
+2. When the same change set touches **MiscRepos** (or workspace) **rules, skills, or `.cursor` policy files** in a sibling clone, run harness checksum from **MiscRepos** root:  
+   `python .cursor/scripts/checksum_integrity.py --verify --strict`  
+   See [MiscRepos `.cursor/docs/COMMANDS_README.md`](../../MiscRepos/.cursor/docs/COMMANDS_README.md) (checksum section). Paths assume `Documents/GitHub/OpenGrimoire` and `Documents/GitHub/MiscRepos` as siblings.
+
+E2E: use `npm run verify:e2e` or `npm run test:e2e` when flows need browser coverage (see **Tests** below).
+
 ## API and agent contract changes
 
 OpenGrimoire follows a **strict public REST contract** for domain entities. Before merging changes that add or modify routes under `src/app/api/`:

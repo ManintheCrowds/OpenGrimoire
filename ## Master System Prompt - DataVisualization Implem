@@ -1,10 +1,10 @@
 ## Master System Prompt - DataVisualization Implementation
 
 ```markdown
-# OpenAtlas — Data visualization implementation guide
+# OpenGrimoire — Data visualization implementation guide
 
 ## Context
-You are implementing data visualizations for the OpenAtlas (Agent Context Atlas) survey app. The core message to communicate is "We are different, but we are also similar" — showing how respondents connect across various dimensions.
+You are implementing data visualizations for the OpenGrimoire (Agent Context Atlas) survey app. The core message to communicate is "We are different, but we are also similar" — showing how respondents connect across various dimensions.
 
 ## IMPORTANT: Codebase Investigation First
 Before implementing anything:

@@ -67,7 +67,7 @@ See [docs/security/PUBLIC_SURFACE_AUDIT.md](docs/security/PUBLIC_SURFACE_AUDIT.m
 docker-compose up -d
 
 # Check logs
-docker-compose logs -f openatlas-survey
+docker-compose logs -f opengrimoire-survey
 ```
 
 ### Step 5: Create Admin User
@@ -167,7 +167,7 @@ curl -f http://localhost:3000/
 docker-compose ps
 
 # View logs
-docker-compose logs --tail=100 openatlas-survey
+docker-compose logs --tail=100 opengrimoire-survey
 ```
 
 ### Database Backup

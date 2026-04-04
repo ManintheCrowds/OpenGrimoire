@@ -13,6 +13,8 @@ Concise engineering decisions for production and agent integration. Normative HT
 | **Operator auth** | **Single** shared operator password + signed JWT cookie session. **Multi-operator** or multi-device sessions would require a different model (e.g. Lucia + SQLite sessions table) — optional upgrade path. |
 | **Capability discovery** | **Hand-maintained** [`GET /api/capabilities`](../../src/app/api/capabilities/route.ts) + entity matrix in [`ARCHITECTURE_REST_CONTRACT.md`](../ARCHITECTURE_REST_CONTRACT.md) vs **generated OpenAPI** (OA-REST-2): lower drift risk from codegen vs ongoing maintenance cost. |
 | **Agent-native parity / discovery scores** | Raising scores in the [agent-native audit](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) usually means **harness** and **MCP** work **outside** this repo (thin tools over REST), not additional React surface area. |
+| **LLM token budgets** | This app **does not** enforce spend or output-token limits on behalf of callers. Any LLM use is **outside** the OpenGrimoire server (Cursor, harness scripts, local Ollama, etc.). Caller/harness responsibility. Harness env vars and truncation behavior: [MiscRepos `docs/agent/CALLER_SIDE_LLM_BUDGETS.md`](../../MiscRepos/docs/agent/CALLER_SIDE_LLM_BUDGETS.md). Product entry: [`AGENT_INTEGRATION.md`](../AGENT_INTEGRATION.md) § Token budgets. |
+| **Agent transcript compaction** | The Next.js app **does not** compact, summarize, or prune **agent chat transcripts** (IDE or harness). **Non-goal** for the server; optional **harness-side** handoff rules: [MiscRepos `docs/agent/HANDOFF_COMPACTION.md`](../../MiscRepos/docs/agent/HANDOFF_COMPACTION.md). |
 
 ## Related
 

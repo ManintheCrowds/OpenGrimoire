@@ -1,7 +1,7 @@
 # OpenGrimoire — full product-scope review (charter)
 
 **Status:** Draft — fill during OA-FR-SCOPE.  
-**Harness tasks:** [.cursor/state/pending_tasks.md](../../../.cursor/state/pending_tasks.md) § **OPENATLAS_FULL_REVIEW**.
+**Harness tasks:** [.cursor/state/pending_tasks.md](../../../.cursor/state/pending_tasks.md) § **OPENGRIMOIRE_FULL_REVIEW**.
 
 ## Definition of “fully functioning”
 

@@ -9,7 +9,7 @@ Single reference for **machines and agents** integrating with OpenGrimoire `alig
 - Local dev (matches `npm run dev` in this repo’s `package.json`): **`http://localhost:3001`**
 - Production: your deployed origin
 
-Always set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENATLAS_BASE_URL`) explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
+Always set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENGRIMOIRE_BASE_URL`) explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
 
 ## Public API (shared secret)
 
@@ -95,10 +95,10 @@ For logged-in **admin** users (same cookie session as `/admin`). **No** `x-align
 
 ## CLI (harness / agents)
 
-From this repo’s root (folder may still be named `OpenAtlas` on disk):
+From this repo’s root (folder may still be named `OpenGrimoire` on disk):
 
 ```bash
-set OPENATLAS_BASE_URL=http://localhost:3001
+set OPENGRIMOIRE_BASE_URL=http://localhost:3001
 set ALIGNMENT_CONTEXT_API_SECRET=your-secret
 
 node scripts/alignment-context-cli.mjs list
@@ -108,7 +108,7 @@ node scripts/alignment-context-cli.mjs patch <uuid> --status active
 node scripts/alignment-context-cli.mjs delete <uuid>
 ```
 
-PowerShell: `$env:OPENGRIMOIRE_BASE_URL="..."` (or `$env:OPENATLAS_BASE_URL`); `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
+PowerShell: `$env:OPENGRIMOIRE_BASE_URL="..."` (or `$env:OPENGRIMOIRE_BASE_URL`); `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
 
 If secret is unset locally, CLI omits the header (matches open dev server behavior).
 

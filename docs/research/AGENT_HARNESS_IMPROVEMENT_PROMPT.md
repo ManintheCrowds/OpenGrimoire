@@ -7,7 +7,7 @@
 ## How to use
 
 1. Attach or `@` **AGENT_HARNESS_PRIMITIVES_2026-04-03.md** (or a fork with an updated gap matrix).
-2. Optionally specify **priority scope:** OpenGrimoire (OpenGrimoire) only, harness (MiscRepos + OpenHarness), Arc_Forge workspace, or **all three** (default).
+2. Optionally specify **priority scope:** OpenGrimoire only, harness (MiscRepos + OpenHarness), Arc_Forge workspace, or **all three** (default).
 3. Paste everything below the line **---** into the same message.
 
 ---

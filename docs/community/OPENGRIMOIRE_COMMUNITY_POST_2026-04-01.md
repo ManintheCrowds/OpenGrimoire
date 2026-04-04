@@ -10,7 +10,7 @@
 
 OpenGrimoire helps humans and agents run structured one-on-ones (“Sync Sessions”) to align context, reduce drift, and make decisions legible before action.
 
-**Try it locally:** clone your OpenAtlas / OpenGrimoire repo (folder may still be named `OpenAtlas`), `npm install`, `cp .env.example .env.local`, set admin/session vars for `/login`, `npm run dev` → **http://localhost:3001**. Full **one-path smoke:** see README section **“One-path smoke (local demo)”** in the repo root.
+**Try it locally:** clone your OpenGrimoire / OpenGrimoire repo (folder may still be named `OpenGrimoire`), `npm install`, `cp .env.example .env.local`, set admin/session vars for `/login`, `npm run dev` → **http://localhost:3001**. Full **one-path smoke:** see README section **“One-path smoke (local demo)”** in the repo root.
 
 **What to run first:** `/operator-intake` (Sync Session) → `/context-atlas` (brain map) → `/login` + `/admin/*` if you want operator views.
 

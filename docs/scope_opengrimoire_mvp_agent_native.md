@@ -1,7 +1,7 @@
 # Product scope: OpenGrimoire MVP (agent-native readiness)
 
 **Date:** 2026-03-24  
-**Product:** OpenGrimoire; **npm package** `open-grimoire`; **GitHub** `ManintheCrowds/OpenGrimoire`; **local clone folder** should be **`OpenGrimoire`** (legacy `OpenAtlas` folder name still supported until renames complete).  
+**Product:** OpenGrimoire; **npm package** `open-grimoire`; **GitHub** `ManintheCrowds/OpenGrimoire`; **local clone folder** should be **`OpenGrimoire`** (legacy `OpenGrimoire` folder name still supported until renames complete).  
 **Related:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md), [BRAIN_MAP_SCHEMA.md](./BRAIN_MAP_SCHEMA.md), [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md).
 
 ---

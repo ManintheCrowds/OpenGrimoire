@@ -15,7 +15,7 @@ const CAPABILITIES = {
     discovery_stability_gate: '/docs/engineering/DISCOVERY_STABILITY_GATE.md (repo; Phase A gate)',
     route_index: '/docs/api/ROUTE_INDEX.json (generated; scripts/generate-route-index.mjs)',
     opencompass_brain_map_interop:
-      'Portfolio: MiscRepos/trustgraph-local-repo/interop/OPENCOMPASS_OPENATLAS_INTEROP.md',
+      'Portfolio: MiscRepos/trustgraph-local-repo/interop/OPENCOMPASS_OPENGRIMOIRE_INTEROP.md',
   },
   workflows: [
     {

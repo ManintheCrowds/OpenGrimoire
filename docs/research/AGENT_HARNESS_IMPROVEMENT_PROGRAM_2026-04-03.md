@@ -4,7 +4,7 @@
 **Last revised:** 2026-04-03 (UTC) — regeneration procedure, Phase 1 issue stubs, CONTRIBUTING review hooks, `scripts/gh-phase1-setup.ps1`, [regeneration checklist](./AGENT_HARNESS_REGENERATION_CHECKLIST.md).  
 **Prompt used:** [AGENT_HARNESS_IMPROVEMENT_PROMPT.md](./AGENT_HARNESS_IMPROVEMENT_PROMPT.md).
 
-**Scope note:** Maturity **A/P/G** is per column **OpenGrimoire (OpenGrimoire) | MiscRepos + OpenHarness | Arc_Forge** unless a section says otherwise.
+**Scope note:** Maturity **A/P/G** is per column **OpenGrimoire | MiscRepos + OpenHarness | Arc_Forge** unless a section says otherwise.
 
 ---
 
@@ -192,6 +192,26 @@ Legend: **OA** = OpenGrimoire, **MH** = MiscRepos + OpenHarness, **AF** = Arc_Fo
 | Skipping **P7** verify on “doc-only” PRs that change contracts | CI green but contract wrong | Require contract/capabilities diff → run verify (P12.1). |
 | **False expectation** of server-side token limits (P5) | Users expect OA to cap LLM spend | P5.2 boundary note in AGENT_INTEGRATION / tradeoffs. |
 | **Overloading** Arc_Forge with CI expectations | AF remains **P** on verify | P7.2: explicit “run from sibling repo” only; no fake CI in empty workspace. |
+
+---
+
+## Phase 2 follow-ups (explicit backlog)
+
+| Item | Status | Notes |
+|------|--------|--------|
+| **Typed agent event / progress API** | **Not shipped** | OpenGrimoire has no SSE/WebSocket (or similar) **typed** stream for agent progress, tool steps, or token usage. Harnesses use HTTP responses, polling, and **structured `access_denied` lines** ([OPERATOR_LOG_FIELDS.md](../engineering/OPERATOR_LOG_FIELDS.md)) only. A future stream would need API design, contract matrix rows, auth model, and manifest updates—treat as **backlog**, not an undocumented absence. |
+| **P6.1 denial logging** | **Shipped** | JSON lines via [`access-denial-log.ts`](../../src/lib/observability/access-denial-log.ts); field reference: [OPERATOR_LOG_FIELDS.md](../engineering/OPERATOR_LOG_FIELDS.md). |
+
+---
+
+## Phase 3 artifacts (P5, P9 — shipped)
+
+| Item | Artifact |
+|------|----------|
+| **P5.1** | [MiscRepos `docs/agent/CALLER_SIDE_LLM_BUDGETS.md`](../../../MiscRepos/docs/agent/CALLER_SIDE_LLM_BUDGETS.md) (links [LOCAL_AI_TOKEN_OFFLOAD_POLICY.md](../../../MiscRepos/local-proto/docs/LOCAL_AI_TOKEN_OFFLOAD_POLICY.md)) |
+| **P5.2** | [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) § Token budgets; [OPERATIONAL_TRADEOFFS.md](../engineering/OPERATIONAL_TRADEOFFS.md) |
+| **P9.1** | [MiscRepos `docs/agent/HANDOFF_COMPACTION.md`](../../../MiscRepos/docs/agent/HANDOFF_COMPACTION.md); entry from [HANDOFF_FLOW.md](../../../MiscRepos/.cursor/HANDOFF_FLOW.md), [COMMANDS_README.md](../../../MiscRepos/.cursor/docs/COMMANDS_README.md) |
+| **P9.2** | [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) § Agent transcripts; [OPERATIONAL_TRADEOFFS.md](../engineering/OPERATIONAL_TRADEOFFS.md) |
 
 ---
 

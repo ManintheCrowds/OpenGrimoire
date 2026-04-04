@@ -1,4 +1,4 @@
-# Agent-Native Architecture Review: OpenGrimoire (OpenGrimoire)
+# Agent-Native Architecture Review: OpenGrimoire
 
 **Date:** 2026-03-26  
 **Scope:** `c:\Users\Dell\Documents\GitHub\OpenGrimoire` (Next.js app + APIs + docs).  

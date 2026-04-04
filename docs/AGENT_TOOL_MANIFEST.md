@@ -1,6 +1,6 @@
 # Unified agent tool manifest (HTTP + workspace MCP)
 
-**Owning repo:** OpenGrimoire (this repository; clone folder often `OpenAtlas`).  
+**Owning repo:** OpenGrimoire (this repository; clone folder often `OpenGrimoire`).  
 **Update policy:** Change this file in the **same PR** as any new public `src/app/api/` route, MCP-facing script, or harness doc that alters the agent surface. Keep tiers aligned with [HARNESS_ACTION_TIERS.md](./agent/HARNESS_ACTION_TIERS.md) and the normative matrix in [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md).
 
 **Machine-readable index:** `GET /api/capabilities` — [src/app/api/capabilities/route.ts](../src/app/api/capabilities/route.ts).  

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
+import { logAccessDenied } from '@/lib/observability/access-denial-log';
 
 /** Result of checking the shared-secret gate for public alignment-context API routes. */
 export type AlignmentContextGateResult =
@@ -22,6 +23,12 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
   if (secret) {
     const key = request.headers.get('x-alignment-context-key') ?? '';
     if (!timingSafeEqualString(key, secret)) {
+      logAccessDenied({
+        request,
+        gate: 'alignment_context',
+        reason: key.trim() ? 'invalid_secret' : 'missing_header',
+        status: 401,
+      });
       return {
         ok: false,
         response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
@@ -35,6 +42,12 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
   }
 
   if (isProduction) {
+    logAccessDenied({
+      request,
+      gate: 'alignment_context',
+      reason: 'misconfigured',
+      status: 503,
+    });
     return {
       ok: false,
       response: NextResponse.json(
@@ -48,6 +61,12 @@ export function checkAlignmentContextApiGate(request: Request): AlignmentContext
     };
   }
 
+  logAccessDenied({
+    request,
+    gate: 'alignment_context',
+    reason: 'misconfigured',
+    status: 503,
+  });
   return {
     ok: false,
     response: NextResponse.json(

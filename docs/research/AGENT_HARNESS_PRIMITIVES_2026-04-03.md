@@ -6,9 +6,27 @@
 
 ## Provenance and epistemic limits
 
-- **Material summarized here** comes from **secondary narration** (video + platform-generated digests). It is **not** a verified transcript and is **not** independently confirmed against Anthropic primary sources.
-- Treat specific claims (e.g. “18-module” bash stack, revenue figures, exact internal JSON layouts) as **illustrative** until corroborated.
+- **Narration baseline:** The video’s **YouTube caption transcript** (auto-generated speech recognition on [the same URL](https://www.youtube.com/watch?v=FtCdYhspm7w&t=55s)) was pulled for alignment. It is **not** a human-stenographer transcript; expect **ASR drift** (e.g. “Clawed” for “Claude”) and occasional word errors. It **is** the platform-published text of what was said on camera, without using leak artifacts directly.
+- **Enumeration vs synthesis:** In the video, **twelve primitives** are presented as **eight “day one” items** then **four “operational maturity” items** (tool pool assembly → transcript compaction → permission handlers in multiple contexts → **six built-in agent types**). This doc’s **P12 (velocity + guardrails)** is a deliberate **cross-cutting synthesis** from the **opening** (velocity vs operational discipline, pipeline/publish validation) and closing (“80% plumbing”)—it is **not** the same slot as the video’s **last named primitive** (agent types), which here maps to **P10**.
+- **Not independently confirmed:** Numeric or structural claims the speaker attributes to leaked code (e.g. “207” / “184” registry counts, “18-module” bash stack, internal JSON layouts) remain **uncorroborated** against Anthropic primary sources; treat as **illustrative**.
 - **Purpose:** A **checklist of engineering primitives** for production agent harnesses, aligned with classical backend discipline—usable regardless of vendor.
+
+### Transcript alignment (video enumeration → P1–P12)
+
+| Speaker order (eight + four) | Doc ID | Notes |
+|------------------------------|--------|--------|
+| Metadata-first tool registry | **P1** | Two parallel registries in transcript; entry counts are speaker-attributed, not verified here. |
+| Permission / trust tiers (+ bash depth) | **P2** | Three tiers; “18 module” stack is speaker-attributed. |
+| Session persistence (full recoverable state) | **P3** | JSON persistence, resume/reconstruct framing. |
+| Workflow state ≠ conversation state | **P4** | Retries, checkpoints, side effects. |
+| Token budgets + pre-turn checks | **P5** | Hard limits, compaction threshold, stop before overspend. |
+| Typed streaming **then** system event logging | **P6** | Video uses two slots (6 and 7); this doc’s matrix combines them as “logging + typed streaming.” |
+| Verification (run + harness change) | **P7** | Two levels in transcript. |
+| Session tool pool assembly | **P8** | Dynamic subset per run. |
+| Transcript compaction | **P9** | Thresholds, persist flags in narration. |
+| Three permission-handler contexts | **P11** | Interactive / coordinator / “swarm worker” in transcript. |
+| Six built-in agent types | **P10** | explore, plan, verify, guide, general purpose, status line setup (ASR wording). |
+| *(Intro/closing theme, not the 12th numbered item)* | **P12** | Velocity vs discipline, leak context, “boring” pipeline guardrails. |
 
 ## Executive summary
 
@@ -16,7 +34,7 @@ The framing is that **most production value in agent products sits in infrastruc
 
 A useful synthesis is **twelve primitives**: metadata-first tool definition, tiered permissions, durable session state, **workflow state separate from chat transcript**, token budgets, structured logging and streaming, verification at both task and harness levels, dynamic tool scoping, transcript compaction, explicit agent roles/types, permission handling that varies by execution mode (e.g. interactive vs delegated), and **velocity paired with guardrails** (pipelines, audits, config discipline).
 
-This document archives that synthesis, reflects it against **OpenGrimoire (OpenGrimoire)**, **MiscRepos + OpenHarness**, and the **Arc_Forge** workspace, and seeds **P1–P12** backlog items with acceptance-style criteria.
+This document archives that synthesis, reflects it against **OpenGrimoire**, **MiscRepos + OpenHarness**, and the **Arc_Forge** workspace, and seeds **P1–P12** backlog items with acceptance-style criteria.
 
 ---
 
@@ -44,6 +62,7 @@ This document archives that synthesis, reflects it against **OpenGrimoire (OpenG
 - **REST contract + capabilities:** OpenGrimoire exposes [`GET /api/capabilities`](../api/capabilities) and documents auth in [ARCHITECTURE_REST_CONTRACT.md](../ARCHITECTURE_REST_CONTRACT.md)—a form of **manifest-first** surface for agents (related to **P1**, **P6**).
 - **Separation of concerns:** Sync Session (`POST /api/survey`) vs alignment context (`/api/alignment-context`) vs clarification queue maps to **distinct workflows** (related to **P4**).
 - **Harness discipline (MiscRepos / OpenHarness):** `agent-intent` policy checksum, handoff/state as **memory not runbook**, verifier runs without silent code edits, and scripts indexed in harness docs—**P7**, **P12**.
+- **P3 session boundary (OA vs harness):** In-app persistence is domain + operator session only, not a full agent-engine dump; harness-side snapshot fields—[AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) § Agent session boundary; template: MiscRepos [`docs/agent/SESSION_SNAPSHOT_TEMPLATE.md`](../../../MiscRepos/docs/agent/SESSION_SNAPSHOT_TEMPLATE.md).
 - **Untrusted LLM content:** [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) explicitly warns on alignment body/title and points to safeguard docs—**P2**, **P6**.
 - **Gaps:** No first-class **typed event stream** from the app for agent observability; **token budgeting** is caller-side; **workflow checkpoints** for idempotent retries are not uniformly modeled outside individual APIs.
 
@@ -53,7 +72,7 @@ This document archives that synthesis, reflects it against **OpenGrimoire (OpenG
 
 Legend: **A** = Absent, **P** = Partial, **G** = Good. One example per cell.
 
-| ID | OpenGrimoire (OpenGrimoire) | MiscRepos + OpenHarness | Arc_Forge (Cursor workspace) |
+| ID | OpenGrimoire | MiscRepos + OpenHarness | Arc_Forge (Cursor workspace) |
 |----|--------------------------|-------------------------|------------------------------|
 | **P1** | **P** — `/api/capabilities` + route docs; MCP map externalized to workspace | **G** — `MCP_CAPABILITY_MAP`, `capabilities.harness.yaml`, skills index | **P** — plans reference repos; no single generated registry file in repo |
 | **P2** | **G** — layered API keys, admin vs alignment vs survey gates per contract | **G** — rules/skills security audit skill; tiered secrets policy | **P** — user rules + agent-intent; no automated policy engine |

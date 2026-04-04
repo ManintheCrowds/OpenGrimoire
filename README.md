@@ -2,7 +2,7 @@
 
 OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution. **Sync Session** submissions use `POST /api/survey` (survey rows in SQLite); **Alignment Context** is a separate surface—alignment items persisted and served via `/api/alignment-context` and the alignment CLI, not the form submit path.
 
-**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **GitHub:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire). **Local clone folder:** use **`OpenGrimoire`** (recommended). If your checkout is still named **`OpenAtlas`**, that is a **legacy** folder name only—rename when practical so sibling-repo paths in docs match. If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder.
+**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **GitHub:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire). **Local clone folder:** use **`OpenGrimoire`** (recommended). If your checkout is still named **`OpenGrimoire`**, that is a **legacy** folder name only—rename when practical so sibling-repo paths in docs match. If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder.
 
 ## Key Concepts
 
@@ -66,7 +66,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 - **Unified tool manifest (HTTP + MCP):** [docs/AGENT_TOOL_MANIFEST.md](docs/AGENT_TOOL_MANIFEST.md) · **Action tiers + curl:** [docs/agent/HARNESS_ACTION_TIERS.md](docs/agent/HARNESS_ACTION_TIERS.md).
 - **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
 - **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
-- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy alias `OPENATLAS_BASE_URL`; local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
+- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy alias `OPENGRIMOIRE_BASE_URL`; local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
 - **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md).
 - **OpenGrimoire MVP (scope + audit + pack):** [docs/scope_opengrimoire_mvp_agent_native.md](docs/scope_opengrimoire_mvp_agent_native.md), [docs/audit/agent_native_opengrimoire_2026-03-24.md](docs/audit/agent_native_opengrimoire_2026-03-24.md), [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md).
 - **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENGRIMOIRE.md](docs/MONITORING_OPENGRIMOIRE.md).

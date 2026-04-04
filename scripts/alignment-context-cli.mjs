@@ -2,7 +2,7 @@
 /**
  * Thin CLI for /api/alignment-context (agent/harness parity).
  * Env: OPENGRIMOIRE_BASE_URL (default http://localhost:3001 — matches OpenGrimoire `npm run dev`);
- * legacy alias OPENATLAS_BASE_URL still read if OPENGRIMOIRE_BASE_URL is unset,
+ * legacy alias OPENGRIMOIRE_BASE_URL still read if OPENGRIMOIRE_BASE_URL is unset,
  * ALIGNMENT_CONTEXT_API_SECRET (required when server enforces it), or server must have
  * ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true for local dev without a secret.
  *
@@ -15,7 +15,7 @@
 
 const BASE = (
   process.env.OPENGRIMOIRE_BASE_URL ||
-  process.env.OPENATLAS_BASE_URL ||
+  process.env.OPENGRIMOIRE_BASE_URL ||
   'http://localhost:3001'
 ).replace(/\/$/, '');
 const SECRET = (process.env.ALIGNMENT_CONTEXT_API_SECRET || '').trim();

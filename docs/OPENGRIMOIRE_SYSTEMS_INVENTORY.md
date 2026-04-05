@@ -8,6 +8,8 @@
 
 **Persistence:** Survey, alignment, clarification, study, and moderation data use **local SQLite** only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). There is **no** Supabase or hosted Postgres in the supported runtime path.
 
+**GUI product wave (MiscRepos ritual):** **`oatlas-wave-7`** — first-run + **`/capabilities`** depth (**OA-8**), default slice after responsive OA-7. Audit: [`docs/audit/gui-2026-03-26.md`](./audit/gui-2026-03-26.md) §8–§9; YAML: [`MiscRepos/docs/audit/gui_wave_rollout_opengrimoire.yaml`](../../MiscRepos/docs/audit/gui_wave_rollout_opengrimoire.yaml).
+
 ---
 
 ## Workspace paths (flat `GitHub` folder)

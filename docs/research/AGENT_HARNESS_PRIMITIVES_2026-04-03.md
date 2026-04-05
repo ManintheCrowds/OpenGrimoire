@@ -126,5 +126,5 @@ Use **labels** `agent-harness` and `P1` … `P12` in your tracker, or mirror the
 ## See also
 
 - [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) — OpenGrimoire HTTP entry for agents.
-- [BITTENSOR_EVALUATION.md](./BITTENSOR_EVALUATION.md) — unrelated domain research; same `docs/research/` convention.
+- [PRIVATE_RESEARCH_LAYOUT.md](./PRIVATE_RESEARCH_LAYOUT.md) — optional **gitignored** consulting/strategy research under `docs/private/research/` (not in public clone).
 - OpenHarness (sibling clone): [`../../../OpenHarness/docs/AGENT_ENTRY.md`](../../../OpenHarness/docs/AGENT_ENTRY.md) — harness entry chain (path assumes `GitHub/OpenGrimoire` and `GitHub/OpenHarness` siblings).

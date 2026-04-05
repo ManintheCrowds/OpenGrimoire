@@ -20,3 +20,6 @@ public/brain-map-graph.local.json
 
 # Local SQLite (alignment + survey)
 /data/
+
+# Private consulting / strategy research (not shipped in public clone; see docs/research/PRIVATE_RESEARCH_LAYOUT.md)
+/docs/private/

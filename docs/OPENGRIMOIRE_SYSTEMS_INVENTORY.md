@@ -25,6 +25,8 @@ Older docs sometimes say **`portfolio-harness`** or show **`D:\portfolio-harness
 | **OpenHarness** (e.g. `C:\Users\YOU\Documents\GitHub\OpenHarness`; legacy examples used `D:/openharness`) | Portable **template**: docs, `.cursor` rules/skills, `state/` schema, handoff patterns. No app server. |
 | **OpenGrimoire** (this app; clone folder should be `OpenGrimoire`; legacy `OpenGrimoire` possible) | **Implementation**: Next.js UI + APIs + visualization. Consumes **brain-map JSON** produced by harness-adjacent scripts (typically from a sibling **MiscRepos** clone). |
 
+**Operator-facing brain map GUI:** [GUI_ACTION_MAP_BRAIN_MAP.md](GUI_ACTION_MAP_BRAIN_MAP.md) — `/context-atlas` / `/brain-map` as canonical surface; **OpenHarness** `scripts/brain_map_viewer.html` is a secondary static viewer; **OpenHarness state** enters the graph via `CURSOR_STATE_DIRS` / `build_brain_map.py` (see § below).
+
 **This app is not a submodule of OpenHarness.** Nesting this Next.js app inside the public harness repo would violate [OpenHarness `docs/DELINEATION.md`](../../OpenHarness/docs/DELINEATION.md) (domain-specific, heavy deps). The intended split: **harness = patterns + state**; **OpenGrimoire = optional viewer + portfolio-specific features**.
 
 ---
@@ -81,7 +83,7 @@ Handoffs must still **cite paths** (wikilinks, bullets with `.md`) for nodes to 
 | Kind | Name / path | Notes |
 |------|-------------|--------|
 | Route | `/`, `/visualization`, `/login`, `/admin/*` | Admin needs `OPENGRIMOIRE_SESSION_SECRET` + operator password (see `.env.example`) |
-| Route | `/context-atlas`, `/brain-map` | Context graph UI (same app) |
+| Route | `/context-atlas`, `/brain-map` | Context graph UI (same app); **GUI action map:** [GUI_ACTION_MAP_BRAIN_MAP.md](GUI_ACTION_MAP_BRAIN_MAP.md) |
 | Route | `/operator-intake`, `/survey` | Sync Session form → `POST /api/survey` (SQLite) |
 | Route | `/test-sqlite` | Dev-only SQLite API smoke page (`/test-supabase` redirects here); gated in prod like other `/test*` routes |
 | Route | `/admin/clarification-queue` | Operator inbox for async **clarification queue** (agent questions); distinct from Sync Session |

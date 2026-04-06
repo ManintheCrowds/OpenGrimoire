@@ -51,6 +51,7 @@ This file provides guidance for AI assistants working in this repository.
 
 - `src/app/` — App Router pages and API routes.
 - `src/components/BrainMap/` — Context graph UI.
+- `docs/GUI_ACTION_MAP_BRAIN_MAP.md` — Operator GUI actions + OpenHarness graph pipeline (agent-native parity).
 - `src/db/` — Drizzle schema and SQLite client/bootstrap.
 - `src/lib/storage/repositories/` — Alignment and survey data access.
 - `public/brain-map-graph.json` — Default graph data for the viewer.

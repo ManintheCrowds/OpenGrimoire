@@ -17,7 +17,7 @@ OpenGrimoire is a local-first context graph and alignment workspace for human-to
 
 ## Context graph (SQLite / static JSON — no hosted DB required)
 
-- **Viewer:** `/context-atlas` (alias of the same UI as `/brain-map`).
+- **Viewer:** `/context-atlas` (alias of the same UI as `/brain-map`). **Operator GUI map (actions + OpenHarness data path):** [docs/GUI_ACTION_MAP_BRAIN_MAP.md](docs/GUI_ACTION_MAP_BRAIN_MAP.md).
 - **Data:** `GET /api/brain-map/graph` reads **`public/brain-map-graph.local.json` when that file exists** (personal / vault merges; gitignored), otherwise `public/brain-map-graph.json`.
 - **Regenerate** (canonical script — **MiscRepos**, sibling of this repo under your GitHub folder):
 

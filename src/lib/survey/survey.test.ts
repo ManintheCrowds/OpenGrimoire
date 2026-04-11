@@ -9,6 +9,7 @@ const validAnswers = [
   { questionId: 'peak_performance' as const, answer: 'Introvert, Morning' },
   { questionId: 'motivation' as const, answer: 'growth' },
   { questionId: 'unique_quality' as const, answer: 'Curious collaborator' },
+  { questionId: 'questions' as const, answer: 'How should I prioritize handoffs?' },
 ];
 
 describe('surveyPostBodySchema', () => {
@@ -24,6 +25,8 @@ describe('surveyPostBodySchema', () => {
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.firstName).toBe('Jane');
+      expect(parsed.data.sessionType).toBe('profile');
+      expect(parsed.data.questionnaireVersion).toBe('v1');
     }
   });
 
@@ -80,14 +83,28 @@ describe('surveyPostBodySchema', () => {
     const parsed = surveyPostBodySchema.safeParse(body);
     expect(parsed.success).toBe(true);
   });
+
+  it('rejects unsupported sessionType/questionnaireVersion pair', () => {
+    const parsed = surveyPostBodySchema.safeParse({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane@example.com',
+      sessionType: 'profile',
+      questionnaireVersion: 'v999',
+      answers: validAnswers,
+    });
+    expect(parsed.success).toBe(false);
+  });
 });
 
 describe('mapAnswersToSurveyResponsePayload', () => {
   it('maps answers to survey_responses fields (happy path)', () => {
-    const mapped = mapAnswersToSurveyResponsePayload(validAnswers);
+    const mapped = mapAnswersToSurveyResponsePayload({ answers: validAnswers });
     expect(mapped.ok).toBe(true);
     if (mapped.ok) {
-      expect(mapped.data).toEqual({
+      expect(mapped.data.surveyResponse).toEqual({
+        session_type: 'profile',
+        questionnaire_version: 'v1',
         tenure_years: 5,
         learning_style: 'visual',
         shaped_by: 'mentor',
@@ -95,14 +112,22 @@ describe('mapAnswersToSurveyResponsePayload', () => {
         motivation: 'growth',
         unique_quality: 'Curious collaborator',
       });
+      expect(mapped.data.categories).toEqual([
+        {
+          category: 'questions',
+          content: 'How should I prioritize handoffs?',
+        },
+      ]);
     }
   });
 
   it('returns error for unknown questionId', () => {
-    const mapped = mapAnswersToSurveyResponsePayload([
-      { questionId: 'tenure_years', answer: '1' },
-      { questionId: 'not_a_column', answer: 'x' },
-    ]);
+    const mapped = mapAnswersToSurveyResponsePayload({
+      answers: [
+        { questionId: 'tenure_years', answer: '1' },
+        { questionId: 'not_a_column', answer: 'x' },
+      ],
+    });
     expect(mapped.ok).toBe(false);
     if (!mapped.ok) {
       expect(mapped.error.message).toContain('Unknown questionId');
@@ -110,13 +135,15 @@ describe('mapAnswersToSurveyResponsePayload', () => {
   });
 
   it('last duplicate questionId wins', () => {
-    const mapped = mapAnswersToSurveyResponsePayload([
-      { questionId: 'tenure_years', answer: '1' },
-      { questionId: 'tenure_years', answer: '7' },
-    ]);
+    const mapped = mapAnswersToSurveyResponsePayload({
+      answers: [
+        { questionId: 'tenure_years', answer: '1' },
+        { questionId: 'tenure_years', answer: '7' },
+      ],
+    });
     expect(mapped.ok).toBe(true);
     if (mapped.ok) {
-      expect(mapped.data.tenure_years).toBe(7);
+      expect(mapped.data.surveyResponse.tenure_years).toBe(7);
     }
   });
 });

@@ -67,7 +67,11 @@ export async function POST(request: Request) {
     }
   }
 
-  const mapped = mapAnswersToSurveyResponsePayload(body.answers);
+  const mapped = mapAnswersToSurveyResponsePayload({
+    answers: body.answers,
+    sessionType: body.sessionType,
+    questionnaireVersion: body.questionnaireVersion,
+  });
   if (!mapped.ok) {
     return NextResponse.json(
       {
@@ -89,7 +93,8 @@ export async function POST(request: Request) {
 
     const surveyResponse = createSurveyResponse({
       attendee_id: attendee.id,
-      ...mapped.data,
+      ...mapped.data.surveyResponse,
+      categories: mapped.data.categories,
     });
 
     return NextResponse.json({

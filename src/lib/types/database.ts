@@ -45,6 +45,7 @@ export type SurveyResponseRow = {
   peak_performance: PeakPerformanceType | null;
   motivation: MotivationType | null;
   unique_quality: string | null;
+  harness_profile_id: string | null;
   status: ModerationStatus;
   moderated_at: string | null;
   test_data: boolean;
@@ -52,6 +53,15 @@ export type SurveyResponseRow = {
   updated_at: string;
 };
 
+export type HarnessProfileRow = {
+  id: string;
+  name: string;
+  purpose: string;
+  question_strategy: string;
+  risk_posture: string;
+  preferred_clarification_modes: string[];
+  output_style: string;
+  is_default: boolean;
 
 export type SurveyResponseIntentCategoryRow = {
   id: string;

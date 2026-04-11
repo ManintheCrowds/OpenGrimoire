@@ -35,6 +35,21 @@ function runBootstrap(sqlite: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_attendees_email ON attendees(email);
     CREATE INDEX IF NOT EXISTS idx_attendees_created_at ON attendees(created_at);
 
+    CREATE TABLE IF NOT EXISTS harness_profiles (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      question_strategy TEXT NOT NULL,
+      risk_posture TEXT NOT NULL,
+      preferred_clarification_modes TEXT NOT NULL DEFAULT '[]',
+      output_style TEXT NOT NULL,
+      is_default INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_harness_profiles_name ON harness_profiles(name);
+    CREATE INDEX IF NOT EXISTS idx_harness_profiles_is_default ON harness_profiles(is_default);
+
     CREATE TABLE IF NOT EXISTS survey_responses (
       id TEXT PRIMARY KEY NOT NULL,
       attendee_id TEXT NOT NULL REFERENCES attendees(id) ON DELETE CASCADE,
@@ -46,6 +61,7 @@ function runBootstrap(sqlite: Database.Database) {
       peak_performance TEXT,
       motivation TEXT,
       unique_quality TEXT,
+      harness_profile_id TEXT REFERENCES harness_profiles(id) ON DELETE SET NULL,
       status TEXT NOT NULL DEFAULT 'pending',
       moderated_at TEXT,
       test_data INTEGER NOT NULL DEFAULT 0,
@@ -162,6 +178,11 @@ function runBootstrap(sqlite: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_study_reviews_reviewed_at ON study_reviews(reviewed_at DESC);
   `);
 
+  const hasHarnessProfileColumn = sqlite
+    .prepare(`SELECT 1 FROM pragma_table_info('survey_responses') WHERE name = 'harness_profile_id'`)
+    .get();
+  if (!hasHarnessProfileColumn) {
+    sqlite.exec(`ALTER TABLE survey_responses ADD COLUMN harness_profile_id TEXT REFERENCES harness_profiles(id) ON DELETE SET NULL`);
   const surveyColumns = sqlite
     .prepare(`PRAGMA table_info(survey_responses)`)
     .all() as { name: string }[];

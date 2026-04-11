@@ -50,6 +50,7 @@ function rowToSurvey(row: typeof surveyResponses.$inferSelect): SurveyResponseRo
     peak_performance: row.peakPerformance as PeakPerformanceType | null,
     motivation: row.motivation as MotivationType | null,
     unique_quality: row.uniqueQuality,
+    harness_profile_id: row.harnessProfileId,
     status: row.status as ModerationStatus,
     moderated_at: row.moderatedAt,
     test_data: row.testData,
@@ -125,6 +126,7 @@ export function createSurveyResponse(data: {
   peak_performance?: PeakPerformanceType | null;
   motivation?: MotivationType | null;
   unique_quality?: string;
+  harness_profile_id?: string | null;
   test_data?: boolean;
   categories?: { category: IntentCategory; content: string }[];
 }): SurveyResponseRow {
@@ -143,6 +145,7 @@ export function createSurveyResponse(data: {
       peakPerformance: data.peak_performance ?? null,
       motivation: data.motivation ?? null,
       uniqueQuality: data.unique_quality ?? null,
+      harnessProfileId: data.harness_profile_id ?? null,
       status: 'pending',
       moderatedAt: null,
       testData: data.test_data ?? false,
@@ -234,6 +237,7 @@ export function getModerationQueue(): ModerationQueueRow[] {
       peak_performance: raw.peak_performance as PeakPerformanceType | null,
       motivation: raw.motivation as MotivationType | null,
       unique_quality: raw.unique_quality == null ? null : String(raw.unique_quality),
+      harness_profile_id: raw.harness_profile_id == null ? null : String(raw.harness_profile_id),
       status: raw.status as ModerationStatus,
       moderated_at: raw.moderated_at == null ? null : String(raw.moderated_at),
       test_data: Boolean(raw.test_data),
@@ -377,6 +381,11 @@ export function getApprovedUniqueQualities(): {
         is_anonymous: Boolean(r.aan),
       },
     }));
+}
+
+export function getSurveyResponseById(id: string): SurveyResponseRow | null {
+  const row = getDb().select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
+  return row ? rowToSurvey(row) : null;
 }
 
 export function debugSurveyResponses() {

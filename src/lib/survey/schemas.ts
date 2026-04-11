@@ -21,6 +21,7 @@ export const surveyPostBodySchema = z
     sessionType: z.string().trim().min(1).max(64).optional().default('profile'),
     questionnaireVersion: z.string().trim().min(1).max(32).optional().default('v1'),
     answers: z.array(surveyAnswerRowSchema).min(1, 'At least one answer is required'),
+    harnessProfileId: z.string().uuid().optional(),
     /** Cloudflare Turnstile response when captcha enforcement is active. */
     turnstileToken: z.string().min(1).max(8000).optional(),
   })

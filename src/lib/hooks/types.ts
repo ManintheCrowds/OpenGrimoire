@@ -16,4 +16,5 @@ export type SyncSessionFormData = {
   peak_performance?: PeakPerformanceType;
   motivation?: MotivationType;
   unique_quality?: string;
+  harness_profile_id?: string;
 };

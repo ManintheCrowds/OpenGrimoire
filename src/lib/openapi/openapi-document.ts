@@ -119,6 +119,11 @@ export const openApiDocument = {
                       },
                     },
                   },
+                  harnessProfileId: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'Optional selected harness profile id from /api/harness-profiles/select.',
+                  },
                   turnstileToken: {
                     type: 'string',
                     description: 'Optional. Cloudflare Turnstile token when SURVEY_POST_CAPTCHA_REQUIRED or production captcha is enabled.',
@@ -152,6 +157,70 @@ export const openApiDocument = {
           '429': { description: 'Rate limited' },
           '503': { description: 'Captcha or token enforcement misconfigured' },
         },
+      },
+    },
+    '/api/harness-profiles': {
+      get: {
+        summary: 'List harness profiles for Sync Session/external harness alignment',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        responses: { '200': { description: 'profiles[]' } },
+      },
+      post: {
+        summary: 'Create harness profile',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        responses: { '201': { description: 'profile' } },
+      },
+      put: {
+        summary: 'Import or export harness profile files (?action=import|export)',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        responses: { '200': { description: 'import/export result' } },
+      },
+    },
+    '/api/harness-profiles/{id}': {
+      get: {
+        summary: 'Get harness profile by id',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'profile' } },
+      },
+      patch: {
+        summary: 'Update harness profile',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'profile' } },
+      },
+      delete: {
+        summary: 'Delete harness profile',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': { description: 'ok' } },
+      },
+    },
+    '/api/harness-profiles/select': {
+      get: {
+        summary: 'Resolve selected/default harness profile for Sync Session start',
+        security: [],
+        responses: { '200': { description: 'selected + items' } },
+      },
+      post: {
+        summary: 'Validate and resolve an explicit harness profile selection',
+        security: [],
+        responses: { '200': { description: 'selected profile' } },
+      },
+    },
+    '/api/harness-profiles/openharness': {
+      get: {
+        summary: 'OpenHarness-oriented bundle of harness profiles plus selected profile resolution',
+        security: [{ AlignmentApiKey: [] }, { OperatorSession: [] }],
+        parameters: [
+          {
+            name: 'surveyResponseId',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: { '200': { description: 'bundle' } },
       },
     },
     '/api/survey/bootstrap-token': {

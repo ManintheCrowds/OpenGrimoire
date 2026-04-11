@@ -44,6 +44,7 @@ function buildSyncSessionPostBody(formData: SyncSessionFormData) {
     sessionType: 'profile',
     questionnaireVersion: 'v1',
     answers,
+    harnessProfileId: formData.harness_profile_id,
   };
 }
 

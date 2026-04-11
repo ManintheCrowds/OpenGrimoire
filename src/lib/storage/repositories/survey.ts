@@ -1,6 +1,12 @@
 import { randomUUID } from 'crypto';
 import { and, desc, eq } from 'drizzle-orm';
-import { attendees, moderation, peakPerformanceDefinitions, surveyResponses } from '@/db/schema';
+import {
+  attendees,
+  moderation,
+  peakPerformanceDefinitions,
+  surveyResponseIntentCategories,
+  surveyResponses,
+} from '@/db/schema';
 import { getDb, getSqlite } from '@/db/client';
 import type {
   AttendeeRow,
@@ -8,6 +14,7 @@ import type {
   ModerationRow,
   ModerationStatus,
   MotivationType,
+  IntentCategory,
   PeakPerformanceDefinitionRow,
   PeakPerformanceType,
   ShapedBy,
@@ -35,6 +42,8 @@ function rowToSurvey(row: typeof surveyResponses.$inferSelect): SurveyResponseRo
   return {
     id: row.id,
     attendee_id: row.attendeeId,
+    session_type: row.sessionType as SurveyResponseRow['session_type'],
+    questionnaire_version: row.questionnaireVersion as SurveyResponseRow['questionnaire_version'],
     tenure_years: row.tenureYears,
     learning_style: row.learningStyle as LearningStyle | null,
     shaped_by: row.shapedBy as ShapedBy | null,
@@ -108,6 +117,8 @@ export function createAttendee(data: {
 
 export function createSurveyResponse(data: {
   attendee_id: string;
+  session_type?: SurveyResponseRow['session_type'];
+  questionnaire_version?: SurveyResponseRow['questionnaire_version'];
   tenure_years?: number;
   learning_style?: LearningStyle | null;
   shaped_by?: ShapedBy | null;
@@ -115,6 +126,7 @@ export function createSurveyResponse(data: {
   motivation?: MotivationType | null;
   unique_quality?: string;
   test_data?: boolean;
+  categories?: { category: IntentCategory; content: string }[];
 }): SurveyResponseRow {
   const db = getDb();
   const id = randomUUID();
@@ -123,6 +135,8 @@ export function createSurveyResponse(data: {
     .values({
       id,
       attendeeId: data.attendee_id,
+      sessionType: data.session_type ?? 'profile',
+      questionnaireVersion: data.questionnaire_version ?? 'v1',
       tenureYears: data.tenure_years ?? null,
       learningStyle: data.learning_style ?? null,
       shapedBy: data.shaped_by ?? null,
@@ -136,6 +150,26 @@ export function createSurveyResponse(data: {
       updatedAt: ts,
     })
     .run();
+
+  if (data.categories && data.categories.length > 0) {
+    for (const category of data.categories) {
+      db.insert(surveyResponseIntentCategories)
+        .values({
+          id: randomUUID(),
+          responseId: id,
+          category: category.category,
+          content: category.content,
+          createdAt: ts,
+          updatedAt: ts,
+        })
+        .onConflictDoUpdate({
+          target: [surveyResponseIntentCategories.responseId, surveyResponseIntentCategories.category],
+          set: { content: category.content, updatedAt: ts },
+        })
+        .run();
+    }
+  }
+
   const row = db.select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
   if (!row) throw new Error('Survey response insert failed');
   return rowToSurvey(row);
@@ -189,6 +223,11 @@ export function getModerationQueue(): ModerationQueueRow[] {
     const sr: SurveyResponseRow = {
       id,
       attendee_id: String(raw.attendee_id),
+      session_type: raw.session_type == null ? 'profile' : (String(raw.session_type) as SurveyResponseRow['session_type']),
+      questionnaire_version:
+        raw.questionnaire_version == null
+          ? 'v1'
+          : (String(raw.questionnaire_version) as SurveyResponseRow['questionnaire_version']),
       tenure_years: raw.tenure_years == null ? null : Number(raw.tenure_years),
       learning_style: raw.learning_style as LearningStyle | null,
       shaped_by: raw.shaped_by as ShapedBy | null,

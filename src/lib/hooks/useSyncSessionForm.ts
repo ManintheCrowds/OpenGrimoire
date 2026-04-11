@@ -41,6 +41,8 @@ function buildSyncSessionPostBody(formData: SyncSessionFormData) {
     lastName,
     email: formData.is_anonymous ? '' : formData.email ?? '',
     isAnonymous: formData.is_anonymous,
+    sessionType: 'profile',
+    questionnaireVersion: 'v1',
     answers,
   };
 }

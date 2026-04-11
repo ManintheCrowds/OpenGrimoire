@@ -27,6 +27,8 @@ const mockData: SurveyRow[] = [
   {
     id: 'mock-1',
     attendee_id: 'mock-attendee-1',
+    session_type: 'profile',
+    questionnaire_version: 'v1',
     tenure_years: 5,
     learning_style: 'visual',
     shaped_by: 'mentor',
@@ -48,6 +50,8 @@ const mockData: SurveyRow[] = [
   {
     id: 'mock-2',
     attendee_id: 'mock-attendee-2',
+    session_type: 'profile',
+    questionnaire_version: 'v1',
     tenure_years: 10,
     learning_style: 'auditory',
     shaped_by: 'challenge',
@@ -69,6 +73,8 @@ const mockData: SurveyRow[] = [
   {
     id: 'mock-3',
     attendee_id: 'mock-attendee-3',
+    session_type: 'profile',
+    questionnaire_version: 'v1',
     tenure_years: 15,
     learning_style: 'kinesthetic',
     shaped_by: 'success',

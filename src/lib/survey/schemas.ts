@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-/** One answer row; questionId uses DB column names (see mapAnswersToSurveyResponse). */
+import { hasQuestionnaireMapper } from './mapAnswersToSurveyResponse';
+
+/** One answer row; questionId uses mapper IDs. */
 const surveyAnswerRowSchema = z.object({
   questionId: z.string().min(1).max(64),
   answer: z.string().max(8000),
@@ -16,6 +18,8 @@ export const surveyPostBodySchema = z
     lastName: z.string().trim().min(1, 'Last name is required').max(200),
     email: z.union([z.string().email().max(320), z.literal('')]).optional(),
     isAnonymous: z.boolean().optional().default(false),
+    sessionType: z.string().trim().min(1).max(64).optional().default('profile'),
+    questionnaireVersion: z.string().trim().min(1).max(32).optional().default('v1'),
     answers: z.array(surveyAnswerRowSchema).min(1, 'At least one answer is required'),
     /** Cloudflare Turnstile response when captcha enforcement is active. */
     turnstileToken: z.string().min(1).max(8000).optional(),
@@ -28,6 +32,14 @@ export const surveyPostBodySchema = z
         code: z.ZodIssueCode.custom,
         message: 'Email is required unless submitting anonymously',
         path: ['email'],
+      });
+    }
+
+    if (!hasQuestionnaireMapper(data.sessionType, data.questionnaireVersion)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Unsupported questionnaire for sessionType=${data.sessionType} and questionnaireVersion=${data.questionnaireVersion}`,
+        path: ['questionnaireVersion'],
       });
     }
   });

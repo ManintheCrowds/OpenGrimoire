@@ -35,6 +35,7 @@ const CAPABILITIES = {
     'BRAIN_MAP_SECRET: x-brain-map-key or operator session cookie (same origin, credentials: include)',
     'Operator session: POST /api/auth/login sets HTTP-only cookie (OPENGRIMOIRE_ADMIN_PASSWORD or OPENGRIMOIRE_ADMIN_PASSWORD_HASH + OPENGRIMOIRE_SESSION_SECRET)',
     'Survey reads (production): SURVEY_VISUALIZATION_ALLOW_PUBLIC=true, or admin session, or SURVEY_VISUALIZATION_API_SECRET + x-survey-visualization-key; optional ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true for x-alignment-context-key',
+    'Harness profiles: operator session cookie or x-alignment-context-key for catalog/CRUD/OpenHarness bundle; /api/harness-profiles/select is public for Sync Session startup',
     'POST /api/auth/login: rate limited 10 requests per 60s per IP (middleware; single process)',
   ],
   routes: [
@@ -139,6 +140,26 @@ const CAPABILITIES = {
       path: '/api/survey/bootstrap-token',
       methods: ['GET'],
       auth: 'Public; short-lived JWT for POST when SURVEY_POST_REQUIRE_TOKEN is set — see docs/engineering/OPERATIONAL_TRADEOFFS.md',
+    },
+    {
+      path: '/api/harness-profiles',
+      methods: ['GET', 'POST', 'PUT'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key',
+    },
+    {
+      path: '/api/harness-profiles/:id',
+      methods: ['GET', 'PATCH', 'DELETE'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key',
+    },
+    {
+      path: '/api/harness-profiles/openharness',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key',
+    },
+    {
+      path: '/api/harness-profiles/select',
+      methods: ['GET', 'POST'],
+      auth: 'Public profile selection helper for Sync Session start',
     },
     {
       path: '/api/survey/visualization',

@@ -21,6 +21,7 @@ On **200 OK**, the response includes server-issued UUIDs (camelCase):
 
 - **`attendeeId`** — row in `attendees`.
 - **`surveyResponseId`** — row in `survey_responses` for this submit.
+- **`harnessProfileId`** — selected harness profile id persisted onto `survey_responses.harness_profile_id` (nullable when no profile selected).
 
 Treat these as **internal correlation identifiers** (join keys for operators and automation). They are not end-user secrets, but avoid shipping them to third-party analytics or public logs without a policy decision.
 
@@ -31,7 +32,8 @@ Use these in handoffs, run logs, and PRs — not as compiler magic. Example resp
   "success": true,
   "message": "Survey submitted successfully",
   "attendeeId": "uuid",
-  "surveyResponseId": "uuid"
+  "surveyResponseId": "uuid",
+  "harnessProfileId": "uuid-or-null"
 }
 ```
 

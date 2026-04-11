@@ -17,6 +17,7 @@ export const surveyPostBodySchema = z
     email: z.union([z.string().email().max(320), z.literal('')]).optional(),
     isAnonymous: z.boolean().optional().default(false),
     answers: z.array(surveyAnswerRowSchema).min(1, 'At least one answer is required'),
+    harnessProfileId: z.string().uuid().optional(),
     /** Cloudflare Turnstile response when captcha enforcement is active. */
     turnstileToken: z.string().min(1).max(8000).optional(),
   })

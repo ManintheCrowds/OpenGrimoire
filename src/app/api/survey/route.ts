@@ -8,6 +8,7 @@ import {
   verifySurveyPostBootstrapToken,
 } from '@/lib/survey/survey-post-bootstrap';
 import { surveyPostBodySchema } from '@/lib/survey/schemas';
+import { getHarnessProfileById } from '@/lib/storage/repositories/harness-profiles';
 
 function isUniqueConstraintError(e: unknown): boolean {
   return (
@@ -50,6 +51,12 @@ export async function POST(request: Request) {
   }
 
   const body = parsed.data;
+  if (body.harnessProfileId) {
+    const profile = getHarnessProfileById(body.harnessProfileId);
+    if (!profile) {
+      return NextResponse.json({ error: 'Validation failed', message: 'Invalid harnessProfileId' }, { status: 400 });
+    }
+  }
 
   if (isSurveyPostCaptchaRequired()) {
     if (!process.env.TURNSTILE_SECRET_KEY?.trim()) {
@@ -89,6 +96,7 @@ export async function POST(request: Request) {
 
     const surveyResponse = createSurveyResponse({
       attendee_id: attendee.id,
+      harness_profile_id: body.harnessProfileId ?? null,
       ...mapped.data,
     });
 
@@ -97,6 +105,7 @@ export async function POST(request: Request) {
       message: 'Survey submitted successfully',
       attendeeId: attendee.id,
       surveyResponseId: surveyResponse.id,
+      harnessProfileId: surveyResponse.harness_profile_id,
     });
   } catch (error: unknown) {
     console.error('Error submitting survey:', error);

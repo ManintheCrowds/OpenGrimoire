@@ -192,6 +192,7 @@ export const convertAppToDBResponse = (appResponse: AppSurveyResponse): DBSurvey
     peak_performance: appResponse.peak_performance,
     motivation: appResponse.motivation,
     unique_quality: appResponse.unique_quality,
+    harness_profile_id: null,
     status: 'pending',
     moderated_at: null,
     test_data: false,

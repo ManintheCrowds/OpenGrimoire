@@ -14,6 +14,23 @@ export const attendees = sqliteTable(
   (t) => [index('idx_attendees_email').on(t.email), index('idx_attendees_created_at').on(t.createdAt)]
 );
 
+export const harnessProfiles = sqliteTable(
+  'harness_profiles',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    purpose: text('purpose').notNull(),
+    questionStrategy: text('question_strategy').notNull(),
+    riskPosture: text('risk_posture').notNull(),
+    preferredClarificationModes: text('preferred_clarification_modes').notNull().default('[]'),
+    outputStyle: text('output_style').notNull(),
+    isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_harness_profiles_name').on(t.name), index('idx_harness_profiles_is_default').on(t.isDefault)]
+);
+
 export const surveyResponses = sqliteTable(
   'survey_responses',
   {
@@ -27,6 +44,7 @@ export const surveyResponses = sqliteTable(
     peakPerformance: text('peak_performance'),
     motivation: text('motivation'),
     uniqueQuality: text('unique_quality'),
+    harnessProfileId: text('harness_profile_id').references(() => harnessProfiles.id, { onDelete: 'set null' }),
     status: text('status', { enum: ['pending', 'approved', 'rejected'] })
       .notNull()
       .default('pending'),

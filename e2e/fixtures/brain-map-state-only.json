@@ -9,10 +9,54 @@
       "trust_score": 0.85,
       "compass_axis": "alignment",
       "grimoire_tags": ["fixture", "opengrimoire"],
-      "insight_level": "curated"
+      "insight_level": "curated",
+      "affect_overlay": {
+        "concern_level": 0.7,
+        "need_urgency": 0.8,
+        "accomplishment_momentum": 0.55,
+        "unresolved_question_count": 2,
+        "confidence_drift": -0.2
+      },
+      "intent_artifacts": {
+        "survey_refs": ["survey:fixture-2026-03-19"],
+        "clarification_refs": ["clarification:fixture-q1"],
+        "alignment_context_refs": ["alignment:fixture-a1"],
+        "session_refs": ["openharness:fixture-session"]
+      }
+    },
+    {
+      "id": "fixture-state-node-no-affect",
+      "group": "tools",
+      "accessCount": 1,
+      "path": ".cursor/state/plain_fixture.md",
+      "layer": "state"
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "source": "fixture-state-node",
+      "target": "fixture-state-node-no-affect",
+      "weight": 1,
+      "sessionType": "general",
+      "sessions": ["openharness:fixture-session"],
+      "affect_by_session": {
+        "openharness:fixture-session": {
+          "concern_level": 0.6,
+          "need_urgency": 0.7,
+          "accomplishment_momentum": 0.4,
+          "unresolved_question_count": 1,
+          "confidence_drift": 0.1
+        }
+      },
+      "intent_artifacts_by_session": {
+        "openharness:fixture-session": {
+          "survey_refs": ["survey:fixture-2026-03-19"],
+          "clarification_refs": ["clarification:fixture-q1"],
+          "alignment_context_refs": ["alignment:fixture-a1"]
+        }
+      }
+    }
+  ],
   "generated": "2026-03-19T00:00:00.000Z",
   "sessionCount": 1
 }

@@ -53,6 +53,8 @@ function runBootstrap(sqlite: Database.Database) {
     CREATE TABLE IF NOT EXISTS survey_responses (
       id TEXT PRIMARY KEY NOT NULL,
       attendee_id TEXT NOT NULL REFERENCES attendees(id) ON DELETE CASCADE,
+      session_type TEXT NOT NULL DEFAULT 'profile',
+      questionnaire_version TEXT NOT NULL DEFAULT 'v1',
       tenure_years INTEGER,
       learning_style TEXT,
       shaped_by TEXT,
@@ -68,6 +70,18 @@ function runBootstrap(sqlite: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_survey_responses_attendee_id ON survey_responses(attendee_id);
     CREATE INDEX IF NOT EXISTS idx_survey_responses_created_at ON survey_responses(created_at);
+
+    CREATE TABLE IF NOT EXISTS survey_response_intent_categories (
+      id TEXT PRIMARY KEY NOT NULL,
+      response_id TEXT NOT NULL REFERENCES survey_responses(id) ON DELETE CASCADE,
+      category TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(response_id, category)
+    );
+    CREATE INDEX IF NOT EXISTS idx_survey_response_intent_categories_response_id ON survey_response_intent_categories(response_id);
+    CREATE INDEX IF NOT EXISTS idx_survey_response_intent_categories_category ON survey_response_intent_categories(category);
 
     CREATE TABLE IF NOT EXISTS peak_performance_definitions (
       id TEXT PRIMARY KEY NOT NULL,
@@ -169,6 +183,15 @@ function runBootstrap(sqlite: Database.Database) {
     .get();
   if (!hasHarnessProfileColumn) {
     sqlite.exec(`ALTER TABLE survey_responses ADD COLUMN harness_profile_id TEXT REFERENCES harness_profiles(id) ON DELETE SET NULL`);
+  const surveyColumns = sqlite
+    .prepare(`PRAGMA table_info(survey_responses)`)
+    .all() as { name: string }[];
+  const surveyColumnSet = new Set(surveyColumns.map((c) => c.name));
+  if (!surveyColumnSet.has('session_type')) {
+    sqlite.exec(`ALTER TABLE survey_responses ADD COLUMN session_type TEXT NOT NULL DEFAULT 'profile';`);
+  }
+  if (!surveyColumnSet.has('questionnaire_version')) {
+    sqlite.exec(`ALTER TABLE survey_responses ADD COLUMN questionnaire_version TEXT NOT NULL DEFAULT 'v1';`);
   }
 
   const now = new Date().toISOString();

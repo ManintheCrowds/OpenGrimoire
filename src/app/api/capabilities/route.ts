@@ -80,6 +80,16 @@ const CAPABILITIES = {
       auth: 'OpenGrimoire operator session cookie',
     },
     {
+      path: '/api/intent-ledger',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key (same gate as alignment API)',
+    },
+    {
+      path: '/api/intent-ledger/:attendeeId',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie or x-alignment-context-key (same gate as alignment API)',
+    },
+    {
       path: '/api/admin/moderation-queue',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie',

@@ -38,6 +38,8 @@ export const surveyResponses = sqliteTable(
     attendeeId: text('attendee_id')
       .notNull()
       .references(() => attendees.id, { onDelete: 'cascade' }),
+    sessionType: text('session_type').notNull().default('profile'),
+    questionnaireVersion: text('questionnaire_version').notNull().default('v1'),
     tenureYears: integer('tenure_years'),
     learningStyle: text('learning_style'),
     shapedBy: text('shaped_by'),
@@ -56,6 +58,28 @@ export const surveyResponses = sqliteTable(
   (t) => [
     index('idx_survey_responses_attendee_id').on(t.attendeeId),
     index('idx_survey_responses_created_at').on(t.createdAt),
+  ]
+);
+
+
+export const surveyResponseIntentCategories = sqliteTable(
+  'survey_response_intent_categories',
+  {
+    id: text('id').primaryKey(),
+    responseId: text('response_id')
+      .notNull()
+      .references(() => surveyResponses.id, { onDelete: 'cascade' }),
+    category: text('category', {
+      enum: ['questions', 'concerns', 'needs', 'accomplishments', 'stats', 'constraints', 'signals'],
+    }).notNull(),
+    content: text('content').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    index('idx_survey_response_intent_categories_response_id').on(t.responseId),
+    index('idx_survey_response_intent_categories_category').on(t.category),
+    uniqueIndex('survey_response_intent_categories_response_category_unique').on(t.responseId, t.category),
   ]
 );
 

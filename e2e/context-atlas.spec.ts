@@ -38,16 +38,42 @@ test.describe('Context Atlas (Brain Map)', () => {
 
     await page.getByRole('tab', { name: 'Table' }).click();
     await expect(page.getByRole('cell', { name: '.cursor/state/handoff_fixture.md' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '.cursor/state/plain_fixture.md' })).toBeVisible();
     await expect(page.getByTestId('col-trust-score')).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Trust score' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '0.85' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Grimoire tags' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'fixture, opengrimoire' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Concern' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Urgency' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Unresolved questions' })).toBeVisible();
 
     await page.getByRole('tab', { name: 'Vault' }).click();
     await expect(
       page.getByText(/No nodes in this layer for the current filter/)
     ).toBeVisible();
+  });
+
+  test('overlay filter + intent drilldown are shown for affect-enabled nodes', async ({ page }) => {
+    const body = loadBrainMapFixture('brain-map-state-only.json');
+    await page.route('**/api/brain-map/graph**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body,
+      });
+    });
+    await page.goto('/context-atlas');
+    await expect(page.getByText('Loading brain map')).not.toBeVisible({ timeout: 15000 });
+
+    await page.getByRole('tab', { name: 'Table' }).click();
+    await page.getByRole('row', { name: /handoff_fixture/ }).click();
+    await expect(page.getByTestId('intent-drilldown-panel')).toBeVisible();
+    await expect(page.getByTestId('intent-survey-refs')).toContainText('survey:fixture-2026-03-19');
+
+    await page.getByTestId('affect-filter-checkbox').check();
+    await expect(page.getByRole('cell', { name: '.cursor/state/plain_fixture.md' })).toHaveCount(0);
+    await expect(page.getByRole('cell', { name: '.cursor/state/handoff_fixture.md' })).toBeVisible();
   });
 
   test('mocked empty API with sessionCount 0: placeholder hint is visible', async ({ page }) => {

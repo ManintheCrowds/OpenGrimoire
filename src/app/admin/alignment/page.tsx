@@ -21,6 +21,15 @@ type AlignmentItem = {
   updated_at: string;
 };
 
+type IntentLedgerRecord = {
+  attendee: { id: string; first_name: string; last_name: string | null };
+  intent_gaps: {
+    unresolved: number;
+    resolved: number;
+    escalation_prompts: string[];
+  };
+};
+
 export default function AdminAlignmentPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -72,6 +81,24 @@ export default function AdminAlignmentPage() {
   });
 
   const items = alignmentQuery.data ?? [];
+  const intentLedgerQuery = useQuery({
+    queryKey: ['admin', 'intent-ledger'],
+    enabled: !!user,
+    queryFn: async () => {
+      const res = await fetch('/api/intent-ledger', {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to load intent ledger (${res.status})`);
+      }
+      const data = (await res.json()) as { items?: IntentLedgerRecord[] };
+      return data.items ?? [];
+    },
+  });
+  const intentRows = intentLedgerQuery.data ?? [];
+  const unresolvedCount = intentRows.reduce((sum, row) => sum + row.intent_gaps.unresolved, 0);
+  const resolvedCount = intentRows.reduce((sum, row) => sum + row.intent_gaps.resolved, 0);
+  const escalationRows = intentRows.filter((row) => row.intent_gaps.escalation_prompts.length > 0);
 
   useEffect(() => {
     if (!user) return;
@@ -222,6 +249,43 @@ export default function AdminAlignmentPage() {
             {loadError ?? queryError}
           </div>
         )}
+
+        <section className="mb-10 rounded-lg border border-amber-200 bg-amber-50 p-6 shadow-sm" aria-labelledby="intent-gaps-heading">
+          <h2 id="intent-gaps-heading" className="text-lg font-semibold text-amber-900">
+            Intent gaps ledger
+          </h2>
+          <p className="mt-1 text-sm text-amber-800">
+            Merged Sync Session + clarification + alignment read model for operator/harness handoff.
+          </p>
+          {intentLedgerQuery.isPending ? (
+            <p className="mt-3 text-sm text-amber-700">Loading intent ledger…</p>
+          ) : (
+            <div className="mt-4 space-y-3 text-sm">
+              <p className="text-amber-900">
+                Unresolved gaps: <strong>{unresolvedCount}</strong> · Resolved outcomes:{' '}
+                <strong>{resolvedCount}</strong>
+              </p>
+              {escalationRows.length === 0 ? (
+                <p className="text-amber-800">No escalation prompts right now.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {escalationRows.map((row) => (
+                    <li key={row.attendee.id} className="rounded border border-amber-300 bg-white p-3">
+                      <div className="font-medium text-gray-900">
+                        {row.attendee.first_name} {row.attendee.last_name ?? ''} ({row.attendee.id})
+                      </div>
+                      <ul className="mt-1 list-disc pl-5 text-gray-700">
+                        {row.intent_gaps.escalation_prompts.map((prompt) => (
+                          <li key={prompt}>{prompt}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </section>
 
         <section className="mb-10 rounded-lg border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="create-heading">
           <h2 id="create-heading" className="mb-4 text-lg font-semibold text-gray-900">

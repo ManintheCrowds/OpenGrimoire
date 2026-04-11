@@ -181,6 +181,8 @@ export const convertAppToDBResponse = (appResponse: AppSurveyResponse): DBSurvey
     attendee_id: `a${appResponse.id.split('_')[1]}`,
     created_at: appResponse.created_at,
     updated_at: appResponse.created_at,
+    session_type: 'profile',
+    questionnaire_version: 'v1',
     attendee: {
       first_name: firstName,
       last_name: isAnonymous ? null : lastName,

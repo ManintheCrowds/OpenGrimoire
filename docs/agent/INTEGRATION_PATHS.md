@@ -11,6 +11,7 @@
 ## Primary: HTTP + thin CLI
 
 - **Alignment context:** Full list/create/patch/delete via [ALIGNMENT_CONTEXT_API.md](./ALIGNMENT_CONTEXT_API.md) and [`scripts/alignment-context-cli.mjs`](../../scripts/alignment-context-cli.mjs) (`list`, `create`, `patch`, `delete`).
+- **Intent ledger read model:** `GET /api/intent-ledger` and `GET /api/intent-ledger/:attendeeId` for merged Sync Session + clarification + alignment records (see [INTENT_LEDGER_API.md](./INTENT_LEDGER_API.md)).
 - **Brain-map graph:** `GET /api/brain-map/graph` for the JSON document consumed by the viewer.
 - **Harness profiles:** CRUD + selection surface under `/api/harness-profiles*` plus OpenHarness bundle endpoint (`/api/harness-profiles/openharness`); behavior mapping guide in [HARNESS_PROFILE_ALIGNMENT.md](./HARNESS_PROFILE_ALIGNMENT.md).
 

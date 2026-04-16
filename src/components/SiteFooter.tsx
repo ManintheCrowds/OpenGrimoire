@@ -8,6 +8,9 @@ export default function SiteFooter() {
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1">
         <span>OpenGrimoire</span>
+        <Link href="/wiki" className="text-blue-600 hover:underline">
+          LLM Wiki mirror
+        </Link>
         <Link href="/capabilities" className="text-blue-600 hover:underline">
           API capabilities
         </Link>

@@ -34,6 +34,21 @@ OpenGrimoire is a local-first context graph and alignment workspace for human-to
 
 Full JSON contract: [docs/BRAIN_MAP_SCHEMA.md](docs/BRAIN_MAP_SCHEMA.md). **Tools, APIs, and how this relates to OpenHarness:** [docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md](docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md).
 
+### Wiki mirror (LLM-Wiki → `public/wiki`, read-only `/wiki`)
+
+OpenGrimoire can show a **one-way copy** of your vault’s `LLM-Wiki/` tree under `public/wiki`. This is **not** authoring — keep writing in Obsidian.
+
+**Single sync command** (PowerShell, from sibling **MiscRepos** — adjust paths):
+
+```powershell
+$env:OBSIDIAN_VAULT_ROOT = "D:/path/to/ObsidianVault"
+$env:OPENGRIMOIRE_WIKI_SYNC_OUT = "D:/path/to/OpenGrimoire/public/wiki"
+Set-Location D:/path/to/MiscRepos
+.\local-proto\scripts\Run-LlmWikiScheduledPipeline.ps1 -SyncOpenGrimoireWiki -SkipStagingImport -SkipLint
+```
+
+Then open **`http://localhost:3001/wiki`**. Full notes: [docs/WIKI_MIRROR.md](docs/WIKI_MIRROR.md).
+
 ### Local-first notes
 
 The graph path is **static JSON + optional secret**—you can run the viewer without configuring a database for the graph file. Survey and alignment data use **local SQLite** on the server. For broader local-first patterns (sync, ownership, AI safety), see [Open Local First](https://openlocalfirst.org/) and optionally the sibling `local-first` workspace (`README.md`, `RESOURCES.md`, `AI_SECURITY.md`).
@@ -49,6 +64,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 |------|---------|
 | `/` | Home |
 | `/context-atlas`, `/brain-map` | Context graph (same UI) |
+| `/wiki` | **Read-only** LLM Wiki mirror from `public/wiki` (vault `LLM-Wiki/` stays SSOT; see [docs/WIKI_MIRROR.md](docs/WIKI_MIRROR.md)) |
 | `/operator-intake`, `/survey` | Sync Session form (`/survey` is legacy alias of the same UI) |
 | `/visualization` | D3 demos |
 | `/login`, `/admin/*` | Operator password + session cookie (see `.env.example`: `OPENGRIMOIRE_SESSION_SECRET`, `OPENGRIMOIRE_ADMIN_PASSWORD` or hash) |

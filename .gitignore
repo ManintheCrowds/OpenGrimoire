@@ -18,6 +18,10 @@ npm-debug.log
 # Local / personal brain map (vault merges; not committed by default)
 public/brain-map-graph.local.json
 
+# LLM-Wiki read-only mirror (operator sync; not SSOT — keep .gitkeep only)
+public/wiki/**
+!public/wiki/.gitkeep
+
 # Local SQLite (alignment + survey)
 /data/
 

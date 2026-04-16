@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 const navItems: { href: string; label: string; testId?: string }[] = [
   { href: '/', label: 'Home' },
   { href: '/context-atlas', label: 'Context graph' },
+  { href: '/wiki', label: 'LLM Wiki mirror' },
   { href: '/visualization', label: 'Visualization' },
   { href: '/operator-intake', label: 'Sync Session', testId: 'nav-link-operator-intake' },
   { href: '/capabilities', label: 'Capabilities' },

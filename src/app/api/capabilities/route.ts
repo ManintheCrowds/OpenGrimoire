@@ -29,6 +29,16 @@ const CAPABILITIES = {
       reference_note:
         'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE).',
     },
+    {
+      id: 'llm_wiki_mirror_read',
+      summary:
+        'Read-only Karpathy-style LLM Wiki mirror under public/wiki (vault LLM-Wiki/ remains SSOT). No write API; render is escaped plaintext in /wiki.',
+      ui_path: '/wiki',
+      api: '(none — files on disk only)',
+      data_source: 'public/wiki/**/*.md (robocopy from vault via MiscRepos script)',
+      refresh: 'manual_after_robocopy',
+      reference_note: 'See docs/WIKI_MIRROR.md; Phase B minimal slice (no search, no edit, no wikilink routing).',
+    },
   ],
   auth_env_hints: [
     'ALIGNMENT_CONTEXT_API_SECRET + header x-alignment-context-key',

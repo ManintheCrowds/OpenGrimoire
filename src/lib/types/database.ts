@@ -11,6 +11,16 @@ export type PeakPerformanceType =
   | 'Ambivert, Night';
 export type MotivationType = 'impact' | 'growth' | 'recognition' | 'autonomy' | 'purpose';
 export type ModerationStatus = 'pending' | 'approved' | 'rejected';
+export type SurveySessionType = string;
+export type QuestionnaireVersion = string;
+export type IntentCategory =
+  | 'questions'
+  | 'concerns'
+  | 'needs'
+  | 'accomplishments'
+  | 'stats'
+  | 'constraints'
+  | 'signals';
 export type AlignmentContextSource = 'ui' | 'import' | 'api';
 export type AlignmentContextStatus = 'draft' | 'active' | 'archived';
 
@@ -27,15 +37,37 @@ export type AttendeeRow = {
 export type SurveyResponseRow = {
   id: string;
   attendee_id: string;
+  session_type: SurveySessionType;
+  questionnaire_version: QuestionnaireVersion;
   tenure_years: number | null;
   learning_style: LearningStyle | null;
   shaped_by: ShapedBy | null;
   peak_performance: PeakPerformanceType | null;
   motivation: MotivationType | null;
   unique_quality: string | null;
+  harness_profile_id: string | null;
   status: ModerationStatus;
   moderated_at: string | null;
   test_data: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HarnessProfileRow = {
+  id: string;
+  name: string;
+  purpose: string;
+  question_strategy: string;
+  risk_posture: string;
+  preferred_clarification_modes: string[];
+  output_style: string;
+  is_default: boolean;
+
+export type SurveyResponseIntentCategoryRow = {
+  id: string;
+  response_id: string;
+  category: IntentCategory;
+  content: string;
   created_at: string;
   updated_at: string;
 };

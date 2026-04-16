@@ -14,6 +14,23 @@ export const attendees = sqliteTable(
   (t) => [index('idx_attendees_email').on(t.email), index('idx_attendees_created_at').on(t.createdAt)]
 );
 
+export const harnessProfiles = sqliteTable(
+  'harness_profiles',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    purpose: text('purpose').notNull(),
+    questionStrategy: text('question_strategy').notNull(),
+    riskPosture: text('risk_posture').notNull(),
+    preferredClarificationModes: text('preferred_clarification_modes').notNull().default('[]'),
+    outputStyle: text('output_style').notNull(),
+    isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_harness_profiles_name').on(t.name), index('idx_harness_profiles_is_default').on(t.isDefault)]
+);
+
 export const surveyResponses = sqliteTable(
   'survey_responses',
   {
@@ -21,12 +38,15 @@ export const surveyResponses = sqliteTable(
     attendeeId: text('attendee_id')
       .notNull()
       .references(() => attendees.id, { onDelete: 'cascade' }),
+    sessionType: text('session_type').notNull().default('profile'),
+    questionnaireVersion: text('questionnaire_version').notNull().default('v1'),
     tenureYears: integer('tenure_years'),
     learningStyle: text('learning_style'),
     shapedBy: text('shaped_by'),
     peakPerformance: text('peak_performance'),
     motivation: text('motivation'),
     uniqueQuality: text('unique_quality'),
+    harnessProfileId: text('harness_profile_id').references(() => harnessProfiles.id, { onDelete: 'set null' }),
     status: text('status', { enum: ['pending', 'approved', 'rejected'] })
       .notNull()
       .default('pending'),
@@ -38,6 +58,28 @@ export const surveyResponses = sqliteTable(
   (t) => [
     index('idx_survey_responses_attendee_id').on(t.attendeeId),
     index('idx_survey_responses_created_at').on(t.createdAt),
+  ]
+);
+
+
+export const surveyResponseIntentCategories = sqliteTable(
+  'survey_response_intent_categories',
+  {
+    id: text('id').primaryKey(),
+    responseId: text('response_id')
+      .notNull()
+      .references(() => surveyResponses.id, { onDelete: 'cascade' }),
+    category: text('category', {
+      enum: ['questions', 'concerns', 'needs', 'accomplishments', 'stats', 'constraints', 'signals'],
+    }).notNull(),
+    content: text('content').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    index('idx_survey_response_intent_categories_response_id').on(t.responseId),
+    index('idx_survey_response_intent_categories_category').on(t.category),
+    uniqueIndex('survey_response_intent_categories_response_category_unique').on(t.responseId, t.category),
   ]
 );
 

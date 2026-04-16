@@ -1,6 +1,12 @@
 import { randomUUID } from 'crypto';
 import { and, desc, eq } from 'drizzle-orm';
-import { attendees, moderation, peakPerformanceDefinitions, surveyResponses } from '@/db/schema';
+import {
+  attendees,
+  moderation,
+  peakPerformanceDefinitions,
+  surveyResponseIntentCategories,
+  surveyResponses,
+} from '@/db/schema';
 import { getDb, getSqlite } from '@/db/client';
 import type {
   AttendeeRow,
@@ -8,6 +14,7 @@ import type {
   ModerationRow,
   ModerationStatus,
   MotivationType,
+  IntentCategory,
   PeakPerformanceDefinitionRow,
   PeakPerformanceType,
   ShapedBy,
@@ -35,12 +42,15 @@ function rowToSurvey(row: typeof surveyResponses.$inferSelect): SurveyResponseRo
   return {
     id: row.id,
     attendee_id: row.attendeeId,
+    session_type: row.sessionType as SurveyResponseRow['session_type'],
+    questionnaire_version: row.questionnaireVersion as SurveyResponseRow['questionnaire_version'],
     tenure_years: row.tenureYears,
     learning_style: row.learningStyle as LearningStyle | null,
     shaped_by: row.shapedBy as ShapedBy | null,
     peak_performance: row.peakPerformance as PeakPerformanceType | null,
     motivation: row.motivation as MotivationType | null,
     unique_quality: row.uniqueQuality,
+    harness_profile_id: row.harnessProfileId,
     status: row.status as ModerationStatus,
     moderated_at: row.moderatedAt,
     test_data: row.testData,
@@ -108,13 +118,17 @@ export function createAttendee(data: {
 
 export function createSurveyResponse(data: {
   attendee_id: string;
+  session_type?: SurveyResponseRow['session_type'];
+  questionnaire_version?: SurveyResponseRow['questionnaire_version'];
   tenure_years?: number;
   learning_style?: LearningStyle | null;
   shaped_by?: ShapedBy | null;
   peak_performance?: PeakPerformanceType | null;
   motivation?: MotivationType | null;
   unique_quality?: string;
+  harness_profile_id?: string | null;
   test_data?: boolean;
+  categories?: { category: IntentCategory; content: string }[];
 }): SurveyResponseRow {
   const db = getDb();
   const id = randomUUID();
@@ -123,12 +137,15 @@ export function createSurveyResponse(data: {
     .values({
       id,
       attendeeId: data.attendee_id,
+      sessionType: data.session_type ?? 'profile',
+      questionnaireVersion: data.questionnaire_version ?? 'v1',
       tenureYears: data.tenure_years ?? null,
       learningStyle: data.learning_style ?? null,
       shapedBy: data.shaped_by ?? null,
       peakPerformance: data.peak_performance ?? null,
       motivation: data.motivation ?? null,
       uniqueQuality: data.unique_quality ?? null,
+      harnessProfileId: data.harness_profile_id ?? null,
       status: 'pending',
       moderatedAt: null,
       testData: data.test_data ?? false,
@@ -136,6 +153,26 @@ export function createSurveyResponse(data: {
       updatedAt: ts,
     })
     .run();
+
+  if (data.categories && data.categories.length > 0) {
+    for (const category of data.categories) {
+      db.insert(surveyResponseIntentCategories)
+        .values({
+          id: randomUUID(),
+          responseId: id,
+          category: category.category,
+          content: category.content,
+          createdAt: ts,
+          updatedAt: ts,
+        })
+        .onConflictDoUpdate({
+          target: [surveyResponseIntentCategories.responseId, surveyResponseIntentCategories.category],
+          set: { content: category.content, updatedAt: ts },
+        })
+        .run();
+    }
+  }
+
   const row = db.select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
   if (!row) throw new Error('Survey response insert failed');
   return rowToSurvey(row);
@@ -189,12 +226,18 @@ export function getModerationQueue(): ModerationQueueRow[] {
     const sr: SurveyResponseRow = {
       id,
       attendee_id: String(raw.attendee_id),
+      session_type: raw.session_type == null ? 'profile' : (String(raw.session_type) as SurveyResponseRow['session_type']),
+      questionnaire_version:
+        raw.questionnaire_version == null
+          ? 'v1'
+          : (String(raw.questionnaire_version) as SurveyResponseRow['questionnaire_version']),
       tenure_years: raw.tenure_years == null ? null : Number(raw.tenure_years),
       learning_style: raw.learning_style as LearningStyle | null,
       shaped_by: raw.shaped_by as ShapedBy | null,
       peak_performance: raw.peak_performance as PeakPerformanceType | null,
       motivation: raw.motivation as MotivationType | null,
       unique_quality: raw.unique_quality == null ? null : String(raw.unique_quality),
+      harness_profile_id: raw.harness_profile_id == null ? null : String(raw.harness_profile_id),
       status: raw.status as ModerationStatus,
       moderated_at: raw.moderated_at == null ? null : String(raw.moderated_at),
       test_data: Boolean(raw.test_data),
@@ -338,6 +381,11 @@ export function getApprovedUniqueQualities(): {
         is_anonymous: Boolean(r.aan),
       },
     }));
+}
+
+export function getSurveyResponseById(id: string): SurveyResponseRow | null {
+  const row = getDb().select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
+  return row ? rowToSurvey(row) : null;
 }
 
 export function debugSurveyResponses() {

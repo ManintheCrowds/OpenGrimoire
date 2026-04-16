@@ -29,6 +29,8 @@ This document describes the payload returned by `GET /api/brain-map/graph`. The 
 | `compass_axis` | string | no | Optional orientation axis label from OpenCompass-style context models |
 | `grimoire_tags` | string[] | no | Optional OpenGrimoire tags for operator wisdom grouping |
 | `insight_level` | string | no | Optional qualitative insight level (`raw`, `curated`, `validated`) |
+| `affect_overlay` | object | no | Optional affect signals for intent-aware overlays: `concern_level` (0..1), `need_urgency` (0..1), `accomplishment_momentum` (0..1), `unresolved_question_count` (integer), `confidence_drift` (-1..1; UI generally renders magnitude). |
+| `intent_artifacts` | object | no | Optional links to intent context sources: `survey_refs`, `clarification_refs`, `alignment_context_refs`, `session_refs` (all string arrays). |
 
 The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenance`**, and vault-specific `id`/`path` prefixes (`vault/<label>/...`). Optional fields such as `constraint` / `risk_tier` are for forward-compatible enrichments.
 
@@ -50,6 +52,8 @@ The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenan
 | `compass_axis` | string | no | Optional orientation axis label |
 | `grimoire_tags` | string[] | no | Optional OpenGrimoire tags |
 | `insight_level` | string | no | Optional insight level marker |
+| `affect_by_session` | object | no | Optional per-session overlay map. Keys are session ids; values follow `affect_overlay` shape from nodes. |
+| `intent_artifacts_by_session` | object | no | Optional per-session intent refs map. Keys are session ids; values follow `intent_artifacts` shape from nodes. |
 
 ## API behavior
 
@@ -64,6 +68,8 @@ The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenan
 
 - Consumers must ignore unknown fields.
 - New optional fields must not be required by the UI; the OpenGrimoire viewer tolerates their absence.
+- Affect overlay fields are **optional** and default-safe: if omitted, the graph renders with existing topology styling and no affect columns/filters.
+- Session-level affect/intent maps are optional enrichments for drilldowns; legacy edge payloads without these maps remain valid.
 
 ## State ingest (builder)
 

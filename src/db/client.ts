@@ -183,6 +183,7 @@ function runBootstrap(sqlite: Database.Database) {
     .get();
   if (!hasHarnessProfileColumn) {
     sqlite.exec(`ALTER TABLE survey_responses ADD COLUMN harness_profile_id TEXT REFERENCES harness_profiles(id) ON DELETE SET NULL`);
+  }
   const surveyColumns = sqlite
     .prepare(`PRAGMA table_info(survey_responses)`)
     .all() as { name: string }[];

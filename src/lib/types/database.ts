@@ -62,6 +62,9 @@ export type HarnessProfileRow = {
   preferred_clarification_modes: string[];
   output_style: string;
   is_default: boolean;
+  created_at: string;
+  updated_at: string;
+};
 
 export type SurveyResponseIntentCategoryRow = {
   id: string;

@@ -17,6 +17,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      { source: '/survey', destination: '/operator-intake', permanent: true },
       { source: '/test-supabase', destination: '/test-sqlite', permanent: false },
       { source: '/test-supabase/:path*', destination: '/test-sqlite/:path*', permanent: false },
     ];

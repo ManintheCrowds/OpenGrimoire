@@ -1,6 +1,6 @@
 # Intent ledger API (operator/harness alignment loop)
 
-This read model merges three planes into one per-attendee record:
+This read model merges three planes into one per-attendee record. **Identifier semantics** (`attendeeId`, `surveyResponseId`, submit lifecycle): [SYNC_SESSION_HANDOFF.md](./SYNC_SESSION_HANDOFF.md) §6.
 
 1. **Fixed Sync Session data** (`attendees` + `survey_responses`).
 2. **Clarification queue outcomes** (`clarification_requests`).

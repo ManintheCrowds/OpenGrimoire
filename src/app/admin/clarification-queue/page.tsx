@@ -151,7 +151,7 @@ export default function AdminClarificationQueuePage() {
         <h1 className="text-3xl font-bold text-gray-900">Clarification queue</h1>
         <p className="mt-2 text-gray-600">
           Resolve async questions published by agents (OpenGrimoire intent inbox). Distinct from{' '}
-          <a className="text-blue-600 underline" href="/survey">
+          <a className="text-blue-600 underline" href="/operator-intake">
             Sync Session
           </a>{' '}
           profile flow.

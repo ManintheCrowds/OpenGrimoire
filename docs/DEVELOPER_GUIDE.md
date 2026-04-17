@@ -667,7 +667,7 @@ Extend mocks to match step content and assertions as needed.
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppProvider } from '@/lib/context/AppContext';
-import { SurveyPage } from '@/app/survey/page';
+import OperatorIntakePage from '@/app/operator-intake/page';
 
 // Test wrapper with providers
 function TestWrapper({ children }: { children: React.ReactNode }) {
@@ -684,7 +684,7 @@ describe('Survey Flow Integration', () => {
     
     render(
       <TestWrapper>
-        <SurveyPage />
+        <OperatorIntakePage />
       </TestWrapper>
     );
 
@@ -714,7 +714,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Survey Application', () => {
   test('user can complete survey', async ({ page }) => {
-    await page.goto('/survey');
+    await page.goto('/operator-intake');
 
     // Fill personal information
     await page.fill('[data-testid="name-input"]', 'Test User');
@@ -734,7 +734,7 @@ test.describe('Survey Application', () => {
 
   test('visualization loads after survey completion', async ({ page }) => {
     // Complete survey first
-    await page.goto('/survey');
+    await page.goto('/operator-intake');
     // ... survey completion steps ...
 
     // Navigate to visualization

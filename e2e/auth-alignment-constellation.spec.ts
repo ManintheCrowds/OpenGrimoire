@@ -4,19 +4,7 @@
  */
 import { test, expect } from '@playwright/test';
 
-function adminPassword(): string {
-  return process.env.OPENGRIMOIRE_ADMIN_PASSWORD ?? 'e2e-test-password';
-}
-
-async function loginAsAdmin(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto('/login');
-  await expect(page.getByRole('heading', { name: /OpenGrimoire admin/i })).toBeVisible();
-  await page.getByPlaceholder('Operator password').fill(adminPassword());
-  await Promise.all([
-    page.waitForURL(/\/admin/),
-    page.getByRole('button', { name: /Sign in/i }).click(),
-  ]);
-}
+import { adminPassword, loginAsAdmin } from './helpers/admin-login';
 
 test.describe('OA-5 auth + alignment + constellation', () => {
   test('login page renders and sign-in redirects to /admin', async ({ page }) => {

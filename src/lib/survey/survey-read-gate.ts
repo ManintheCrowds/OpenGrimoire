@@ -6,8 +6,8 @@ import {
   OPENGRIMOIRE_SESSION_COOKIE,
   verifyAdminSessionToken,
 } from '@/lib/auth/session';
-import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
 import { logAccessDenied } from '@/lib/observability/access-denial-log';
+import { decideSurveyReadAccess } from '@/lib/survey/survey-read-gate-logic';
 
 export type SurveyReadGateResult =
   | { ok: true }
@@ -18,38 +18,26 @@ export type SurveyReadGateResult =
  * In production, deny unless explicitly opened or caller presents auth.
  */
 export async function checkSurveyReadGate(request: Request): Promise<SurveyReadGateResult> {
-  const isProd = process.env.NODE_ENV === 'production';
-  if (!isProd) {
-    return { ok: true };
-  }
-
-  if (process.env.SURVEY_VISUALIZATION_ALLOW_PUBLIC === 'true') {
+  if (process.env.NODE_ENV !== 'production') {
     return { ok: true };
   }
 
   const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(token);
-  if (session) {
+
+  const decision = decideSurveyReadAccess({
+    nodeEnv: process.env.NODE_ENV ?? 'development',
+    surveyVisualizationAllowPublic: process.env.SURVEY_VISUALIZATION_ALLOW_PUBLIC,
+    hasAdminSession: Boolean(session),
+    alignmentContextKeyAllowsSurveyRead: process.env.ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ,
+    alignmentApiSecret: process.env.ALIGNMENT_CONTEXT_API_SECRET ?? '',
+    alignmentContextKeyHeader: request.headers.get('x-alignment-context-key') ?? '',
+    surveyVizSecret: process.env.SURVEY_VISUALIZATION_API_SECRET ?? '',
+    surveyVizKeyHeader: request.headers.get('x-survey-visualization-key') ?? '',
+  });
+
+  if (decision.allow) {
     return { ok: true };
-  }
-
-  const alignmentAllowsSurvey =
-    (process.env.ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ ?? '').trim().toLowerCase() === 'true';
-
-  const alignmentSecret = (process.env.ALIGNMENT_CONTEXT_API_SECRET ?? '').trim();
-  if (alignmentAllowsSurvey && alignmentSecret) {
-    const key = request.headers.get('x-alignment-context-key') ?? '';
-    if (timingSafeEqualString(key, alignmentSecret)) {
-      return { ok: true };
-    }
-  }
-
-  const vizSecret = (process.env.SURVEY_VISUALIZATION_API_SECRET ?? '').trim();
-  if (vizSecret) {
-    const key = request.headers.get('x-survey-visualization-key') ?? '';
-    if (timingSafeEqualString(key, vizSecret)) {
-      return { ok: true };
-    }
   }
 
   logAccessDenied({

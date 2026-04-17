@@ -11,5 +11,12 @@ test.describe('API capabilities manifest', () => {
     const paths = (body.routes as { path: string }[]).map((r) => r.path);
     expect(paths).toContain('/api/brain-map/graph');
     expect(paths).toContain('/api/capabilities');
+    const moderationRoutes = (body.routes as { path: string; auth?: string }[]).filter((r) =>
+      ['/api/admin/moderation-queue', '/api/admin/moderation/:responseId'].includes(r.path)
+    );
+    expect(moderationRoutes).toHaveLength(2);
+    for (const r of moderationRoutes) {
+      expect(r.auth ?? '').toContain('operator_session_only_no_alignment_key');
+    }
   });
 });

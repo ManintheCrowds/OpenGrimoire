@@ -102,12 +102,14 @@ const CAPABILITIES = {
     {
       path: '/api/admin/moderation-queue',
       methods: ['GET'],
-      auth: 'OpenGrimoire operator session cookie',
+      auth:
+        'OpenGrimoire operator session cookie; operator_session_only_no_alignment_key (moderation never uses x-alignment-context-key)',
     },
     {
       path: '/api/admin/moderation/:responseId',
       methods: ['PATCH'],
-      auth: 'OpenGrimoire operator session cookie',
+      auth:
+        'OpenGrimoire operator session cookie; operator_session_only_no_alignment_key (moderation never uses x-alignment-context-key)',
     },
     {
       path: '/api/admin/debug-survey',

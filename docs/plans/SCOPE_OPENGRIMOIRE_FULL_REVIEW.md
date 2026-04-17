@@ -4,7 +4,8 @@
 
 **Normative product spec:** [OPENGRIMOIRE_BASE_FEATURES.md](../OPENGRIMOIRE_BASE_FEATURES.md)  
 **Execution companion (CI waves):** [OPENGRIMOIRE_BASE_FEATURES_ENGINEERING_PLAN.md](./OPENGRIMOIRE_BASE_FEATURES_ENGINEERING_PLAN.md)  
-**Harness tasks:** [MiscRepos `pending_tasks.md` — OPENGRIMOIRE_FULL_REVIEW](../../../MiscRepos/.cursor/state/pending_tasks.md#opengrimoire_full_review-product-scope)
+**Harness tasks:** [MiscRepos `pending_tasks.md` — OPENGRIMOIRE_FULL_REVIEW](../../../MiscRepos/.cursor/state/pending_tasks.md#opengrimoire_full_review-product-scope)  
+**Intent export / revocation API (Phase 2 backlog):** [ELICITATION_EXPORT_CONTRACT.md](../agent/ELICITATION_EXPORT_CONTRACT.md) · operator flow [MiscRepos INTENT_ELICITATION_AND_OG.md](../../../MiscRepos/docs/agent/INTENT_ELICITATION_AND_OG.md)
 
 ---
 
@@ -55,6 +56,7 @@ Aligned with [engineering plan — Out of scope](./OPENGRIMOIRE_BASE_FEATURES_EN
 | Full-text search across mirror from OG | REQ-2.1 wikilinks + perf budget |
 | Automatic menagerie ↔ brain-map graph fusion | REQ-6 links + REQ-7 events stable |
 | Replacing vault SSOT with OG-native wiki | Non-goal per hybrid model in base-features spec |
+| In-app **Sync Session** guided prompts (UI wizard) duplicating [SYNC_SESSION_HANDOFF.md](../agent/SYNC_SESSION_HANDOFF.md) | Operator demand or OA-FR-1 survey UX backlog; doc SSOT exists in-repo |
 
 ---
 
@@ -82,8 +84,8 @@ Single source for open/closed rows: [MiscRepos `.cursor/state/pending_tasks.md`]
 
 | # | System | Primary surfaces | Notes |
 |---|--------|------------------|-------|
-| 1 | **Survey & moderation** | `/survey`, `/admin`, `/login`, `POST /api/survey` | SQLite + route-handler auth (no Postgres RLS) |
-| 2 | **Data visualization** | `/visualization`, `/visualization/*`, constellation/test pages | Alluvial/Chord, hooks, quotes, debug flags |
+| 1 | **Survey & moderation** | `/operator-intake` (canonical; `/survey` → 308 redirect), `/admin`, `/login`, `POST /api/survey` | SQLite + route-handler auth (no Postgres RLS) · **OA-FR-1 matrix:** [OA_FR_1_SYSTEM1_SURVEY_MODERATION.md](./OA_FR_1_SYSTEM1_SURVEY_MODERATION.md) |
+| 2 | **Data visualization** | `/visualization`, `/visualization/*`, constellation/test pages | Alluvial/Chord, hooks, quotes, debug flags · **OA-FR-2 matrix:** [OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md](./OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md) |
 | 3 | **Brain map / context atlas** | `build_brain_map.py` → JSON → `GET /api/brain-map/graph` → `/context-atlas` | Ports, `BRAIN_MAP_*`, EMPTY_GRAPH |
 | 4 | **Alignment & operator APIs** | `/api/alignment-context`, `/admin/alignment`, `docs/agent/*`, CLI | Migration, prod secret, agent parity |
 

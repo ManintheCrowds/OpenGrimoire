@@ -1,184 +1,152 @@
-# Agent-native architecture audit: OpenGrimoire
+# OpenGrimoire — agent-native audit (canonical)
 
-**Normative rules:** Integration expectations and the **strict public REST contract** for entities are defined in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md). This document is a **gap report** against those rules and the eight principles below.
+**Role:** Gap report and **harness-facing scorecard** vs [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) and [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md). This file is **not** a substitute for those contracts.
 
-Living gap report against eight agent-native principles. **Last refreshed:** 2026-03-31 (clarification queue REST + admin UI, `verify:route-index`, OpenAPI/capabilities E2E, survey bootstrap token). **Evidence:** Playwright E2E ([`e2e/`](../e2e/)), [`scripts/alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs), App Router + API routes ([`src/app/api/`](../src/app/api/)), Maestro smoke ([`e2e/maestro/`](../e2e/maestro/)).
-
-## Overall score summary
-
-| Principle | Score | Approx. % | Status |
-|-----------|-------|-----------|--------|
-| 1. Action parity | 6 / 12 | 50% | Partial |
-| 2. Tools as primitives | 7 / 10 | 70% | Partial |
-| 3. Context injection | 3 / 8 | 38% | Needs work |
-| 4. Shared workspace | 8 / 10 | 80% | Excellent |
-| 5. CRUD completeness | 7 / 8 | 88% | Partial |
-| 6. UI integration | 5 / 10 | 50% | Partial |
-| 7. Capability discovery | 5 / 7 | 71% | Partial |
-| 8. Prompt-native features | 2 / 10 | 20% | Needs work |
-
-**Weighted takeaway:** OpenGrimoire is a **Next.js + SQLite (local-first)** app with strong **HTTP API + CLI** affordances for alignment context, but it is **not** an embedded agent shell. **Effective** parity for external agents is **REST + optional browser automation** (Playwright/Maestro); a branded MCP server is optional backlog, not the default rubric for “can the agent do what the operator UI does” for API-backed entities.
-
-Scoring legend: **Excellent** 80%+, **Partial** 50–79%, **Needs work** &lt;50% (mapped to status column).
+**Last updated:** 2026-04-16
 
 ---
 
-## 1. Action parity
+## Related artifacts (GUI + product matrices)
 
-**Principle:** Whatever the user can do, the agent can do.
+| Artifact | Scope |
+|----------|--------|
+| [docs/audit/gui-2026-04-16-opengrimoire-survey.md](./audit/gui-2026-04-16-opengrimoire-survey.md) | System 1 — survey / moderation GUI matrix + desk audit |
+| [docs/audit/gui-2026-04-16-opengrimoire-data-viz.md](./audit/gui-2026-04-16-opengrimoire-data-viz.md) | System 2 — data viz GUI matrix, dimension action items, architecture strategist synthesis |
+| [docs/plans/OA_FR_1_SYSTEM1_SURVEY_MODERATION.md](./plans/OA_FR_1_SYSTEM1_SURVEY_MODERATION.md) | OA-FR-1 REQ/AC |
+| [docs/plans/OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md](./plans/OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md) | OA-FR-2 REQ/AC |
 
-**Findings**
-
-| User surface | Agent path | Parity |
-|--------------|------------|--------|
-| Navigate pages, use visualization, operator intake, admin | Playwright / Maestro / cursor-ide-browser | Yes (generic UI automation) |
-| CRUD alignment context via UI | Same + manual; or **REST** | Partial |
-| CRUD alignment context programmatically | [`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs) (`list`, `create`, `patch`, `delete`) | Yes for API-shaped actions |
-| Clarification queue (agent poll + create; operator/admin) | **`GET`/`POST` `/api/clarification-requests`**, **`GET`/`PATCH` `/api/clarification-requests/:id`** with shared-secret headers; admin BFF under `/api/admin/clarification-requests/*`; UI [`/admin/clarification-queue`](../src/app/admin/clarification-queue/page.tsx) | Yes for HTTP-shaped actions (see [`CLARIFICATION_QUEUE_API.md`](./agent/CLARIFICATION_QUEUE_API.md)) |
-| Auth-gated flows | Depends on env (`ALIGNMENT_CONTEXT_API_SECRET`, admin session for UI) | Same gates for agent |
-
-**Gaps:** No dedicated “OpenGrimoire MCP server” listing app-specific tools; agents rely on **generic** MCP (browser, fetch) + CLI. **Rubric note:** Low “named tool” counts do **not** mean HTTP parity is absent—alignment/clarification/survey surfaces are reachable via documented routes and secrets.
-
-**Score:** **6 / 12** — six of **twelve** fixed parity slots (checklist below) are assessed as having **programmatic** parity (documented REST + headers, [`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs), or contract-backed `fetch`) without relying solely on browser automation; the rest are **generic UI automation**, **operator-session-only** surfaces, or **no public agent mirror** per [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md). Clarification queue APIs and Playwright coverage ([`e2e/clarification-queue.spec.ts`](../e2e/clarification-queue.spec.ts)) improve parity vs browser-only.
-
-**Evidence:** [`e2e/smoke.spec.ts`](../e2e/smoke.spec.ts) (nav + visibility); [`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs); [`e2e/clarification-queue.spec.ts`](../e2e/clarification-queue.spec.ts).
-
-**Re-audit denominator**
-
-Normative integration surfaces: [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — **What counts as an entity** and **Entity × HTTP × auth matrix**. Use this **twelve-slot** checklist to rescore principle 1 consistently (each row: **Y** = programmatic agent path documented, **P** = browser/session automation only, **N** = out of scope for public agents):
-
-| # | Parity slot | Pointer |
-|---|-------------|---------|
-| 1 | Browse major UI (visualization, intake, admin shells) | E2E / Maestro |
-| 2 | Alignment context — list | `GET /api/alignment-context` |
-| 3 | Alignment context — create | `POST /api/alignment-context` |
-| 4 | Alignment context — patch | `PATCH /api/alignment-context/:id` |
-| 5 | Alignment context — delete | `DELETE /api/alignment-context/:id` |
-| 6 | Clarification — list + create | `GET`/`POST /api/clarification-requests` |
-| 7 | Clarification — get + patch by id | `GET`/`PATCH /api/clarification-requests/:id` |
-| 8 | Sync Session submit | `POST /api/survey` |
-| 9 | Brain-map graph read | `GET /api/brain-map/graph` |
-| 10 | Discovery manifest | `GET /api/capabilities` (+ optional OpenAPI) |
-| 11 | Operator auth | `POST /api/auth/login` (session cookie — agent parity via documented harness or browser) |
-| 12 | Admin-only (e.g. moderation, survey visualization PII) | Contract: **Agent vs operator** — no public agent mirror for some rows |
+**Harness backlog:** decomposed rows live in [MiscRepos `.cursor/state/pending_tasks.md`](../../MiscRepos/.cursor/state/pending_tasks.md) under **PENDING_OPENGRIMOIRE_AGENT_NATIVE_DECOMPOSED** (IDs `OGAN-01` …).
 
 ---
 
-## 2. Tools as primitives
+## Eight-agent scorecard (2026-04-16)
 
-**Principle:** Tools expose capability, not opaque business workflows.
+**Method:** Eight parallel **explore** subagents (compound **agent-native-audit** workflow), one per principle, against OpenGrimoire (System 2 slice + shared survey/API). **Synthesis below** is editorial; see per-principle bullets for caveats (e.g. dual definitions of “full parity”).
 
-**Findings:** REST routes under [`src/app/api/`](../src/app/api/) are **resource-oriented** (alignment-context, clarification-requests, survey, brain-map graph, openapi, test-data). The CLI is a **thin** wrapper over HTTP. Admin routes separate from public patterns.
+### Overall score summary
 
-**Gaps:** Some visualization logic is inherently UI-heavy; no decomposition into micro-primitives beyond API boundaries.
+| Core principle | Score | Approx. % | Status |
+|----------------|-------|-----------|--------|
+| 1 Action parity | **4 / 15** full UI-equivalent without browser; **7 / 15** raw survey/quote bytes via HTTP | 27% strict · 47% data | ❌ |
+| 2 Tools as primitives | **3 / 3** survey viz HTTP surfaces are thin reads; E2E = workflow (CI only) | 100% API | ✅ |
+| 3 Context injection | **3 / 8** context types present (repo self-score) | 38% | ❌ |
+| 4 Shared workspace | Single SQLite + same GET gates | 8.5 / 10 | ✅ |
+| 5 CRUD completeness | HTTP over entities touching viz | ~55% strict · ~80% viz-read-scoped | ⚠️ |
+| 6 UI integration | Survey POST / moderation → open `/visualization` refresh | **2 / 10** immediacy | ❌ |
+| 7 Capability discovery | Seven discovery mechanisms | **4 / 7** | ⚠️ |
+| 8 Prompt-native features | **0 / 8** viz behaviors defined as LLM prompts (all CODE) | 0% prompt | ⚠️ (expected for code-first viz) |
 
-**Score:** 7 / 10 — APIs skew primitive; CLI is appropriately thin.
+**Blended agent-native posture (this slice): ~54%** if principle 8 counts as neutral 50%; **lower** if prompt-native is mandatory product doctrine.
 
----
-
-## 3. Context injection
-
-**Principle:** Dynamic context (workspace state, capabilities) feeds the agent system prompt.
-
-**Findings:** OpenGrimoire **does not** implement Cursor/agent system prompts. Alignment **content** is data in SQLite and can be fetched via API for *external* agents if the harness loads it.
-
-**Gaps:** No in-app “agent context panel” or exported prompt bundle for sessions.
-
-**Non-goal (by design):** In-app agent context / prompt bundles are **out of scope** for OpenGrimoire; see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
-
-**Score:** 3 / 8 — relevant to harness wiring outside this repo.
+**Status legend:** ✅ ≈ 80%+ · ⚠️ roughly 50–79% or structural tradeoff · ❌ below 50% or blocking for that principle.
 
 ---
 
-## 4. Shared workspace
+### 1 — Action parity (subagent c15dc530)
 
-**Principle:** Agent and user read/write the same stores.
+| User action | Agent without browser |
+|-------------|------------------------|
+| `GET /api/survey/visualization?all=1`, `GET /api/survey/approved-qualities` | **Full** (same gate family as UI) |
+| Constellation **rows** via `?all=0&showTestData=` | **Full** |
+| Alluvial/Chord tab, auto-play, theme, admin color prefs, Three camera/modes | **Browser only** |
+| `/test-chord` mock chord | **Browser only** |
 
-**Findings:** Same SQLite store and API for users (via app) and agents (via CLI/fetch with same secrets). No separate “agent-only” database for alignment context. **Clarification requests** live in the same store with public and admin routes ([`src/lib/storage/repositories/clarification.ts`](../src/lib/storage/repositories/clarification.ts)).
+**Score:** **4 / 15** actions with full non-UI parity for **entire visible outcome**; **7 / 15** with **data byte** parity.
 
-**Gaps:** Survey/brain-map flows may be more UI-centric; verify per feature.
-
-**Score:** 8 / 10 — clarification entity shares the same persistence story as alignment.
-
----
-
-## 5. CRUD completeness
-
-**Principle:** Each entity supports create, read, update, delete via agent-observable paths.
-
-**Findings:** **Alignment context** exposes list/create/patch/delete via API + CLI ([`alignment-context-cli.mjs`](../scripts/alignment-context-cli.mjs)). **Clarification queue** exposes list/create/read/patch via public and admin APIs (no delete in contract) — see entity matrix in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) and [`CLARIFICATION_QUEUE_API.md`](./agent/CLARIFICATION_QUEUE_API.md). Other entities (survey submissions, brain-map graph) depend on route surface — audit each before claiming full CRUD.
-
-**Score:** 7 / 8 entities — alignment + clarification are documented; **Sync Session** POST and survey bootstrap ([`src/app/api/survey/bootstrap-token/route.ts`](../src/app/api/survey/bootstrap-token/route.ts)) remain product-specific flows.
-
-**Evidence:** [`src/app/api/alignment-context/route.ts`](../src/app/api/alignment-context/route.ts), [`src/app/api/alignment-context/[id]/route.ts`](../src/app/api/alignment-context/[id]/route.ts), [`src/app/api/clarification-requests/route.ts`](../src/app/api/clarification-requests/route.ts), [`src/app/api/clarification-requests/[id]/route.ts`](../src/app/api/clarification-requests/[id]/route.ts).
+**Recommendations (abridged):** Optional **viz bundle GET** (rows + optional `processVisualizationData` output); extend OpenAPI bodies; mark `/test*` non-contractual in capabilities; persist operator prefs via API if agents must set them.
 
 ---
 
-## 6. UI integration
+### 2 — Tools as primitives (subagent 1bd43be6)
 
-**Principle:** Agent-driven changes reflect immediately in UI.
+Executable viz-related capabilities in-tree are **`GET` route handlers** + **`GET /api/capabilities`** — each is a **primitive** read. **No** first-party MCP server in this repo; [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md) maps to HTTP. Playwright specs are **workflow** (appropriate for CI, not agent tools).
 
-**Findings:** Standard React/Next.js client state; no app-wide WebSocket for “agent did X”. User refreshes or client refetch after API mutations.
+**Score:** **N/A** for MCP count; **100%** of in-repo **HTTP tools** touching viz are primitive-shaped.
 
-**Gaps:** External agent mutating via API may not update an open browser tab without polling or navigation.
-
-**Resolution (documented):** Tiered expectations for UI freshness — cache invalidation in-app, cross-client limits, optional polling/SSE — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § UI integration.
-
-**Score:** 5 / 10 — standard web app; admin clarification queue and capabilities/OpenAPI pages have E2E coverage; still no app-wide live co-editing.
-
-**Evidence:** Playwright tests assert DOM after navigation ([`e2e/smoke.spec.ts`](../e2e/smoke.spec.ts)); [`e2e/clarification-queue.spec.ts`](../e2e/clarification-queue.spec.ts); [`e2e/capabilities.spec.ts`](../e2e/capabilities.spec.ts); [`e2e/openapi.spec.ts`](../e2e/openapi.spec.ts).
+**Risk:** Stale docs pointing at missing `mcp-server/` paths — align manifests and audits.
 
 ---
 
-## 7. Capability discovery
+### 3 — Context injection (subagent 7dc48113)
 
-**Principle:** Users discover what the agent can do (onboarding, `/help`, suggested prompts, etc.).
+Dynamic LLM runtime injection: **no** (explicit non-goal in architecture docs). **Partial:** `GET /api/capabilities`, static docs, DOM `data-region` / `data-usage-hint`, `AGENT_TOOL_MANIFEST.md`. **Missing:** single JSON “context bundle” for dual-stack + query semantics; UI routes in capabilities; in-repo Cursor rules for viz.
 
-**Findings (March 2026 refresh):** In-app **[`/capabilities`](../src/app/capabilities/page.tsx)** lists the API surface; **[`SiteFooter`](../src/components/SiteFooter.tsx)** links to `/capabilities` and **`GET /api/capabilities`** (JSON); **[`SharedNavBar`](../src/components/SharedNavBar.tsx)** includes a Capabilities nav item. Machine-readable index: **[`GET /api/capabilities`](../src/app/api/capabilities/route.ts)** (hand-maintained manifest, same PR as route changes per [CONTRIBUTING](../CONTRIBUTING.md)). **Partial OpenAPI 3:** [`GET /api/openapi`](../src/app/api/openapi/route.ts) / **`GET /api/openapi.json`** (rewrite) from [`openapi-document.ts`](../src/lib/openapi/openapi-document.ts); CI enforces parity via **`npm run verify:openapi`** ([`verify-openapi-coverage.mjs`](../scripts/verify-openapi-coverage.mjs)). **Route index:** [`docs/api/ROUTE_INDEX.json`](./api/ROUTE_INDEX.json) (`npm run generate:route-index`); **`npm run verify:route-index`** ([`verify-route-index.mjs`](../scripts/verify-route-index.mjs)). **Gate doc:** [`engineering/DISCOVERY_STABILITY_GATE.md`](./engineering/DISCOVERY_STABILITY_GATE.md). **Operator mirror (scoped):** [`ApiDiscoveryMirror`](../src/components/ApiDiscoveryMirror.tsx) on **`/admin`** fetches the same public capabilities JSON and links to OpenAPI + brain map. [`README.md`](../README.md) and [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) point agents at headers, CLI, and contract. **E2E:** [`e2e/openapi.spec.ts`](../e2e/openapi.spec.ts) exercises OpenAPI JSON shape; [`e2e/capabilities.spec.ts`](../e2e/capabilities.spec.ts) covers `/capabilities` + JSON.
-
-**Gaps:** No onboarding wizard or slash-command help; harness-side copy still lives outside this repo; OpenAPI is **partial** (not full Zod schemas or admin BFF paths). Full-schema OpenAPI and optional thin MCP remain backlog — [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Capability discovery.
-
-**Score:** 5 / 7 discovery mechanisms — route-index + verify:route-index + OpenAPI E2E strengthen the **machine-checkable** story; onboarding and suggested-prompt flows still weak.
-
-**Future (distinct from intake survey):** Async **HITL intent** form for AI-posted human questions — see [`HITL_INTENT_SURVEY_BACKLOG.md`](./HITL_INTENT_SURVEY_BACKLOG.md).
+**Score:** **3 / 8** ≈ **38%**.
 
 ---
 
-## 8. Prompt-native features
+### 4 — Shared workspace (subagent a517b9d4)
 
-**Principle:** Outcomes defined in prompts/config vs hardcoded app logic.
+Single **`OPENGRIMOIRE_DB_PATH`** SQLite; user and gated agent hit same **`getVisualizationData`**. **Anti-patterns:** silent **mock fallback** in `useVisualizationData`; `?all=1` mixes test+live rows; legacy `loadSurveyData` path if revived.
 
-**Findings:** Product behavior is **code-first** (React, API handlers, Zod schemas). Alignment **body** fields can store prompt-like text, but features are not prompt-defined.
-
-**Clarification:** See [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Prompt-native features (code-first today; future config-driven copy vs orchestration in harness).
-
-**Score:** 2 / 10 — by design for a web app; prompt-native layer would be a separate product choice.
+**Score:** **8.5 / 10** (~**85%**).
 
 ---
 
-## Maestro and Playwright as verification hooks
+### 5 — CRUD completeness (subagent 17df5450)
 
-Normative summary: [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Verification.
+| Entity | Agent-relevant HTTP |
+|--------|---------------------|
+| Survey response | **C** POST; **R** bulk viz (no public by-id read); **U** partial via admin moderation; **D** none |
+| Moderation | **R/U** via admin session; first PATCH upserts |
+| Approved quotes | **R** only (derived) |
 
-| Artifact | Role |
-|----------|------|
-| [`e2e/*.spec.ts`](../e2e/) | **CI source of truth** — primary automated proof that user-visible flows render (Chromium, `baseURL` localhost:3001). |
-| [`e2e/maestro/smoke_web.yaml`](../e2e/maestro/smoke_web.yaml) | **Optional** YAML smoke; cross-tool story ([Maestro web](https://docs.maestro.dev/get-started/supported-platform/web-browser)). |
-
-Use Playwright for CI truth; Maestro for cross-tool YAML experiments or future mobile surfaces — not a substitute for Playwright unless explicitly adopted as a gate.
+**Score:** **~55%** strict full CRUD; **~80%** if scoped to “viz is read-heavy”.
 
 ---
 
-## Top recommendations (by impact)
+### 6 — UI integration (subagent 5d05adc0)
 
-1. **Agent entry + contract:** [`AGENT_INTEGRATION.md`](./AGENT_INTEGRATION.md) (single index), README, and [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) — base URL, env vars, entity × HTTP × auth matrix (`OPENGRIMOIRE_BASE_URL` or legacy `OPENGRIMOIRE_BASE_URL` should match dev port **3001**; CLI default aligns with README).
-2. **Optional:** Thin MCP over REST only — see [`agent/INTEGRATION_PATHS.md`](./agent/INTEGRATION_PATHS.md) (no duplicate business layer).
-3. **CRUD matrix:** Maintained in [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md); update in same PR as API changes ([`CONTRIBUTING.md`](../CONTRIBUTING.md)).
-4. **SCP:** Content pasted into alignment fields from untrusted sources should be gated upstream in the **agent harness** (see **`MiscRepos/local-proto/docs/TOOL_SAFEGUARDS.md`** in a sibling **MiscRepos** clone next to **OpenGrimoire**, e.g. `GitHub/MiscRepos` beside `GitHub/OpenGrimoire` — no stable relative link from this repo), not inside OpenGrimoire alone — see [`ARCHITECTURE_REST_CONTRACT.md`](./ARCHITECTURE_REST_CONTRACT.md) § Non-goals.
+`useVisualizationData` and `useApprovedQuotes` fetch on **mount only** (`[]` deps). **No** poll/SSE. Admin moderation invalidates **queue** queries only — **not** public visualization. **Silent action:** DB changes while `/visualization` tab stays stale until remount/refresh/tab switch.
+
+**Score:** **2 / 10** (~**20%**) for survey→viz immediacy.
+
+---
+
+### 7 — Capability discovery (subagent adb183fa)
+
+Mechanisms: onboarding **partial**; help docs **strong**; UI hints **partial** (good on `DataVisualization`); ApiDiscoveryMirror **no self-describe** by design; suggested actions **partial**; empty states **partial**; slash commands **no**. **`GET /api/capabilities`** lists survey APIs but **not** `/visualization` as a workflow row.
+
+**Score:** **4 / 7** (~**57%**).
+
+---
+
+### 8 — Prompt-native features (subagent a3772a35)
+
+Alluvial/Chord/constellation lab: **CODE** (React + D3/Three). **0 / 8** rows classified as **PROMPT**-defined.
+
+**Score:** **0%** prompt-native — **appropriate** for this product slice unless the roadmap adds a JSON/spec → renderer layer.
+
+---
+
+### Top 10 recommendations (by impact, deduped)
+
+| Priority | Action | Principle |
+|----------|--------|-------------|
+| P1 | Add **refetch** path for viz + quotes after survey POST and after moderation (shared query key, `router.refresh`, focus, or interval). | UI integration |
+| P2 | Extend **`GET /api/capabilities`** with `workflows` / `ui_surfaces` for `/visualization`, `/constellation`, query semantics (`all` vs `showTestData`). | Capability discovery · Context injection |
+| P3 | Optional **GET** returning rows + optional **precomputed graph** for constellation mode (or document “must run `processVisualizationData` locally”). | Action parity |
+| P4 | **Banner** when `isMockData` / empty API — kill silent mock confusion. | Shared workspace · Task success |
+| P5 | **OpenAPI** response schemas for visualization + approved-qualities bodies. | Action parity · Tools |
+| P6 | **Single client module** for visualization fetch query shapes (prevent `?all=1` drift). | Action parity · Architecture |
+| P7 | **Archive or fix** root `## Master System Prompt*` file if still Supabase-stale. | Context injection |
+| P8 | Mark **`/test*`** explicitly non-contractual in capabilities or agent docs. | Action parity |
+| P9 | **Persist** theme/autoplay/color prefs via authenticated API if operators need agent parity. | Action parity |
+| P10 | If prompt-native ever required: **versioned chart spec JSON** + thin renderer over existing D3. | Prompt-native |
+
+---
+
+### What is working well
+
+1. **Thin HTTP primitives** for PII survey reads with a single gate implementation.  
+2. **Single SQLite SSOT** for persisted survey data used by viz APIs.  
+3. **`GET /api/capabilities` + AGENT_INTEGRATION** as the discovery spine for external agents.  
+4. **DOM contract** (`data-region`, `data-testid`, `vizLayoutIds`) for browser automation.  
+5. **Code-first D3/Three** — clear ownership; no fake “LLM drives layout” story.
 
 ---
 
 ## References
 
-- [Agent-Native Testing](../../docs/Agent-Native-Testing.md) (MiscRepos / sibling harness docs when present)
-- [Maestro](https://github.com/mobile-dev-inc/Maestro) · [Web browsers](https://docs.maestro.dev/get-started/supported-platform/web-browser)
+- [PUBLIC_SURFACE_AUDIT.md](./security/PUBLIC_SURFACE_AUDIT.md)
+- [MiscRepos GUI audit portfolio index](../../MiscRepos/docs/audit/GUI_AUDIT_PORTFOLIO_INDEX.md)

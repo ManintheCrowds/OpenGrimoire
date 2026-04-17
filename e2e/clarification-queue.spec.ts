@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+import { E2E_ALIGNMENT_CONTEXT_API_SECRET } from './helpers/e2e-secrets';
+
 test.describe('Clarification queue', () => {
   test('admin inbox shows pending item after API create', async ({ page, request }) => {
     const create = await request.post('/api/clarification-requests', {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-alignment-context-key': E2E_ALIGNMENT_CONTEXT_API_SECRET,
+      },
       data: JSON.stringify({
         question_spec: {
           kind: 'text',

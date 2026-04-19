@@ -9,6 +9,8 @@ import {
   OPENGRIMOIRE_VIZ_TAB_CHORD_ID,
 } from './shared/vizLayoutIds';
 import { useAppContext } from '@/lib/context/AppContext';
+import { VisualizationSurveyDataProvider } from './shared/VisualizationSurveyDataContext';
+import { MockSurveyDataBanner } from './shared/MockSurveyDataBanner';
 
 type VisualizationType = 'alluvial' | 'chord';
 
@@ -73,17 +75,20 @@ export function DataVisualization() {
         background: settings.isDarkMode ? '#0A0A0F' : 'white',
       }}
     >
-      {/* Enhanced Header - Full Width at Top */}
-      <EnhancedVisualizationHeader
-        visualizationType={visualizationType}
-        onVisualizationTypeChange={setVisualizationType}
-        isAutoPlay={settings.isAutoPlayEnabled}
-        onAutoPlayToggle={toggleAutoPlay}
-        usageHint="Choose Alluvial or Chord layout; Play/Pause controls timed demo. Center shows approved participant quotes when available."
-      />
+      <VisualizationSurveyDataProvider>
+        {/* Enhanced Header - Full Width at Top */}
+        <EnhancedVisualizationHeader
+          visualizationType={visualizationType}
+          onVisualizationTypeChange={setVisualizationType}
+          isAutoPlay={settings.isAutoPlayEnabled}
+          onAutoPlayToggle={toggleAutoPlay}
+          usageHint="Choose Alluvial or Chord layout; Play/Pause controls timed demo. Center shows approved participant quotes when available."
+        />
 
-      {/* Visualization Content - Scales to fill remaining space */}
-      <div className="flex h-full w-full min-h-0 flex-1 flex-col pb-4">
+        <MockSurveyDataBanner />
+
+        {/* Visualization Content - Scales to fill remaining space */}
+        <div className="flex h-full w-full min-h-0 flex-1 flex-col pb-4">
         <div
           id={OPENGRIMOIRE_VIZ_MAIN_PANEL_ID}
           role="tabpanel"
@@ -124,7 +129,8 @@ export function DataVisualization() {
             <div>Size: {Math.round(visualizationWidth)}x{Math.round(visualizationHeight)}</div>
           </div>
         )}
-      </div>
+        </div>
+      </VisualizationSurveyDataProvider>
     </div>
   );
 } 

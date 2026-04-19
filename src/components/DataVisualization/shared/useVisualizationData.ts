@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import type { VisualizationSurveyRow } from '@/lib/types/database';
+import { OPENGRIMOIRE_SURVEY_DATA_CHANGED } from '@/lib/survey/survey-data-change-event';
 
 type SurveyRow = VisualizationSurveyRow & {
   attendee: VisualizationSurveyRow['attendee'];
@@ -103,6 +104,7 @@ export function useVisualizationData() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMockData, setIsMockData] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   const prevDataLength = useRef(data.length);
   const prevIsLoading = useRef(isLoading);
@@ -208,6 +210,13 @@ export function useVisualizationData() {
     return () => {
       mounted = false;
     };
+  }, [refreshToken]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const bump = () => setRefreshToken((t) => t + 1);
+    window.addEventListener(OPENGRIMOIRE_SURVEY_DATA_CHANGED, bump);
+    return () => window.removeEventListener(OPENGRIMOIRE_SURVEY_DATA_CHANGED, bump);
   }, []);
 
   return {

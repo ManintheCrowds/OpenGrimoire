@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { OPENGRIMOIRE_SURVEY_DATA_CHANGED } from '@/lib/survey/survey-data-change-event';
 
 interface ApprovedQuote {
   unique_quality: string;
@@ -16,6 +17,7 @@ export function useApprovedQuotes() {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -63,6 +65,13 @@ export function useApprovedQuotes() {
     return () => {
       mounted = false;
     };
+  }, [refreshToken]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const bump = () => setRefreshToken((t: number) => t + 1);
+    window.addEventListener(OPENGRIMOIRE_SURVEY_DATA_CHANGED, bump);
+    return () => window.removeEventListener(OPENGRIMOIRE_SURVEY_DATA_CHANGED, bump);
   }, []);
 
   useEffect(() => {

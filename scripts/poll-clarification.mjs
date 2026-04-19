@@ -3,7 +3,7 @@
  * Poll GET /api/clarification-requests/:id until status is answered or superseded.
  *
  * Env:
- *   OPENGRIMOIRE_BASE_URL (or OPENGRIMOIRE_BASE_URL) — default http://localhost:3001
+ *   OPENGRIMOIRE_BASE_URL — default http://localhost:3001
  *   ALIGNMENT_CONTEXT_API_SECRET — when server requires x-alignment-context-key (alignment + clarification when CLARIFICATION_QUEUE_API_SECRET is unset)
  *   CLARIFICATION_QUEUE_API_SECRET — optional; when set on the server, send x-clarification-queue-key with this value instead of x-alignment-context-key for clarification routes only
  *   Local dev without secret: server may use ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true
@@ -21,7 +21,6 @@ if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
 }
 
 const base =
-  process.env.OPENGRIMOIRE_BASE_URL?.replace(/\/$/, '') ||
   process.env.OPENGRIMOIRE_BASE_URL?.replace(/\/$/, '') ||
   'http://localhost:3001';
 const alignmentSecret = process.env.ALIGNMENT_CONTEXT_API_SECRET?.trim() ?? '';

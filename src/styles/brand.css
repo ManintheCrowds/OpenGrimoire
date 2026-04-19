@@ -20,7 +20,8 @@
 
   /* Text Colors */
   --brand-body-text: #3C3C3C;
-  --brand-secondary-text: #777777;
+  /* Meets WCAG 2 AA 4.5:1 on --brand-atmospheric-white / white body backgrounds */
+  --brand-secondary-text: #595959;
 
   /* Semantic Colors */
   --brand-success: #14853D;

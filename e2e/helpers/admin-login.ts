@@ -1,8 +1,10 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { e2eOpenGrimoireAdminPassword } from './e2e-secrets';
+
 export function adminPassword(): string {
-  return process.env.OPENGRIMOIRE_ADMIN_PASSWORD ?? 'e2e-test-password';
+  return e2eOpenGrimoireAdminPassword();
 }
 
 export async function loginAsAdmin(page: Page): Promise<void> {

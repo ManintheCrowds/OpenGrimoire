@@ -1,0 +1,13 @@
+{
+  "consoleErrors": [],
+  "requestFailed": [
+    {
+      "url": "http://localhost:3001/admin?_rsc=7td7r",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3001/admin?_rsc=1ff24",
+      "error": "net::ERR_ABORTED"
+    }
+  ]
+}

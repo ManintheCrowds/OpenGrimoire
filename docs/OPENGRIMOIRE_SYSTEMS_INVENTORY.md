@@ -8,7 +8,7 @@
 
 **Normative API/agent rules:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) (strict public REST, entity × HTTP × auth matrix, UI freshness tiers, verification appendix). **Integration paths:** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
-**Last reviewed:** 2026-04-12
+**Last reviewed:** 2026-04-17
 
 **Persistence:** Survey, alignment, clarification, study, and moderation data use **local SQLite** only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). There is **no** Supabase or hosted Postgres in the supported runtime path.
 
@@ -140,7 +140,7 @@ The **Karpathy-style LLM Wiki** is **not** implemented inside this Next.js repo.
 | `npm run verify:e2e`                                     | `verify` then Playwright E2E (uses `playwright.config.ts` `webServer`)                                                                                                                                                                                       |
 | `npm run test:e2e`                                       | Playwright only                                                                                                                                                                                                                                              |
 | `python ../MiscRepos/.cursor/scripts/build_brain_map.py` | Regenerate `public/brain-map-graph.json` (run from **OpenGrimoire** repo root with sibling **MiscRepos**; see OpenGrimoire README). Set `BRAIN_MAP_VAULT_ROOTS` to include the Arc_Forge `ObsidianVault` path for **Phase A** LLM-Wiki linkage in the graph. |
-| `node scripts/alignment-context-cli.mjs`                 | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`; legacy `OPENGRIMOIRE_BASE_URL`)                                                                                                                                                                                  |
+| `node scripts/alignment-context-cli.mjs`                 | Alignment API CLI (`OPENGRIMOIRE_BASE_URL`)                                                                                                                                                                                                                  |
 | `npm run study:export -- --output ./export.csv`          | Export `study_cards` to CSV for Anki (`OPENGRIMOIRE_DB_PATH`) — see [docs/learning/README.md](./learning/README.md)                                                                                                                                          |
 | `docker-compose.yml`                                     | Local stack (see `DEPLOYMENT.md`)                                                                                                                                                                                                                            |
 

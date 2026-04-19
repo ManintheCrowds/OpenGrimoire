@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+import { adminPassword } from './helpers/admin-login';
 import { E2E_ALIGNMENT_CONTEXT_API_SECRET } from './helpers/e2e-secrets';
 
 test.describe('Clarification queue', () => {
@@ -23,7 +24,7 @@ test.describe('Clarification queue', () => {
     expect(id && /^[0-9a-f-]{36}$/i.test(id)).toBeTruthy();
 
     await page.goto('/login');
-    await page.getByPlaceholder('Operator password').fill('e2e-test-password');
+    await page.getByPlaceholder('Operator password').fill(adminPassword());
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForURL(/\/admin/, { timeout: 15000 });
 

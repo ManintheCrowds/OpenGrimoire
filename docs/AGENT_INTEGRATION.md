@@ -18,9 +18,13 @@ When anything conflicts, resolve in this order:
 
 **Unified tool manifest (HTTP + workspace MCP):** [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md). **Trust tiers + curl examples:** [agent/HARNESS_ACTION_TIERS.md](./agent/HARNESS_ACTION_TIERS.md). **Retries:** [agent/ADR_IDEMPOTENCY_AND_RETRY.md](./agent/ADR_IDEMPOTENCY_AND_RETRY.md).
 
+### Survey visualization UI coordination (non-normative)
+
+The **`/visualization`** client refetches survey rows and approved quotes when the browser dispatches the **`opengrimoire-survey-data-changed`** `CustomEvent` (see [`src/lib/survey/survey-data-change-event.ts`](../src/lib/survey/survey-data-change-event.ts)). The app fires this after successful **Sync Session** `POST /api/survey`, after **admin moderation** `PATCH`, when the moderation queue refetches on **window focus**, and when the operator clicks **Refresh** on the moderation panel—so open visualization tabs pick up new or approved data without a full reload. Harnesses may dispatch the same event after external writes if they share the origin.
+
 ### Agent session boundary (in-app vs harness)
 
-OpenGrimoire **in-app** persistence is **domain data and operator auth** only: survey responses, alignment context, clarification queue, study entities, and signed operator session cookies—everything described in [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). The app is **not** a full agent-engine or transcript store; it does **not** persist arbitrary agent run state, chat logs, or IDE session dumps. **Harness-side** resume and correlation (session IDs, last successful HTTP call to this app, plan pointers, Sync Session handoff IDs) live in **MiscRepos + OpenHarness** artifacts; use the canonical template at [MiscRepos `docs/agent/SESSION_SNAPSHOT_TEMPLATE.md`](../../MiscRepos/docs/agent/SESSION_SNAPSHOT_TEMPLATE.md) (sibling clone under your GitHub folder).
+OpenGrimoire **in-app** persistence is **domain data and operator auth** only: survey responses, alignment context, clarification queue, study entities, optional **operator probe run** records (internal observability ingest), and signed operator session cookies—everything described in [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). The app is **not** a full agent-engine or transcript store; it does **not** persist arbitrary agent run state, chat logs, or IDE session dumps. **Harness-side** resume and correlation (session IDs, last successful HTTP call to this app, plan pointers, Sync Session handoff IDs) live in **MiscRepos + OpenHarness** artifacts; use the canonical template at [MiscRepos `docs/agent/SESSION_SNAPSHOT_TEMPLATE.md`](../../MiscRepos/docs/agent/SESSION_SNAPSHOT_TEMPLATE.md) (sibling clone under your GitHub folder).
 
 ### Token budgets (caller / harness)
 
@@ -35,7 +39,7 @@ The Next.js app **does not** compact, summarize, or prune **agent or IDE chat tr
 | Item | Value |
 |------|--------|
 | Local dev URL | **`http://localhost:3001`** (`npm run dev` in this repo) |
-| Base URL for scripts | **`OPENGRIMOIRE_BASE_URL`** (legacy alias: **`OPENGRIMOIRE_BASE_URL`**) — must match origin including port |
+| Base URL for scripts | **`OPENGRIMOIRE_BASE_URL`** — must match origin including port (in-repo CLIs read this name only; older docs duplicated the same identifier in `||` chains — fixed 2026-04) |
 | Alignment CLI | **`node scripts/alignment-context-cli.mjs`** (`list`, `create`, `patch`, `delete`) |
 | Study / SRS (flashcards) | **`GET`/`POST` `/api/study/decks`**, **`GET`/`POST` `/api/study/decks/:deckId/cards`**, **`POST` `/api/study/cards/:cardId/review`** — operator session cookie **or** **`x-alignment-context-key`** when alignment secret is set. CSV export: **`npm run study:export -- --output ./export.csv`**. See [docs/learning/README.md](./learning/README.md). |
 | Clarification queue (async agent → human) | **`GET`/`POST` `/api/clarification-requests`**, **`GET`/`PATCH` `/api/clarification-requests/:id`** — **`x-alignment-context-key`** when using alignment secret, or **`x-clarification-queue-key`** when **`CLARIFICATION_QUEUE_API_SECRET`** is set (recommended for production harnesses that only poll clarification). Operator UI: **`/admin/clarification-queue`**. See [docs/agent/CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md). |
@@ -45,8 +49,9 @@ The Next.js app **does not** compact, summarize, or prune **agent or IDE chat tr
 | Clarification secret (optional) | Set **`CLARIFICATION_QUEUE_API_SECRET`**; send **`x-clarification-queue-key`** on `/api/clarification-requests` only. **When unset**, clarification uses the **same** secret and header as alignment (one key gates both surfaces). Split keys to limit blast radius if alignment automation and clarification automation are owned by different systems. |
 | Survey read escape hatch | **`ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true`** lets **`x-alignment-context-key`** satisfy the production gate for **`GET /api/survey/visualization`** and **`GET /api/survey/approved-qualities`** (PII). **Default off.** Prefer **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`** for read-only survey data so a leaked alignment key does not automatically imply survey PII access. |
 | Brain map | **`GET /api/brain-map/graph`** only (not bare `/brain-map-graph.json`); when **`BRAIN_MAP_SECRET`** is set: **`x-brain-map-key`** matching the secret **or** operator session cookie (same-origin UI sends **`credentials: 'include'`**) |
+| Operator observability (probe runs) | **`POST /api/operator-probes/ingest`** — operator session **`credentials: 'include'`** **or** **`OPERATOR_PROBE_INGEST_SECRET`** + header **`x-operator-probe-ingest-key`**. **`GET`** list / **`GET`** detail / **`DELETE`** via **`/api/admin/operator-probes`** (session only). UI **`/admin/observability`**. `target_host` must be on the server allowlist (see contract). |
 | Admin / operator | **`POST /api/auth/login`** with password; session cookie (**`OPENGRIMOIRE_SESSION_SECRET`**, **`OPENGRIMOIRE_ADMIN_PASSWORD`** or hash) — see [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
-| Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. |
+| Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. **CI / local prod matrix:** `npm run verify:survey-read-prod` ([`scripts/survey-read-gate-prod-smoke.mjs`](../scripts/survey-read-gate-prod-smoke.mjs)); workflow [`.github/workflows/survey-visualization-prod-smoke.yml`](../.github/workflows/survey-visualization-prod-smoke.yml). |
 
 ## Canonical naming (UX vs system)
 
@@ -61,7 +66,9 @@ The Next.js app **does not** compact, summarize, or prune **agent or IDE chat tr
 | Local `npm run dev` | **`http://localhost:3001`** (see `package.json`) |
 | Production | Your deployed origin |
 
-Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). Legacy alias: **`OPENGRIMOIRE_BASE_URL`** (still read by the alignment CLI if unset).
+Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port).
+
+When multiple local services run from the same workspace, prefer resolving OpenGrimoire’s origin from **MiscRepos** `.cursor/state/ports.json` (`services.opengrimoire.baseUrl`) per [.cursor/docs/PORT_REGISTRY.md](../../MiscRepos/.cursor/docs/PORT_REGISTRY.md); fall back to `defaults.opengrimoire` in `ports.json.template` or **3001** above.
 
 ## Headers
 
@@ -70,8 +77,18 @@ Set **`OPENGRIMOIRE_BASE_URL`** in scripts and CLIs to match (including port). L
 | `x-alignment-context-key` | Must match `ALIGNMENT_CONTEXT_API_SECRET` when that env var is set (public alignment API and, unless `CLARIFICATION_QUEUE_API_SECRET` is set, clarification queue API). |
 | `x-clarification-queue-key` | When `CLARIFICATION_QUEUE_API_SECRET` is set: must match for `/api/clarification-requests` and `/api/clarification-requests/:id` (public routes only). |
 | `x-brain-map-key` | When `BRAIN_MAP_SECRET` is set: must match for programmatic access, unless the request uses a valid operator session cookie instead (`GET /api/brain-map/graph`). |
+| `x-operator-probe-ingest-key` | When `OPERATOR_PROBE_INGEST_SECRET` is set: must match for **`POST /api/operator-probes/ingest`** without operator session cookie (CI/runner ingest). **Do not** reuse `ALIGNMENT_CONTEXT_API_SECRET` for this surface. |
 
 **Brain map JSON:** Do not fetch `/brain-map-graph.json` or `/brain-map-graph.local.json` from the site root — those paths return **404**. Use **`GET /api/brain-map/graph`** only.
+
+### Operator probe ingest (curl)
+
+```bash
+curl -sS -X POST "$BASE/api/operator-probes/ingest" \
+  -H "Content-Type: application/json" \
+  -H "x-operator-probe-ingest-key: $OPERATOR_PROBE_INGEST_SECRET" \
+  -d '{"probe_type":"cursor_path_analysis","target_host":"api.cursor.com","runner_id":"my-laptop","runner_type":"laptop_script","summary":{"ok":true,"hops":5}}'
+```
 
 ## Local development: alignment API
 
@@ -86,7 +103,7 @@ Alternatively, set a real `ALIGNMENT_CONTEXT_API_SECRET` and send it on each req
 - **`GET /api/capabilities`** — routes, auth hints, workflow notes (hand-maintained; same PR as API changes when possible).
 - Human-friendly view: **`/capabilities`** in the app.
 
-**Observability (limited):** There is **no** typed agent event or progress stream from this app. Server-side audit for auth failures is **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). Roadmap honesty: [research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md](./research/AGENT_HARNESS_IMPROVEMENT_PROGRAM_2026-04-03.md) § Phase 2 follow-ups. **Transcript compaction** is also **out of scope** for the server (see § Agent transcripts above).
+**Observability:** There is **no** typed agent event or progress stream from this app. **Operator probe runs** are an optional, **internal** SQLite-backed surface: **`POST /api/operator-probes/ingest`** (session or ingest secret) stores allowlisted connectivity/path summaries for review under **`/admin/observability`** — see the quick reference table above and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). Server-side audit for auth failures remains **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). **Transcript compaction** is **out of scope** for the server (see § Agent transcripts above).
 
 ## CLI (alignment context)
 
@@ -95,7 +112,7 @@ node scripts/alignment-context-cli.mjs list
 node scripts/alignment-context-cli.mjs create --title "Example" --body "Optional"
 ```
 
-Env: `OPENGRIMOIRE_BASE_URL` (or legacy `OPENGRIMOIRE_BASE_URL`), `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
+Env: `OPENGRIMOIRE_BASE_URL`, `ALIGNMENT_CONTEXT_API_SECRET` (when the server enforces the secret).
 
 ## HTTP examples (curl)
 

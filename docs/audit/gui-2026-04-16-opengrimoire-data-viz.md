@@ -3,13 +3,13 @@
 **Date:** 2026-04-16  
 **Scope:** Data visualization surfaces (Alluvial/Chord, quotes, constellation, test routes), REST reads, harness/agent assumptions.  
 **Normative traceability:** [OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md](../plans/OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md) · [OA_FR_1_SYSTEM1_SURVEY_MODERATION.md](../plans/OA_FR_1_SYSTEM1_SURVEY_MODERATION.md) (read gates)  
-**Critic / debate:** Not run for this draft; optional before release per **gui-human-audit** workflow (AuditorSpec + `/debate` when the audit closes a gate).
+**Critic / debate:** Structural critic + dialectic revision on **2026-04-17** (§ Critic revision log). **MiscRepos `/debate` gate:** satisfied for this file on **2026-04-17** (§ MiscRepos /debate); re-run if the audit or product surface changes materially.
 
 ---
 
 ## AuditorSpec
 
-- **App / repo:** OpenGrimoire (`C:/Users/Dell/Documents/GitHub/OpenGrimoire`)
+- **App / repo:** OpenGrimoire (sibling checkout next to MiscRepos / Arc_Forge; no host-specific path in audit text)
 - **Branch / PR:** (not pinned)
 - **Environment:** local dev primary; production gate checks optional
 
@@ -23,16 +23,35 @@
   3. **Operate demos safely** — prod: survey reads gated; dev-only test routes blocked unless `OPENGRIMOIRE_ALLOW_TEST_ROUTES`.
 
 - **CI / verify targets**
-  - Lint / typecheck: `npm run lint`, `npm run build` (or repo-standard scripts from `package.json`)
-  - E2E: `npx playwright test e2e/visualization.spec.ts e2e/test-routes.spec.ts`
-  - Contract: `GET /api/capabilities`, `docs/api/ROUTE_INDEX.json`, OpenAPI doc in repo
-  - A11y / visual: no dedicated OG workflow at audit time; manual + optional axe on `/visualization`
+  - Lint / typecheck / unit: `npm run lint`, `npm run type-check`, `npm run test` (Vitest)
+  - Full gate (repo root): `npm run verify` — includes `verify:capabilities`, `verify:openapi`, `verify:route-index`, `verify:moderation-auth`, `verify:admin-panel-a2ui` (shared with System 1)
+  - E2E (viz smoke): `npx playwright test e2e/visualization.spec.ts e2e/test-routes.spec.ts`
+  - **System 1 a11y gate (2026-04-18):** `npm run test:e2e:a11y` — **does not** visit `/visualization` or `/constellation`; viz a11y remains **OGAN-15** backlog
+  - A11y / visual (viz): manual or future axe spec on `/visualization` + `/constellation` (see dimension 3)
 
 - **Existing audit doc:** [gui-2026-04-16-opengrimoire-survey.md](./gui-2026-04-16-opengrimoire-survey.md) (System 1)
 
 - **Parity / capability docs:** [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) · [ARCHITECTURE_REST_CONTRACT.md](../ARCHITECTURE_REST_CONTRACT.md) · `src/app/api/capabilities/route.ts`
 
 - **Notes:** Two visualization stacks (`DataVisualization` vs `components/visualization` + Zustand); `?all=1` vs `?all=0` + `showTestData` must not be conflated in harnesses.
+
+---
+
+## BrowserReviewSpec (MCP hardening wave, 2026-04-18)
+
+Aligned with **browser-review-protocol** (three human jobs above → flows).
+
+- **Base URL:** `http://localhost:3001`
+- **Route(s):** `/visualization`, `/constellation`, `/visualization/alluvial`, `/test-chord`
+- **Auth:** none (local dev); prod/staging not in scope for this desk pass
+- **Viewports:** 1280×720 (desktop), 375×667 (mobile) when live browser is used
+- **Flows**
+  1. Open `/visualization` → **Expected:** page settles; diagram or mock banner present; no uncaught console errors on first paint.
+  2. Open `/constellation` → **Expected:** Three view loads or documented empty state; network uses `all=0` semantics per OA-FR-2 (contrast with `/visualization` `?all=1` — **OGAN-16**).
+  3. Open `/test-chord` (dev) → **Expected:** mock chord only when test routes allowed; blocked in prod per middleware.
+- **Critical screens:** `/visualization` (main D3), `/constellation` (Three + Zustand)
+
+**Executor report:** [evidence/og-system2-mcp-wave/BROWSER_REVIEW_REPORT.md](./evidence/og-system2-mcp-wave/BROWSER_REVIEW_REPORT.md)
 
 ---
 
@@ -52,18 +71,18 @@
 
 | # | Dimension | Status | Evidence |
 |---|-----------|--------|----------|
-| 1 | Task success | **PARTIAL** | Diagrams + quotes work when API and DB align; empty DB → mock data (can confuse operators unless copy explains). `NavigationDots` includes routes without `app/` pages (dead links). |
+| 1 | Task success | **PARTIAL** | Diagrams + quotes work when API and DB align; empty DB → mock data with **banner** (`opengrimoire-viz-mock-data-banner`). `NavigationDots` still includes routes without `app/` pages (dead links). |
 | 2 | Cognitive load | **PARTIAL** | Two “visualization” mental models (D3 main vs Three constellation vs `/test` fixtures). Header `data-usage-hint` helps agents. |
 | 3 | Accessibility | **PARTIAL** | `vizLayoutIds`, tab panel wiring, `data-testid` on diagrams; full WCAG pass not claimed (no axe CI on this slice). |
 | 4 | Visual system | **PASS** | Header uses CSS variables (`--opengrimoire-viz-*`); theme via `AppContext`. |
 | 5 | A2UI / catalog | **PARTIAL** | `data-region` on header, quote slot, canvas; good for selectors. Legacy `/test` stack less instrumented. |
-| 6 | Agent parity | **PARTIAL** | REST + `/api/capabilities` document reads; **no** MCP mirroring tab toggle or auto-play — agents rely on HTTP + browser automation. |
+| 6 | Agent parity | **PARTIAL** | REST + `/api/capabilities` includes **`workflows.cohort_survey_visualization`**; tab/auto-play still browser-only. |
 
 ---
 
 ## Agent-native architecture (condensed review)
 
-Principles from [agent-native-audit](../../../../.cursor/plugins/cache/cursor-public/compound-engineering/3d96c0f074faf56fcdc835a0332e0f475dc8425f/skills/agent-native-audit/SKILL.md), scored qualitatively for **this slice only**:
+Principles from the **compound agent-native-audit** skill (numeric scorecard: [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md)). This table is qualitative for **this slice only**.
 
 | Principle | Assessment | Notes |
 |-----------|------------|--------|
@@ -72,8 +91,8 @@ Principles from [agent-native-audit](../../../../.cursor/plugins/cache/cursor-pu
 | 3 Context injection | **N/A** | Not applicable to standalone OG UI. |
 | 4 Shared workspace | **Pass** | Agents and users hit same SQLite-backed APIs (when gate allows). |
 | 5 CRUD completeness | **N/A** | Viz is read-heavy; moderation CRUD is System 1. |
-| 6 UI integration | **Pass** | Standard React fetch; no silent second source of truth for main viz. |
-| 7 Capability discovery | **Pass** | `GET /api/capabilities` + OA-FR-2 doc. |
+| 6 UI integration | **Partial** | Main `/visualization` refetches on `opengrimoire-survey-data-changed` after moderation / survey POST ([AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)); no SSE; constellation / Zustand path unchanged. |
+| 7 Capability discovery | **Pass** | `GET /api/capabilities` **workflows.cohort_survey_visualization** + OA-FR-2 doc. |
 | 8 Prompt-native features | **N/A** | Viz is code-first D3/Three. |
 
 **Overall:** acceptable for a read-only analytics UI; **risk** is automation assuming a single component stack (see architecture strategist).
@@ -92,11 +111,13 @@ Principles from [agent-native-audit](../../../../.cursor/plugins/cache/cursor-pu
 
 ## Automation gaps
 
-| Layer | OpenGrimoire System 2 |
+| Layer | OpenGrimoire System 2 (2026-04-18 refresh) |
 |-------|------------------------|
-| Contract | Capabilities + OpenAPI exist; **no** CI in-repo at audit time enforcing route↔OpenAPI drift for OG alone. |
-| E2E | `visualization.spec.ts`, `test-routes.spec.ts` — good smoke; **no** assertion that `/constellation` uses `?all=0` + `showTestData` vs `/visualization` `?all=1`. |
-| A11y | Manual / optional; not wired as merge gate for viz routes. |
+| Contract | **`npm run verify`** (OpenGrimoire) enforces capabilities ↔ routes ↔ OpenAPI coverage repo-wide — **not** viz-only, but drift is gated on every PR that runs verify. |
+| E2E | `visualization.spec.ts`, `test-routes.spec.ts` — good smoke; **still missing** explicit assertion that `/constellation` network query uses `?all=0` + `showTestData` vs `/visualization` `?all=1` (**OGAN-16**). |
+| A11y | **System 1:** `e2e/sync-session-admin-a11y.spec.ts` + `npm run test:e2e:a11y` (Wave **OG-GUI-04**). **System 2 viz routes:** not in that spec — track **OGAN-15**. |
+
+**Wave boundary:** MiscRepos [Wave 10 — OG GUI release](../../../MiscRepos/local-proto/docs/WAVED_PENDING_TASKS.md) covers **System 1** survey/moderation evidence (`OG-GUI-*`). System 2 GUI debt stays here + **OGAN-*** in [MiscRepos pending_tasks — PENDING_AGENT_NATIVE](../../../MiscRepos/.cursor/state/pending_tasks.md).
 
 ---
 
@@ -105,30 +126,51 @@ Principles from [agent-native-audit](../../../../.cursor/plugins/cache/cursor-pu
 ### 1 — Task success
 
 - [ ] Add E2E or smoke: `NavigationDots` targets either get real `app/` pages or are removed from shipped UI.
-- [ ] When mock fallback activates, show non-blocking banner: “Showing sample data — empty survey” (copy + design pass).
+- [x] When mock fallback activates, show non-blocking banner (`MockSurveyDataBanner`, `data-testid="opengrimoire-viz-mock-data-banner"`).
+- [ ] **Maintain:** After changing viz routes or `NavigationDots`, run `npx playwright test e2e/visualization.spec.ts e2e/test-routes.spec.ts` before merge.
 
 ### 2 — Cognitive load
 
 - [ ] In admin or docs, one diagram: “Which page uses which stack” (D3 vs Three vs fixtures).
 - [ ] Rename or namespace exports so `ConstellationView` search resolves to the live file first.
+- [ ] **Maintain:** When adding a viz surface, update OA-FR-2 or this audit’s “dual stack” note so harness authors do not assume one HTTP shape.
 
 ### 3 — Accessibility
 
 - [ ] Run axe-playwright (or equivalent) on `/visualization` + `/constellation`; file issues for focus traps in Three canvas if any.
+- [ ] **Maintain:** Do not assume **OG-GUI-04** covers viz — keep **OGAN-15** visible until axe E2E exists for `/visualization` and `/constellation`.
 
 ### 4 — Visual system
 
 - [ ] Audit `DataVisualization` for stray hex outside tokens; align with `--opengrimoire-viz-*` where missing.
+- [ ] **Maintain:** If product adds Percy/Chromatic for viz pages, mirror the **OG-GUI-06** pattern (`e2e/visual-baselines-og-gui-06.spec.ts`) for stable selectors first.
 
 ### 5 — A2UI / catalog
 
 - [ ] Extend `data-region` / `data-testid` to `/constellation` loading shell and Zustand-driven controls used in demos.
 - [ ] Document `data-usage-hint` on header in AGENT_INTEGRATION or OA-FR-2 appendix.
+- [ ] **Maintain:** New operator-facing components should follow the same `data-region` / non-decorative naming discipline as System 1 **OG-GUI-A2**.
 
 ### 6 — Agent parity
 
-- [ ] Add capabilities rows (or doc table) for “visualization modes” and required headers in prod for harnesses.
+- [x] Add **`workflows`** entry **`cohort_survey_visualization`** plus refresh contract on `GET /api/capabilities` (see [`src/app/api/capabilities/route.ts`](../../src/app/api/capabilities/route.ts)); prod headers remain in ARCHITECTURE / AGENT_INTEGRATION.
 - [ ] Optional: document Playwright selectors for tab + auto-play for external agents (link from OA-FR-2 verification).
+- [ ] **Maintain:** On route or query-param changes, update **`GET /api/capabilities`** prose and verify scripts together (**OGAN-02**, **OGAN-05**).
+
+---
+
+## Critic revision log
+
+| When | Delta | Reason |
+|------|-------|--------|
+| 2026-04-17 | +2 completeness, +1 correctness | Critic: stale “UI integration Pass” vs AGENT_NATIVE; header still said critic not run; dimension-1 evidence omitted mock banner; brittle absolute link to plugin skill path. |
+| 2026-04-17 | +1 completeness | MiscRepos `/debate`: persisted critic JSON + agreement table; marked release-gate checklist row for `/debate`. |
+
+## Post-implementation process checklist (release gate)
+
+- [x] Run MiscRepos **`/debate`** on this audit file (critic domain **`docs`**) per **gui-human-audit** before treating the GUI audit as release-closing; attach critic JSON summary or a short revision subsection (no secrets). _(Done 2026-04-17 — see § MiscRepos /debate.)_
+- [ ] After substantial OpenGrimoire changes to survey or visualization paths, re-run the **compound agent-native-audit** eight-explore workflow and refresh scores in [`AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md`](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md).
+- [ ] When importing **community Cursor rules or skills**, apply the **security-audit-rules** checklist to those new files only.
 
 ---
 
@@ -143,6 +185,76 @@ Principles from [agent-native-audit](../../../../.cursor/plugins/cache/cursor-pu
 ## Agent-native eight-agent scorecard (canonical)
 
 The full **eight-agent explore scorecard** (2026-04-16) — overall table, per-principle detail, top-10 recommendations, strengths — lives in **[`AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md`](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md)**. Prefer that file for **AN1** closure citations and to avoid duplicate edits.
+
+---
+
+## MiscRepos `/debate` (2026-04-17)
+
+**Artifact:** this file · **Domain:** `docs` · **Command:** [MiscRepos `.cursor/commands/debate.md`](../../../MiscRepos/.cursor/commands/debate.md) (equivalent flow in Cursor agent session).
+
+### Round 1 — Critic (independent second voice)
+
+```json
+{
+  "pass": true,
+  "threshold": 18,
+  "intent_alignment": 5,
+  "safety": 5,
+  "correctness": 5,
+  "completeness": 4,
+  "minimality": 4,
+  "issues": [
+    {
+      "type": "completeness",
+      "detail": "Release checklist still asked for /debate while header implied prior critic only; no persisted /debate JSON on artifact until this section.",
+      "evidence": "Former § Post-implementation checklist line 'Run MiscRepos /debate' unchecked vs header line 7"
+    },
+    {
+      "type": "minimality",
+      "detail": "Automation gaps table retains 'at audit time' without stating whether CI was added later—minor drift risk.",
+      "evidence": "§ Automation gaps rows still say 'at audit time'"
+    }
+  ],
+  "fixes": [
+    {
+      "action": "Mark /debate checklist complete and append this section with JSON + summary.",
+      "detail": "Closes gui-human-audit gate for second voice on this revision."
+    },
+    {
+      "action": "Optional follow-up",
+      "detail": "Revisit Automation gaps when verify:* scripts change; not blocking pass."
+    }
+  ]
+}
+```
+
+**Summary:** Pass. Agreement: audit now matches implemented survey refetch + capabilities workflow + mock banner; remaining work is **NavigationDots**, **constellation path**, **F4 logs**, and **optional** eight-agent score refresh—not contradictions within this doc.
+
+### Agreement / remaining disputes
+
+| Agreed | Still open (track elsewhere) |
+|--------|--------------------------------|
+| Dual-stack risk and harness false-greens are clearly stated | `NavigationDots` dead routes; orphan `DataVisualization/Constellation/` |
+| UI integration row reflects CustomEvent + AGENT_INTEGRATION | Axe CI; constellation vs `?all=1` E2E assertion |
+| Dimension action items stay actionable | Playwright selector appendix (dimension 6 optional row) |
+
+### Round 2 — Critic (post-revision)
+
+```json
+{
+  "pass": true,
+  "threshold": 18,
+  "intent_alignment": 5,
+  "safety": 5,
+  "correctness": 5,
+  "completeness": 5,
+  "minimality": 4,
+  "issues": [],
+  "fixes": []
+}
+```
+
+**Summary:** Pass; `/debate` checklist closure and persisted transcript resolve round-1 completeness gap.
 
 ---
 

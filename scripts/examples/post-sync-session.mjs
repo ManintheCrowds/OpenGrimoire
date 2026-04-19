@@ -5,7 +5,7 @@
  * No business logic — prints JSON including attendeeId and surveyResponseId on success.
  */
 
-const base = (process.env.OPENGRIMOIRE_BASE_URL || process.env.OPENGRIMOIRE_BASE_URL || 'http://localhost:3001').replace(
+const base = (process.env.OPENGRIMOIRE_BASE_URL || 'http://localhost:3001').replace(
   /\/$/,
   ''
 );

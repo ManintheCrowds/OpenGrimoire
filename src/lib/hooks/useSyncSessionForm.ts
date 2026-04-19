@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { dispatchSurveyDataChanged } from '@/lib/survey/survey-data-change-event';
+import {
+  isLikelyNetworkFetchError,
+  SYNC_SESSION_NETWORK_ERROR_MESSAGE,
+  syncSessionSubmitUserMessage,
+  type SurveySubmitErrorPayload,
+} from '@/lib/survey/sync-session-submit-user-message';
 import type { SyncSessionFormData } from './types';
 
 export type { SyncSessionFormData } from './types';
@@ -136,30 +143,40 @@ export function useSyncSessionForm() {
         body: JSON.stringify(buildSyncSessionPostBody(formData)),
       });
 
-      const payload = (await res.json()) as {
-        success?: boolean;
-        message?: string;
-        error?: string;
-        issues?: unknown;
-      };
-
-      if (!res.ok) {
-        if (res.status === 409 && payload.message) {
-          setError(payload.message);
-        } else if (payload.message) {
-          setError(payload.message);
-        } else if (payload.error === 'Validation failed') {
-          setError('Please check your answers and try again.');
-        } else {
-          setError('An error occurred while submitting the form');
+      let payload: SurveySubmitErrorPayload = {};
+      try {
+        payload = (await res.json()) as SurveySubmitErrorPayload;
+      } catch {
+        if (!res.ok) {
+          setError(
+            syncSessionSubmitUserMessage(res.status, {}, {
+              retryAfterSeconds: res.headers.get('Retry-After'),
+            })
+          );
+          return;
         }
+        setError('An error occurred while submitting the form');
         return;
       }
 
+      if (!res.ok) {
+        setError(
+          syncSessionSubmitUserMessage(res.status, payload, {
+            retryAfterSeconds: res.status === 429 ? res.headers.get('Retry-After') : null,
+          })
+        );
+        return;
+      }
+
+      dispatchSurveyDataChanged('survey-post');
       nextStep();
     } catch (err) {
       console.error('Sync Session submission error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
+      if (isLikelyNetworkFetchError(err)) {
+        setError(SYNC_SESSION_NETWORK_ERROR_MESSAGE);
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
+      }
     } finally {
       setIsSubmitting(false);
     }

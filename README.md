@@ -82,8 +82,9 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 - **Unified tool manifest (HTTP + MCP):** [docs/AGENT_TOOL_MANIFEST.md](docs/AGENT_TOOL_MANIFEST.md) · **Action tiers + curl:** [docs/agent/HARNESS_ACTION_TIERS.md](docs/agent/HARNESS_ACTION_TIERS.md).
 - **Normative HTTP contract:** [docs/ARCHITECTURE_REST_CONTRACT.md](docs/ARCHITECTURE_REST_CONTRACT.md) (strict public REST for domain entities; entity × HTTP × auth matrix).
 - **How to integrate:** [docs/agent/INTEGRATION_PATHS.md](docs/agent/INTEGRATION_PATHS.md), [docs/agent/ALIGNMENT_CONTEXT_API.md](docs/agent/ALIGNMENT_CONTEXT_API.md).
-- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (legacy alias `OPENGRIMOIRE_BASE_URL`; local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
+- **Alignment CLI:** `node scripts/alignment-context-cli.mjs` — set `OPENGRIMOIRE_BASE_URL` (local dev: `http://localhost:3001`), `ALIGNMENT_CONTEXT_API_SECRET` when enforced, or `ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true` for trusted local dev without a secret.
 - **Agent-native audit (gap report):** [docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md).
+- **Cross-cutting go-live (OA-FR-X):** [docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md](docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md) — Docker vs dev ports, env matrix, `npm run verify`, parity table.
 - **OpenGrimoire MVP (scope + audit + pack):** [docs/scope_opengrimoire_mvp_agent_native.md](docs/scope_opengrimoire_mvp_agent_native.md), [docs/audit/agent_native_opengrimoire_2026-03-24.md](docs/audit/agent_native_opengrimoire_2026-03-24.md), [docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md](docs/audit/OPENGRIMOIRE_MVP_EXECUTIVE_PACK_2026-03-24.md).
 - **Operator GUI runbook:** [docs/OPERATOR_GUI_RUNBOOK.md](docs/OPERATOR_GUI_RUNBOOK.md) · **Monitoring split:** [docs/MONITORING_OPENGRIMOIRE.md](docs/MONITORING_OPENGRIMOIRE.md).
 - **Contributing (API changes):** [CONTRIBUTING.md](CONTRIBUTING.md). **Changelog / releases:** [CHANGELOG.md](CHANGELOG.md), [GitHub Releases](https://github.com/ManintheCrowds/OpenGrimoire/releases). **Naming & URLs:** [docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md](docs/engineering/OPENGRIMOIRE_NAMING_AND_URLS.md).
@@ -123,13 +124,13 @@ Follow this once after `npm run dev` so you have a **single runnable story** for
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run type-check` | `tsc --noEmit` |
-| `npm run test` | Placeholder (exits 0 until unit tests exist) |
+| `npm run test` | Vitest unit tests (`src/**/*.test.ts`) |
 | `npm run verify` | **Merge gate:** `lint` + `type-check` + `test` + `verify:capabilities` + `verify:openapi` + `verify:route-index` |
 | `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
 | `npm run test:e2e` | Playwright |
 | `npm run test:maestro` | Maestro mobile smoke (optional; requires [Maestro](https://maestro.mobile.dev/) CLI) |
 
-**GitHub Actions:** On push/PR to `main` or `master`, [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs `npm run verify` and `npm run test:e2e`. See [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
+**CI:** Run **`npm run verify`** (and optionally **`npm run verify:e2e`**) locally or in your own pipeline; an in-repo `.github/workflows/` tree may or may not be present depending on checkout—see [docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md](docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md) §4 and [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
 
 **Tagged releases:** See [RELEASING.md](RELEASING.md) (`verify`, E2E, optional Maestro).
 

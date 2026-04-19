@@ -180,6 +180,7 @@ Defined in [`middleware.ts`](../../middleware.ts) as `TEST_ROUTE_PREFIXES`: `/te
 3. Toggle Alluvial/Chord tabs — focus order and `aria-labelledby` sane (keyboard: ArrowUp/Down between tabs per header).
 4. Open `/visualization/dark` — dark shell + `DataVisualization`.
 5. With moderation data: header quote slot shows text; without: empty or loading state.
+6. With an **empty** survey store (or after clearing DB): expect amber **mock-data banner** (`data-testid="opengrimoire-viz-mock-data-banner"`). With **two tabs** (`/visualization` + `/admin`), approve a response and confirm **network** shows a second `GET` to visualization and approved-qualities without a full page reload (CustomEvent `opengrimoire-survey-data-changed` — [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) § Survey visualization UI coordination).
 
 ### 4.3 HTTP (dev, ungated)
 
@@ -200,7 +201,7 @@ npx playwright test e2e/test-routes.spec.ts
 ### 4.5 Operator doc pointers
 
 - Debug viz logging: [`ANIMATION_DEBUG_GUIDE.md`](../../ANIMATION_DEBUG_GUIDE.md) (mentions `useVisualizationData` and `NEXT_PUBLIC_DEBUG_VISUALIZATION`).
-- Capabilities map: `GET /api/capabilities` lists survey visualization paths ([`capabilities/route.ts`](../../src/app/api/capabilities/route.ts)).
+- Capabilities map: `GET /api/capabilities` lists survey visualization **routes** and the **`workflows`** entry **`cohort_survey_visualization`** ([`capabilities/route.ts`](../../src/app/api/capabilities/route.ts)).
 
 ---
 

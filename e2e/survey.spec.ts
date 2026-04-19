@@ -4,7 +4,16 @@ test.describe('Sync Session flow', () => {
   test('multi-step Sync Session: fill AttendeeStep, YearsStep, reach SuccessStep via submit', async ({
     page,
   }) => {
+    const bootstrapOk = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/survey/bootstrap-token') &&
+        res.request().method() === 'GET' &&
+        res.ok(),
+      { timeout: 15000 }
+    );
     await page.goto('/operator-intake');
+    // Ensures client hook has received bootstrap token before POST when SURVEY_POST_REQUIRE_TOKEN is on.
+    await bootstrapOk;
 
     const surveyPost = page.waitForResponse(
       (res) => res.url().includes('/api/survey') && res.request().method() === 'POST'

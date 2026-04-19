@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback, Component, ErrorInfo, ReactNode } from 'react';
 import * as d3 from 'd3';
 import { arc } from 'd3-shape';
-import { useVisualizationData } from './shared/useVisualizationData';
+import { useVisualizationSurveyData } from './shared/VisualizationSurveyDataContext';
 import { VisualizationContainer } from './shared/VisualizationContainer';
 import { DataInsightPanel } from './shared/DataInsightPanel';
 import { QuestionSelector } from './shared/QuestionSelector';
@@ -67,7 +67,7 @@ function ChordDiagramInternal({
 }: ChordDiagramProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const secondarySvgRef = useRef<SVGSVGElement>(null);
-  const { data, isLoading, error } = useVisualizationData();
+  const { data, isLoading, error } = useVisualizationSurveyData();
   const [currentSource, setCurrentSource] = useState(cyclingModes[0].source);
   const [currentTarget, setCurrentTarget] = useState(cyclingModes[0].target);
   const [insights, setInsights] = useState<Array<{ title: string; value: string; description?: string }>>([]);

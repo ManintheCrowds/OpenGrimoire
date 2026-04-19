@@ -23,7 +23,7 @@ import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 // @ts-expect-error: No types for d3-interpolate-path
 import { interpolatePath } from 'd3-interpolate-path';
-import { useVisualizationData } from './shared/useVisualizationData';
+import { useVisualizationSurveyData } from './shared/VisualizationSurveyDataContext';
 import { VisualizationContainer } from './shared/VisualizationContainer';
 import { DataInsightPanel } from './shared/DataInsightPanel';
 import { getYearsColorScale, getYearsCategory, getNodeColor } from './shared/colorUtils';
@@ -249,7 +249,7 @@ export default function AlluvialDiagram({
   }, []);
 
   const svgRef = useRef<SVGSVGElement>(null);
-  const { data, isLoading, error } = useVisualizationData();
+  const { data, isLoading, error } = useVisualizationSurveyData();
   const { settings, getCurrentThemeColors } = useAppContext();
   const [currentSource, setCurrentSource] = useState('tenure_years');
   const [currentTarget, setCurrentTarget] = useState('learning_style');

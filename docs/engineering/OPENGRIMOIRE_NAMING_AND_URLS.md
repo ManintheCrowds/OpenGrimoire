@@ -9,7 +9,7 @@
 | Product / package | **OpenGrimoire** / `open-grimoire` | — |
 | GitHub `owner/repo` | **`ManintheCrowds/OpenGrimoire`** | Redirect from `…/OpenGrimoire` |
 | Local clone folder | **`OpenGrimoire`** | **`OpenGrimoire`** (rename when convenient) |
-| Env vars | `OPENGRIMOIRE_*` | `OPENGRIMOIRE_BASE_URL` and similar **aliases** (see [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md)) — **do not remove** without migration note |
+| Env vars | `OPENGRIMOIRE_*` (e.g. `OPENGRIMOIRE_BASE_URL`) | Older snippets sometimes duplicated the same `process.env.OPENGRIMOIRE_BASE_URL \|\|` twice — **removed** in 2026-04; use one canonical variable per [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md). |
 
 ## Tracking checklist (repo docs & automation)
 

@@ -1,6 +1,6 @@
 /**
  * OA-5 — E2E smoke for /login, /admin/alignment, /constellation.
- * Playwright webServer sets OPENGRIMOIRE_ADMIN_PASSWORD (see playwright.config.ts).
+ * Playwright webServer sets OPENGRIMOIRE_ADMIN_PASSWORD (see `e2e/helpers/e2e-secrets.ts` + playwright.config).
  */
 import { test, expect } from '@playwright/test';
 

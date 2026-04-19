@@ -1,0 +1,16 @@
+{
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "requestFailed": [
+    {
+      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Regular.woff2",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Bold.woff2",
+      "error": "net::ERR_ABORTED"
+    }
+  ]
+}

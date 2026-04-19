@@ -160,6 +160,7 @@ Moderation routes require **operator session cookie**; easiest smoke:
 |------|--------|
 | 2026-04-16 | Initial OA-FR-1 matrix: surfaces, RLS intent, REQ/AC, gaps, smoke. |
 | 2026-04-16 | Backlog P1–P5: moderation E2E, verify script, read-gate logic tests, `/survey` redirect, OA §8 closure. |
+| 2026-04-18 | **MiscRepos Wave 10 (R1–R3)** revalidated: commands + AC parity logged in [gui-2026-04-16-opengrimoire-survey.md](../audit/gui-2026-04-16-opengrimoire-survey.md) § Flow evidence / § Acceptance criteria; harness row **OG-WAVE10-EXIT** → [completed_tasks.md § PENDING_OG_GUI_RELEASE](../../../MiscRepos/.cursor/state/completed_tasks.md). |
 
 ---
 

@@ -65,7 +65,7 @@ flowchart LR
 |----|------|---------------------|
 | W2.1 | Extract **shared validation** for alignment create/patch payloads (single module imported by REST route handlers). | One module under `src/lib/` (or existing alignment lib); REST handlers call it; no duplicated zod/schema logic in route files. |
 | W2.2 | Add **golden parity tests**: same representative payloads succeed through **HTTP** (in-process `fetch` to route or handler test) and **MCP tool** path (thin wrapper calls same URL or shared client). | Vitest suite documented in this plan § REQ-4; CI runs it in `npm run test`. |
-| W2.3 | Add **CI guard** for MCP thinness (grep/script: `mcp-server/` must not import heavy domain modules beyond allowed list) OR explicit codeowners checklist. | Script in `scripts/` + `npm run verify:*` hook, or documented reviewer gate in CONTRIBUTING. |
+| W2.3 | Add **CI guard** for MCP thinness (grep/script: any future in-repo MCP adapter tree must not import heavy domain modules beyond allowed list) OR explicit codeowners checklist. | Script in `scripts/` + `npm run verify:*` hook, or documented reviewer gate in CONTRIBUTING. |
 | **Exit** | | REQ-4.1/4.2 marked “CI-verified” in the mechanical AC matrix. |
 
 ### Wave 3 — Links and audit atoms
@@ -135,7 +135,7 @@ Each block follows: **Intent → Current state → Gaps vs AC → ADR-lite decis
 ### REQ-4 — Alignment context REST + MCP parity
 
 1. **Intent:** Same semantics for REST and MCP; MCP remains thin `fetch`.
-2. **Current state:** **Partial.** Pattern documented ([mcp-server/README.md](../../mcp-server/README.md)); no automated **same-payload** proof in CI.
+2. **Current state:** **Partial.** Thin MCP pattern documented in [AGENT_TOOL_MANIFEST.md](../AGENT_TOOL_MANIFEST.md) (harness-local MCP; no `mcp-server/` package in this repo); no automated **same-payload** proof in CI.
 3. **Gaps vs AC:** REQ-4.1/4.2 need mechanical enforcement.
 4. **ADR-lite decisions:** Shared validation module — **default** (W2.1); golden tests — **default** (W2.2); ban fat MCP — **default** (W2.3).
 5. **Work breakdown:** Wave 2 tasks.
@@ -208,7 +208,7 @@ Each block follows: **Intent → Current state → Gaps vs AC → ADR-lite decis
 
 - **Parity:** Any new OG-only UI path that replaces filesystem access needs a **thin** agent path (REST/MCP or documented `run_terminal_cmd` + file roots)—never orphan the UI.
 - **Granularity:** Prefer **primitives** (`list_events`, `get_link_graph`) over `run_full_operator_review` mega-tools.
-- **Forbidden anti-pattern:** No **workflow-shaped MCP tools**; **no duplicate business logic** in MCP vs REST—**shared core only**, adapters stay dumb ([`mcp-server/README.md`](../../mcp-server/README.md)).
+- **Forbidden anti-pattern:** No **workflow-shaped MCP tools**; **no duplicate business logic** in MCP vs REST—**shared core only**, adapters stay dumb (see [AGENT_TOOL_MANIFEST.md](../AGENT_TOOL_MANIFEST.md) § Workspace MCP).
 
 ---
 

@@ -2,22 +2,17 @@
 /**
  * Thin CLI for /api/alignment-context (agent/harness parity).
  * Env: OPENGRIMOIRE_BASE_URL (default http://localhost:3001 — matches OpenGrimoire `npm run dev`);
- * legacy alias OPENGRIMOIRE_BASE_URL still read if OPENGRIMOIRE_BASE_URL is unset,
  * ALIGNMENT_CONTEXT_API_SECRET (required when server enforces it), or server must have
  * ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true for local dev without a secret.
  *
  * Usage:
  *   node scripts/alignment-context-cli.mjs list [--status=draft|active|archived]
  *   node scripts/alignment-context-cli.mjs create --title "T" [--body "B"] [--tags a,b]
- *   node scripts/alignment-context-cli.mjs patch <id> [--title T] [--body B] [--status active] ...
+ *   node scripts/alignment-context-cli.mjs patch <id> [--title T] [--body B] [--status active] [--attendee-id <uuid>|null] ...
  *   node scripts/alignment-context-cli.mjs delete <id>
  */
 
-const BASE = (
-  process.env.OPENGRIMOIRE_BASE_URL ||
-  process.env.OPENGRIMOIRE_BASE_URL ||
-  'http://localhost:3001'
-).replace(/\/$/, '');
+const BASE = (process.env.OPENGRIMOIRE_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
 const SECRET = (process.env.ALIGNMENT_CONTEXT_API_SECRET || '').trim();
 
 function headers(json = false) {
@@ -104,6 +99,11 @@ async function main() {
       if (pr !== undefined) payload.priority = pr === 'null' ? null : Number(pr);
       const linked = getOpt(opts, '--linked-node-id', true);
       if (linked !== undefined) payload.linked_node_id = linked || null;
+      const attendee = getOpt(opts, '--attendee-id', true);
+      if (attendee !== undefined) {
+        const a = (attendee || '').trim();
+        payload.attendee_id = a === '' || a === 'null' ? null : a;
+      }
       if (Object.keys(payload).length === 0) {
         console.error('patch needs at least one --field');
         process.exit(1);

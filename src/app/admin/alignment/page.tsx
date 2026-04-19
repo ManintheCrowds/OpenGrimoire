@@ -42,6 +42,11 @@ export default function AdminAlignmentPage() {
   const [newBody, setNewBody] = useState('');
   const [newStatus, setNewStatus] = useState<'draft' | 'active' | 'archived'>('draft');
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
+  const [editSource, setEditSource] = useState<'ui' | 'import' | 'api'>('ui');
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -143,13 +148,14 @@ export default function AdminAlignmentPage() {
     onError: (e: Error) => setLoadError(e.message),
   });
 
-  const patchMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+  const patchItemMutation = useMutation({
+    mutationFn: async (patch: { id: string } & Record<string, unknown>) => {
+      const { id, ...body } = patch;
       const res = await fetch(`/api/admin/alignment-context/${id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         throw new Error(`Update failed (${res.status})`);
@@ -157,8 +163,11 @@ export default function AdminAlignmentPage() {
     },
     onMutate: ({ id }) => setBusyId(id),
     onSettled: () => setBusyId(null),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       setLoadError(null);
+      const isContentSave =
+        'title' in variables || 'body' in variables || 'source' in variables;
+      if (isContentSave) setEditingId(null);
       void queryClient.invalidateQueries({ queryKey: ['admin', 'alignment-items'] });
     },
     onError: (e: Error) => setLoadError(e.message),
@@ -189,7 +198,33 @@ export default function AdminAlignmentPage() {
   };
 
   const patchStatus = (id: string, status: string) => {
-    patchMutation.mutate({ id, status });
+    patchItemMutation.mutate({ id, status });
+  };
+
+  const startEdit = (it: AlignmentItem) => {
+    setEditingId(it.id);
+    setEditTitle(it.title);
+    setEditBody(it.body ?? '');
+    const s = it.source;
+    setEditSource(s === 'import' || s === 'api' ? s : 'ui');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = (id: string) => {
+    const title = editTitle.trim();
+    if (!title) {
+      setLoadError('Title is required');
+      return;
+    }
+    patchItemMutation.mutate({
+      id,
+      title,
+      body: editBody.trim() === '' ? null : editBody,
+      source: editSource,
+    });
   };
 
   const removeItem = (id: string) => {
@@ -354,21 +389,90 @@ export default function AdminAlignmentPage() {
               {items.map((it) => (
                 <li key={it.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{it.title}</h3>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {it.status} · {it.source} · {new Date(it.updated_at).toLocaleString()}
-                      </p>
-                      {it.body && (
-                        <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{it.body}</p>
+                    <div className="min-w-0 flex-1">
+                      {editingId === it.id ? (
+                        <div className="space-y-3">
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700">Title</span>
+                            <input
+                              className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700">Body</span>
+                            <textarea
+                              className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                              rows={4}
+                              value={editBody}
+                              onChange={(e) => setEditBody(e.target.value)}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-sm font-medium text-gray-700">Source (provenance correction)</span>
+                            <select
+                              className="mt-1 rounded border border-gray-300 px-3 py-2"
+                              value={editSource}
+                              onChange={(e) => setEditSource(e.target.value as typeof editSource)}
+                            >
+                              <option value="ui">ui</option>
+                              <option value="import">import</option>
+                              <option value="api">api</option>
+                            </select>
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={busyId === it.id || patchItemMutation.isPending}
+                              onClick={() => void saveEdit(it.id)}
+                              className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busyId === it.id || patchItemMutation.isPending}
+                              onClick={cancelEdit}
+                              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="font-semibold text-gray-900">{it.title}</h3>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {it.status} · {it.source} · {new Date(it.updated_at).toLocaleString()}
+                          </p>
+                          {it.body && (
+                            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-700">{it.body}</p>
+                          )}
+                        </>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-shrink-0 flex-wrap gap-2">
+                      {editingId !== it.id && (
+                        <button
+                          type="button"
+                          disabled={busyId === it.id || patchItemMutation.isPending}
+                          onClick={() => startEdit(it)}
+                          className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                        >
+                          Edit
+                        </button>
+                      )}
                       {(['draft', 'active', 'archived'] as const).map((s) => (
                         <button
                           key={s}
                           type="button"
-                          disabled={busyId === it.id || it.status === s || patchMutation.isPending}
+                          disabled={
+                            busyId === it.id ||
+                            it.status === s ||
+                            patchItemMutation.isPending ||
+                            editingId === it.id
+                          }
                           onClick={() => void patchStatus(it.id, s)}
                           className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
                         >
@@ -377,7 +481,7 @@ export default function AdminAlignmentPage() {
                       ))}
                       <button
                         type="button"
-                        disabled={busyId === it.id || deleteMutation.isPending}
+                        disabled={busyId === it.id || deleteMutation.isPending || editingId === it.id}
                         onClick={() => void removeItem(it.id)}
                         className="rounded border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
                       >

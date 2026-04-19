@@ -54,6 +54,7 @@ const REQUIRED_IN_OPENAPI = [
   '/api/auth/logout',
   '/api/auth/session',
   '/api/test-data/{dataset}',
+  '/api/operator-probes/ingest',
 ];
 
 function main() {

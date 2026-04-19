@@ -4,7 +4,13 @@
 
 Before opening or updating a PR that touches **`src/`**, **`package.json`**, **API routes**, **capabilities**, **OpenAPI**, or **agent-facing docs** under `docs/`:
 
-1. From this repository root, run **`npm run verify`** (lint → type-check → unit tests → `verify:capabilities` → `verify:openapi` → `verify:route-index`). Same composition as [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
+1. From this repository root, run **`npm run verify`** (lint → type-check → unit tests → `verify:capabilities` → `verify:openapi` → `verify:route-index` → `verify:moderation-auth` → `verify:operator-probes-auth` → **`verify:admin-panel-a2ui`**). Same composition as [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).
+
+### AdminPanel and A2UI naming (OG-GUI-A2)
+
+PRs that touch **`src/components/AdminPanel/`** must not introduce **decorative-only** React component names (e.g. `Wrapper`, `Container` as the exported or file-level component identifier). CI enforces a conservative denylist via **`npm run verify`** → `scripts/verify-admin-panel-a2ui-monitor.mjs`. Prefer domain-oriented names (`ModerationQueueRow`, `AdminToolbar`, …).
+
+When product scope adds **agent-rendered or declarative admin** (A2UI), extend that surface with catalog semantics and align with **OA-OG-5** (deferred: A2UI on `/capabilities` in harness `pending_tasks`). Cross-repo design notes: MiscRepos **`.cursor/docs/A2UI_FRONTEND_DESIGN_GUIDANCE.md`** (sibling clone).
 2. When the same change set touches **MiscRepos** (or workspace) **rules, skills, or `.cursor` policy files** in a sibling clone, run harness checksum from **MiscRepos** root:  
    `python .cursor/scripts/checksum_integrity.py --verify --strict`  
    See [MiscRepos `.cursor/docs/COMMANDS_README.md`](../../MiscRepos/.cursor/docs/COMMANDS_README.md) (checksum section). Paths assume `Documents/GitHub/OpenGrimoire` and `Documents/GitHub/MiscRepos` as siblings.

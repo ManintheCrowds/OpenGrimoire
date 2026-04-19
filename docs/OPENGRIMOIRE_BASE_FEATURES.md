@@ -49,7 +49,7 @@
 
 | ID | Requirement | Acceptance criteria |
 |----|-------------|---------------------|
-| REQ-3.1 | Consume `brain-map-graph.json` (or `.local.json`) from disk per [README](../README.md) / env; document ports via MiscRepos [.cursor/docs/PORT_REGISTRY.md](../../MiscRepos/.cursor/docs/PORT_REGISTRY.md) where applicable. | Steps in [MiscRepos `BRAIN_MAP_E2E.md`](../../MiscRepos/docs/BRAIN_MAP_E2E.md) match actual default output path and route. |
+| REQ-3.1 | Consume `brain-map-graph.json` (or `.local.json`) from disk per [README](../README.md) / env; document ports via MiscRepos [.cursor/docs/PORT_REGISTRY.md](../../MiscRepos/.cursor/docs/PORT_REGISTRY.md) where applicable. | Steps in [MiscRepos `BRAIN_MAP_E2E.md`](../../MiscRepos/docs/BRAIN_MAP_E2E.md) match actual default output path, route (`/context-atlas`), and port resolution; normative pipeline table in [MiscRepos `BRAIN_MAP_HUB.md`](../../MiscRepos/docs/BRAIN_MAP_HUB.md) § System 3 — REQ / AC. |
 | REQ-3.2 | Multi-root: document `CURSOR_STATE_DIRS` and optional vault roots so **vault-cited** paths appear in `/context-atlas` when configured. | Cross-link to [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md) § LLM Wiki vs OpenGrimoire. |
 
 ---
@@ -58,7 +58,7 @@
 
 | ID | Requirement | Acceptance criteria |
 |----|-------------|---------------------|
-| REQ-4.1 | Public alignment CRUD contract per [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md); **MCP tools** are thin `fetch` wrappers only ([`mcp-server/README.md`](../mcp-server/README.md)). | Same payloads succeed via REST (CLI/curl) and MCP for list/create/patch/delete where exposed. |
+| REQ-4.1 | Public alignment CRUD contract per [ALIGNMENT_CONTEXT_API.md](./agent/ALIGNMENT_CONTEXT_API.md); **workspace MCP tools** (not served by this repo) are thin `fetch` wrappers only — see [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md) § Workspace MCP and MiscRepos [MCP_CAPABILITY_MAP.md](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md). | Same payloads succeed via REST (CLI/curl) and MCP for list/create/patch/delete where exposed. |
 | REQ-4.2 | No duplicate business logic in MCP layer. | Code review / doc states single source of truth for validation. |
 
 ---
@@ -121,8 +121,9 @@
 | REST contract | [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) |
 | Integration | [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) |
 | Brain map E2E | [MiscRepos docs/BRAIN_MAP_E2E.md](../../MiscRepos/docs/BRAIN_MAP_E2E.md) |
+| Brain map hub (REQ/AC) | [MiscRepos docs/BRAIN_MAP_HUB.md](../../MiscRepos/docs/BRAIN_MAP_HUB.md) |
 | PKM unified demo | [MiscRepos docs/CONTEXT_PKM_E2E_DEMO.md](../../MiscRepos/docs/CONTEXT_PKM_E2E_DEMO.md) |
 | MCP | [MiscRepos MCP_CAPABILITY_MAP § OpenGrimoire](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) |
 | Engineering waves + ADR-lite | [docs/plans/OPENGRIMOIRE_BASE_FEATURES_ENGINEERING_PLAN.md](./plans/OPENGRIMOIRE_BASE_FEATURES_ENGINEERING_PLAN.md) |
 
-**Last updated:** 2026-04-16 (engineering plan + `/wiki` baseline).
+**Last updated:** 2026-04-16 (REQ-3.1 doc alignment: BRAIN_MAP_HUB System 3, E2E, PORT_REGISTRY, capabilities `ui_path`).

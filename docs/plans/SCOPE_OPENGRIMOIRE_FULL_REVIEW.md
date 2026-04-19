@@ -7,6 +7,8 @@
 **Harness tasks:** [MiscRepos `pending_tasks.md` — OPENGRIMOIRE_FULL_REVIEW](../../../MiscRepos/.cursor/state/pending_tasks.md#opengrimoire_full_review-product-scope)  
 **Intent export / revocation API (Phase 2 backlog):** [ELICITATION_EXPORT_CONTRACT.md](../agent/ELICITATION_EXPORT_CONTRACT.md) · operator flow [MiscRepos INTENT_ELICITATION_AND_OG.md](../../../MiscRepos/docs/agent/INTENT_ELICITATION_AND_OG.md)
 
+**Scheduled refresh (delta audit):** [OPENGRIMOIRE_FULL_REVIEW_REFRESH_2026-04-17.md](./OPENGRIMOIRE_FULL_REVIEW_REFRESH_2026-04-17.md) — verification matrix, GUI dimension action items, agent-native score deltas vs 2026-04-16 baseline.
+
 ---
 
 ## Stakeholders (roles)
@@ -87,7 +89,7 @@ Single source for open/closed rows: [MiscRepos `.cursor/state/pending_tasks.md`]
 | 1 | **Survey & moderation** | `/operator-intake` (canonical; `/survey` → 308 redirect), `/admin`, `/login`, `POST /api/survey` | SQLite + route-handler auth (no Postgres RLS) · **OA-FR-1 matrix:** [OA_FR_1_SYSTEM1_SURVEY_MODERATION.md](./OA_FR_1_SYSTEM1_SURVEY_MODERATION.md) |
 | 2 | **Data visualization** | `/visualization`, `/visualization/*`, constellation/test pages | Alluvial/Chord, hooks, quotes, debug flags · **OA-FR-2 matrix:** [OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md](./OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md) |
 | 3 | **Brain map / context atlas** | `build_brain_map.py` → JSON → `GET /api/brain-map/graph` → `/context-atlas` | Ports, `BRAIN_MAP_*`, EMPTY_GRAPH |
-| 4 | **Alignment & operator APIs** | `/api/alignment-context`, `/admin/alignment`, `docs/agent/*`, CLI | Migration, prod secret, agent parity |
+| 4 | **Alignment & operator APIs** | `/api/alignment-context`, `/admin/alignment`, `docs/agent/*`, CLI | SQLite bootstrap, prod secret, agent parity · **OA-FR-4 matrix:** [OA_FR_4_SYSTEM4_ALIGNMENT_OPERATOR_APIS.md](./OA_FR_4_SYSTEM4_ALIGNMENT_OPERATOR_APIS.md) |
 
 ## Product-scope outputs (per system)
 
@@ -100,6 +102,7 @@ For each system, capture:
 
 ## Cross-cutting
 
+- **Go-live checklist (OA-FR-X):** [OA_FR_X_CROSS_CUTTING_GO_LIVE.md](./OA_FR_X_CROSS_CUTTING_GO_LIVE.md) — Docker/env parity, `.env.example` cross-check, local `npm run verify`, agent parity table, operator doc index.  
 - Deployment: [DEPLOYMENT.md](../../DEPLOYMENT.md), Docker, env matrix ([`.env.example`](../../.env.example)).  
 - Systems inventory: [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](../OPENGRIMOIRE_SYSTEMS_INVENTORY.md).  
 - Agent-native parity: [MCP_CAPABILITY_MAP](../../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) § OpenGrimoire.  

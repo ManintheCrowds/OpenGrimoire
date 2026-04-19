@@ -1,3 +1,20 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": [
+        "src/app/api/admin/moderation-queue/**/*.ts",
+        "src/app/api/admin/moderation/**/*.ts"
+      ],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "Literal[value=\"x-alignment-context-key\"]",
+            "message": "OA-FR-1 AC3: moderation routes must not reference x-alignment-context-key (see scripts/verify-moderation-auth-purity.mjs)."
+          }
+        ]
+      }
+    }
+  ]
 }

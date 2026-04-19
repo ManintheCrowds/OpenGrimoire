@@ -6,6 +6,7 @@ All notable changes to OpenGrimoire are documented in this file. **Release caden
 
 ### Added
 
+- **Operator observability:** SQLite-backed probe runs (`operator_probe_runs`), `POST /api/operator-probes/ingest` (operator session or `OPERATOR_PROBE_INGEST_SECRET` + `x-operator-probe-ingest-key`), `GET`/`DELETE` `/api/admin/operator-probes/:id`, operator UI **`/admin/observability`**, TTL via **`OPERATOR_PROBE_RETENTION_DAYS`** (default 30). Allowlisted `target_host` (e.g. `api.cursor.com`).
 - GitHub Actions workflow **`.github/workflows/ci.yml`** — runs `npm run verify` and `npm run test:e2e` on push/PR to `main` and `master`.
 - Playwright **`e2e/responsive-oa7.spec.ts`** — narrow-viewport regression for `/context-atlas` and `/visualization` (OA-7).
 

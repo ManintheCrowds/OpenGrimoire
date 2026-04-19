@@ -1,6 +1,6 @@
-# Production-mode smoke: survey read gate allows GET /api/survey/visualization when
-# SURVEY_VISUALIZATION_ALLOW_PUBLIC=true (see checkSurveyReadGate, docs/AGENT_INTEGRATION.md).
-name: Survey visualization prod smoke
+# Production-mode smoke: survey read gate matrix (NODE_ENV=production).
+# Replaces one-off curl with scripts/survey-read-gate-prod-smoke.mjs (OG-GUI-10).
+name: Survey read gate prod smoke
 
 on:
   push:
@@ -8,9 +8,9 @@ on:
   pull_request:
 
 jobs:
-  survey-viz-prod-smoke:
+  survey-read-gate-prod-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,32 +19,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Start Next.js (production) and curl survey visualization
+      - name: Survey read gate prod smoke (matrix)
+        run: npm run verify:survey-read-prod
         env:
-          NODE_ENV: production
-          SURVEY_VISUALIZATION_ALLOW_PUBLIC: "true"
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx next start -p 3001 > /tmp/next.log 2>&1 &
-          echo $! > /tmp/next.pid
-          for i in $(seq 1 90); do
-            if curl -sf "http://127.0.0.1:3001/api/capabilities" > /dev/null; then
-              echo "Server ready after ${i}s"
-              break
-            fi
-            if [ "$i" -eq 90 ]; then
-              echo "Timeout waiting for server"
-              cat /tmp/next.log || true
-              exit 1
-            fi
-            sleep 1
-          done
-          code=$(curl -sS -o /tmp/viz.json -w "%{http_code}" "http://127.0.0.1:3001/api/survey/visualization")
-          echo "GET /api/survey/visualization => HTTP ${code}"
-          test "${code}" = "200"
-      - name: Stop server
-        if: always()
-        shell: bash
-        run: |
-          if [ -f /tmp/next.pid ]; then kill "$(cat /tmp/next.pid)" 2>/dev/null || true; fi
+          SKIP_BUILD: "1"

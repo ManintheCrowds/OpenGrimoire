@@ -3,6 +3,7 @@
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { dispatchSurveyDataChanged } from '@/lib/survey/survey-data-change-event';
 
 interface QueueItem {
   id: string;
@@ -58,6 +59,7 @@ export function AdminPanel() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] });
+      dispatchSurveyDataChanged('moderation-patch');
     },
   });
 
@@ -87,6 +89,7 @@ export function AdminPanel() {
   React.useEffect(() => {
     const inv = () => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] });
+      dispatchSurveyDataChanged('admin-focus');
     };
     const onVis = () => {
       if (document.visibilityState === 'visible') inv();
@@ -130,9 +133,10 @@ export function AdminPanel() {
         <div className="flex items-center space-x-2">
           <button
             type="button"
-            onClick={() =>
-              void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] })
-            }
+            onClick={() => {
+              void queryClient.invalidateQueries({ queryKey: ['admin', 'moderation-queue'] });
+              dispatchSurveyDataChanged('admin-refresh-button');
+            }}
             className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
           >
             Refresh
@@ -143,7 +147,7 @@ export function AdminPanel() {
               const body = await res.json();
               console.log('Debug survey:', body);
             }}
-            className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            className="px-4 py-2 bg-amber-900 text-white rounded hover:bg-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-700"
           >
             Debug Data
           </button>
@@ -166,7 +170,11 @@ export function AdminPanel() {
       ) : (
         <div className="space-y-4">
           {queue.map((item) => (
-            <div key={item.id} className="bg-white shadow rounded-lg p-6 space-y-4">
+            <div
+              key={item.id}
+              data-testid={`moderation-queue-item-${item.id}`}
+              className="bg-white shadow rounded-lg p-6 space-y-4"
+            >
               <div className="flex justify-between items-start flex-col sm:flex-row">
                 <div>
                   <p className="text-sm text-gray-500">
@@ -185,7 +193,7 @@ export function AdminPanel() {
                       type="button"
                       disabled={moderationMutation.isPending}
                       onClick={() => void handleModeration(item.id, 'approved')}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 w-1/2 sm:w-auto disabled:opacity-50"
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-800 hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 w-1/2 sm:w-auto disabled:opacity-50"
                     >
                       Approve
                     </button>
@@ -193,7 +201,7 @@ export function AdminPanel() {
                       type="button"
                       disabled={moderationMutation.isPending}
                       onClick={() => void handleModeration(item.id, 'rejected')}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 w-1/2 sm:w-auto disabled:opacity-50"
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 w-1/2 sm:w-auto disabled:opacity-50"
                     >
                       Reject
                     </button>

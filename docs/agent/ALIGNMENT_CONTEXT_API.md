@@ -2,14 +2,14 @@
 
 Single reference for **machines and agents** integrating with OpenGrimoire `alignment_context_items`. UI operators may prefer `/admin/alignment` (session auth).
 
-**Related:** [OPERATOR_ALIGNMENT_SETUP.md](./OPERATOR_ALIGNMENT_SETUP.md), [PUBLIC_SURFACE_AUDIT.md](../security/PUBLIC_SURFACE_AUDIT.md), [DEPLOYMENT.md](../../DEPLOYMENT.md).
+**Related:** [OPERATOR_ALIGNMENT_SETUP.md](./OPERATOR_ALIGNMENT_SETUP.md), [PUBLIC_SURFACE_AUDIT.md](../security/PUBLIC_SURFACE_AUDIT.md), [DEPLOYMENT.md](../../DEPLOYMENT.md). **Agent one-page printout:** [OA_FR_4_ALIGNMENT_AGENT_ONE_PAGER.md](./OA_FR_4_ALIGNMENT_AGENT_ONE_PAGER.md).
 
 ## Base URL
 
 - Local dev (matches `npm run dev` in this repo’s `package.json`): **`http://localhost:3001`**
 - Production: your deployed origin
 
-Always set `OPENGRIMOIRE_BASE_URL` (or legacy `OPENGRIMOIRE_BASE_URL`) explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
+Always set `OPENGRIMOIRE_BASE_URL` explicitly in scripts/agents if the origin might differ. The [alignment-context-cli.mjs](../../scripts/alignment-context-cli.mjs) defaults to the same port as local dev.
 
 ## Public API (shared secret)
 
@@ -105,10 +105,11 @@ node scripts/alignment-context-cli.mjs list
 node scripts/alignment-context-cli.mjs list --status=active
 node scripts/alignment-context-cli.mjs create --title "Hello" --body "Optional"
 node scripts/alignment-context-cli.mjs patch <uuid> --status active
+node scripts/alignment-context-cli.mjs patch <uuid> --attendee-id null
 node scripts/alignment-context-cli.mjs delete <uuid>
 ```
 
-PowerShell: `$env:OPENGRIMOIRE_BASE_URL="..."` (or `$env:OPENGRIMOIRE_BASE_URL`); `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
+PowerShell: `$env:OPENGRIMOIRE_BASE_URL="..."`; `$env:ALIGNMENT_CONTEXT_API_SECRET="..."`.
 
 If secret is unset locally, CLI omits the header (matches open dev server behavior).
 

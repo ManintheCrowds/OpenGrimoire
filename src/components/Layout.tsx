@@ -36,11 +36,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
       </header>
 
-      <main className="flex-grow">
+      <div className="flex-grow">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           {children}
         </div>
-      </main>
+      </div>
 
       <footer className="bg-white w-full">
         <div className="py-4 w-full px-4 sm:px-6 lg:px-8">

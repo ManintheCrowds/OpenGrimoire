@@ -66,4 +66,34 @@ test.describe('Admin moderation API', () => {
     });
     expect(patchAlignmentOnly.status()).toBe(401);
   });
+
+  test('seed → loginAsAdmin → /admin shows moderation row for seeded response (UI)', async ({
+    page,
+    request,
+  }) => {
+    const seed = await request.post('/api/survey', {
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify(minimalSurveyBody()),
+    });
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+    const created = (await seed.json()) as { surveyResponseId?: string };
+    const surveyResponseId = created.surveyResponseId;
+    expect(surveyResponseId && /^[0-9a-f-]{36}$/i.test(surveyResponseId)).toBeTruthy();
+
+    const queueWait = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/admin/moderation-queue') &&
+        res.request().method() === 'GET' &&
+        res.ok()
+    );
+
+    await loginAsAdmin(page);
+
+    const queueRes = await queueWait;
+    expect(queueRes.status()).toBe(200);
+
+    const row = page.getByTestId(`moderation-queue-item-${surveyResponseId}`);
+    await expect(row).toBeVisible({ timeout: 20000 });
+    await expect(row).toContainText('E2E moderation queue seed text.');
+  });
 });

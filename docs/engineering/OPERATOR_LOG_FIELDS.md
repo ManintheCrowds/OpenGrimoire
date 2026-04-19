@@ -25,3 +25,7 @@ Each matching line is a single JSON object written with `console.info` (one line
 ## Implementation
 
 [`src/lib/observability/access-denial-log.ts`](../../src/lib/observability/access-denial-log.ts) — wired from alignment context gate, clarification queue gate, brain-map graph route, and survey read gate.
+
+## Operator probe ingest success (non-denial)
+
+[`POST /api/operator-probes/ingest`](../../src/app/api/operator-probes/ingest/route.ts) may emit a single JSON line with `event: operator_probe_ingested` (`console.info`). Fields are **metadata only** (`run_id`, `via`, `probe_type`, `target_host`, `request_id`) — **no** `summary`, **no** `raw_blob`, and no request body content. Treat full probe payloads as sensitive unless you have a separate retention policy.

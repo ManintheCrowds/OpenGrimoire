@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { desc, eq, gte, lt } from 'drizzle-orm';
+import { and, desc, eq, gte, lt } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import { operatorProbeRuns } from '@/db/schema';
 
@@ -20,6 +20,7 @@ function expiresAtFromNow(): string {
   return d.toISOString();
 }
 
+/** Deletes rows past `expires_at`. Call after successful ingest to reclaim disk; not on admin GET paths (reads stay side-effect free). */
 export function purgeExpiredOperatorProbeRuns(): number {
   const now = nowIso();
   const result = getDb().delete(operatorProbeRuns).where(lt(operatorProbeRuns.expiresAt, now)).run();
@@ -68,8 +69,12 @@ export function listOperatorProbeRuns(limit = 100): OperatorProbeRunRow[] {
 }
 
 export function getOperatorProbeRunById(id: string): OperatorProbeRunRow | null {
-  purgeExpiredOperatorProbeRuns();
-  const row = getDb().select().from(operatorProbeRuns).where(eq(operatorProbeRuns.id, id)).get();
+  const now = nowIso();
+  const row = getDb()
+    .select()
+    .from(operatorProbeRuns)
+    .where(and(eq(operatorProbeRuns.id, id), gte(operatorProbeRuns.expiresAt, now)))
+    .get();
   if (!row) return null;
   return rowToApi(row);
 }
@@ -103,11 +108,11 @@ export function insertOperatorProbeRun(params: {
     .run();
   const row = getDb().select().from(operatorProbeRuns).where(eq(operatorProbeRuns.id, id)).get();
   if (!row) throw new Error('insertOperatorProbeRun: row missing after insert');
+  purgeExpiredOperatorProbeRuns();
   return rowToApi(row);
 }
 
 export function deleteOperatorProbeRunById(id: string): boolean {
-  purgeExpiredOperatorProbeRuns();
   const result = getDb().delete(operatorProbeRuns).where(eq(operatorProbeRuns.id, id)).run();
   return (result.changes ?? 0) > 0;
 }

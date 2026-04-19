@@ -27,3 +27,7 @@ public/wiki/**
 
 # Private consulting / strategy research (not shipped in public clone; see docs/research/PRIVATE_RESEARCH_LAYOUT.md)
 /docs/private/
+
+# Playwright
+playwright-report/
+test-results/

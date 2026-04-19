@@ -17,6 +17,9 @@ const rateLimitSyncSessionSubmit = createRateLimiter(60_000, 30);
 /** POST /api/auth/login — stricter; brute-force protection (per-process only). */
 const rateLimitLogin = createRateLimiter(60_000, 10);
 
+/** POST /api/operator-probes/ingest — runner + operator ingest (per-process only). */
+const rateLimitOperatorProbeIngest = createRateLimiter(60_000, 30);
+
 /**
  * GET discovery / OpenAPI — generous per-IP limit to reduce scraping noise (single Node; not multi-replica).
  * 200 requests / minute / IP (same window as other limiters).
@@ -97,6 +100,19 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname === '/api/operator-probes/ingest' && request.method === 'POST') {
+    const ip = getClientIp(request);
+    if (!rateLimitOperatorProbeIngest(ip)) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          detail: 'Operator probe ingest rate limit exceeded. Try again later.',
+        },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+  }
+
   if (request.method === 'GET' && DISCOVERY_GET_PATHS.has(pathname)) {
     const ip = getClientIp(request);
     if (!rateLimitDiscoveryGet(ip)) {
@@ -120,6 +136,7 @@ export const config = {
     '/brain-map-graph.local.json',
     '/api/survey',
     '/api/auth/login',
+    '/api/operator-probes/ingest',
     '/api/capabilities',
     '/api/openapi',
     '/api/openapi.json',

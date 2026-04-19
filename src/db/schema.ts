@@ -224,3 +224,25 @@ export const studyReviews = sqliteTable(
     index('idx_study_reviews_reviewed_at').on(t.reviewedAt),
   ]
 );
+
+/** Internal operator observability: network/path probe runs (ingested from runners or admin). */
+export const operatorProbeRuns = sqliteTable(
+  'operator_probe_runs',
+  {
+    id: text('id').primaryKey(),
+    createdAt: text('created_at').notNull(),
+    probeType: text('probe_type').notNull(),
+    targetHost: text('target_host').notNull(),
+    runnerId: text('runner_id').notNull(),
+    runnerType: text('runner_type', { enum: ['laptop_script', 'ci', 'og_server'] }).notNull(),
+    summaryJson: text('summary_json').notNull(),
+    rawBlob: text('raw_blob'),
+    ingestVia: text('ingest_via', { enum: ['session', 'ingest_secret'] }).notNull(),
+    expiresAt: text('expires_at').notNull(),
+  },
+  (t) => [
+    index('idx_operator_probe_runs_created_at').on(t.createdAt),
+    index('idx_operator_probe_runs_expires_at').on(t.expiresAt),
+    index('idx_operator_probe_runs_target_host').on(t.targetHost),
+  ]
+);

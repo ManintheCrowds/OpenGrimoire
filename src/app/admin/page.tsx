@@ -61,6 +61,10 @@ export default function AdminPage() {
             <a className="text-blue-600 underline hover:text-blue-800" href="/admin/clarification-queue">
               Clarification queue (async agent questions)
             </a>
+            {' · '}
+            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/observability">
+              Operator observability (probe runs)
+            </a>
           </p>
         </div>
 

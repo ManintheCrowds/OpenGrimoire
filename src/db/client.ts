@@ -176,6 +176,22 @@ function runBootstrap(sqlite: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_study_reviews_card_id ON study_reviews(card_id);
     CREATE INDEX IF NOT EXISTS idx_study_reviews_reviewed_at ON study_reviews(reviewed_at DESC);
+
+    CREATE TABLE IF NOT EXISTS operator_probe_runs (
+      id TEXT PRIMARY KEY NOT NULL,
+      created_at TEXT NOT NULL,
+      probe_type TEXT NOT NULL,
+      target_host TEXT NOT NULL,
+      runner_id TEXT NOT NULL,
+      runner_type TEXT NOT NULL,
+      summary_json TEXT NOT NULL,
+      raw_blob TEXT,
+      ingest_via TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_operator_probe_runs_created_at ON operator_probe_runs(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_operator_probe_runs_expires_at ON operator_probe_runs(expires_at);
+    CREATE INDEX IF NOT EXISTS idx_operator_probe_runs_target_host ON operator_probe_runs(target_host);
   `);
 
   const hasHarnessProfileColumn = sqlite

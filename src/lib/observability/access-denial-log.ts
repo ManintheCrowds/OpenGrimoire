@@ -5,7 +5,9 @@ export type AccessDenialGate =
   | 'alignment_context'
   | 'clarification_queue'
   | 'brain_map'
-  | 'survey_read';
+  | 'survey_read'
+  | 'operator_observability_ingest'
+  | 'operator_observability_read';
 
 export type AccessDenialReason =
   | 'missing_header'

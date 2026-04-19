@@ -314,6 +314,21 @@ export const openApiDocument = {
         responses: { '200': { description: 'Stub JSON' } },
       },
     },
+    '/api/operator-probes/ingest': {
+      post: {
+        summary: 'Ingest operator path/probe run (allowlisted target_host)',
+        description:
+          'Body: probe_type, target_host, runner_id, runner_type, summary (object), optional raw_blob. Auth: operator session cookie OR x-operator-probe-ingest-key when OPERATOR_PROBE_INGEST_SECRET is set.',
+        security: [{ OperatorProbeIngestKey: [] }, { OperatorSession: [] }],
+        responses: {
+          '201': { description: 'id + expires_at' },
+          '400': { description: 'Validation or allowlist failure' },
+          '401': { description: 'Unauthorized ingest key' },
+          '429': { description: 'Rate limited' },
+          '503': { description: 'Ingest secret not configured for non-session callers' },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -347,6 +362,12 @@ export const openApiDocument = {
         in: 'cookie',
         name: 'opengrimoire_session',
         description: 'Signed session after POST /api/auth/login.',
+      },
+      OperatorProbeIngestKey: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-operator-probe-ingest-key',
+        description: 'Matches OPERATOR_PROBE_INGEST_SECRET when set (runner/CI ingest without operator cookie).',
       },
     },
   },

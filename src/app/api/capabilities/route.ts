@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 
+import {
+  SURVEY_READ_GATE_CAPABILITIES_APPROVED_QUALITIES_AUTH,
+  SURVEY_READ_GATE_CAPABILITIES_AUTH_ENV_HINT,
+  SURVEY_READ_GATE_CAPABILITIES_ROUTE_AUTH,
+} from '@/lib/survey/survey-read-gate-public-messages';
+
 /**
  * Hand-maintained machine-readable API surface for agents (OA-REST-2).
  * Update in the same PR as changes under src/app/api/ (see CONTRIBUTING.md, ARCHITECTURE_REST_CONTRACT.md).
@@ -22,12 +28,12 @@ const CAPABILITIES = {
       id: 'opencompass_brain_map',
       summary:
         'OpenGrimoire offline pipeline: ingest OpenCompass summary_*.csv and merge into public/brain-map-graph.local.json via trustgraph-local-repo scripts; no POST API on OpenGrimoire for this.',
-      ui_path: '/brain-map',
+      ui_path: '/context-atlas',
       api: 'GET /api/brain-map/graph',
       data_source: 'public/brain-map-graph.local.json',
       refresh: 'manual_after_merge',
       reference_note:
-        'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE).',
+        'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE). Legacy path /brain-map redirects to /context-atlas.',
     },
     {
       id: 'llm_wiki_mirror_read',
@@ -39,14 +45,37 @@ const CAPABILITIES = {
       refresh: 'manual_after_robocopy',
       reference_note: 'See docs/WIKI_MIRROR.md; Phase B minimal slice (no search, no edit, no wikilink routing).',
     },
+    {
+      id: 'cohort_survey_visualization',
+      summary:
+        'Alluvial/Chord cohort views over SQLite survey rows; header shows approved unique_quality quotes.',
+      ui_path: '/visualization',
+      api: 'GET /api/survey/visualization?all=1; GET /api/survey/approved-qualities (same read gate)',
+      data_source: 'Local SQLite via getVisualizationData / getApprovedUniqueQualities',
+      refresh:
+        'Remount; window CustomEvent opengrimoire-survey-data-changed after moderation or POST /api/survey (see AGENT_INTEGRATION.md); admin focus also dispatches from /admin',
+      reference_note:
+        'Alternate UI paths: /visualization/dark, /visualization/alluvial. Constellation uses GET ?all=0&showTestData= via visualizationStore — different client shape than primary hook.',
+    },
+    {
+      id: 'operator_observability_probes',
+      summary:
+        'Internal operator surface: ingest path/connectivity probe summaries (e.g. traceroute-to-Cursor) from trusted runners; list and delete under /admin/observability. target_host allowlist in code.',
+      ui_path: '/admin/observability',
+      api: 'POST /api/operator-probes/ingest; GET /api/admin/operator-probes; GET|DELETE /api/admin/operator-probes/:id',
+      data_source: 'SQLite table operator_probe_runs (TTL via OPERATOR_PROBE_RETENTION_DAYS)',
+      refresh: 'After POST ingest or delete; runner measures its own environment — not end-user browsers unless runner runs there',
+      reference_note: 'See ARCHITECTURE_REST_CONTRACT.md matrix row; AGENT_INTEGRATION.md headers. Ingest: operator session cookie or OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key.',
+    },
   ],
   auth_env_hints: [
     'ALIGNMENT_CONTEXT_API_SECRET + header x-alignment-context-key',
     'BRAIN_MAP_SECRET: x-brain-map-key or operator session cookie (same origin, credentials: include)',
     'Operator session: POST /api/auth/login sets HTTP-only cookie (OPENGRIMOIRE_ADMIN_PASSWORD or OPENGRIMOIRE_ADMIN_PASSWORD_HASH + OPENGRIMOIRE_SESSION_SECRET)',
-    'Survey reads (production): SURVEY_VISUALIZATION_ALLOW_PUBLIC=true, or admin session, or SURVEY_VISUALIZATION_API_SECRET + x-survey-visualization-key; optional ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true for x-alignment-context-key',
+    SURVEY_READ_GATE_CAPABILITIES_AUTH_ENV_HINT,
     'Harness profiles: operator session cookie or x-alignment-context-key for catalog/CRUD/OpenHarness bundle; /api/harness-profiles/select is public for Sync Session startup',
     'POST /api/auth/login: rate limited 10 requests per 60s per IP (middleware; single process)',
+    'OPERATOR_PROBE_INGEST_SECRET + header x-operator-probe-ingest-key for POST /api/operator-probes/ingest when runners have no operator cookie; optional OPERATOR_PROBE_RETENTION_DAYS (default 30)',
   ],
   routes: [
     {
@@ -115,6 +144,22 @@ const CAPABILITIES = {
       path: '/api/admin/debug-survey',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/operator-probes',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/operator-probes/:id',
+      methods: ['GET', 'DELETE'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/operator-probes/ingest',
+      methods: ['POST'],
+      auth:
+        'OpenGrimoire operator session cookie OR OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key (503 if neither session nor secret configured for non-session callers)',
     },
     {
       path: '/api/auth/login',
@@ -186,14 +231,12 @@ const CAPABILITIES = {
     {
       path: '/api/survey/visualization',
       methods: ['GET'],
-      auth:
-        'Dev: open. Production: admin cookie, x-survey-visualization-key (when SURVEY_VISUALIZATION_API_SECRET set), optional x-alignment-context-key only if ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true, or SURVEY_VISUALIZATION_ALLOW_PUBLIC=true — see docs/AGENT_INTEGRATION.md',
+      auth: SURVEY_READ_GATE_CAPABILITIES_ROUTE_AUTH,
     },
     {
       path: '/api/survey/approved-qualities',
       methods: ['GET'],
-      auth:
-        'Same as /api/survey/visualization (PII); production gate via checkSurveyReadGate',
+      auth: SURVEY_READ_GATE_CAPABILITIES_APPROVED_QUALITIES_AUTH,
     },
     {
       path: '/api/test-data/:dataset',

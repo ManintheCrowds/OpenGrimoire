@@ -8,6 +8,7 @@ import {
 } from '@/lib/auth/session';
 import { logAccessDenied } from '@/lib/observability/access-denial-log';
 import { decideSurveyReadAccess } from '@/lib/survey/survey-read-gate-logic';
+import { SURVEY_READ_GATE_UNAUTHORIZED_JSON_DETAIL } from '@/lib/survey/survey-read-gate-public-messages';
 
 export type SurveyReadGateResult =
   | { ok: true }
@@ -51,12 +52,7 @@ export async function checkSurveyReadGate(request: Request): Promise<SurveyReadG
     response: NextResponse.json(
       {
         error: 'Unauthorized',
-        detail:
-          'In production, survey read endpoints require an admin session cookie, ' +
-          'x-survey-visualization-key (when SURVEY_VISUALIZATION_API_SECRET is set), ' +
-          'or set SURVEY_VISUALIZATION_ALLOW_PUBLIC=true for demo-only deployments. ' +
-          'Optional legacy: set ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true to also accept x-alignment-context-key. ' +
-          'See docs/AGENT_INTEGRATION.md.',
+        detail: SURVEY_READ_GATE_UNAUTHORIZED_JSON_DETAIL,
       },
       { status: 401 }
     ),

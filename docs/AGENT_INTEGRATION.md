@@ -14,6 +14,8 @@ When anything conflicts, resolve in this order:
 
 **Same PR as API changes:** Update the matrix and this index when you add or change routes ([CONTRIBUTING.md](../CONTRIBUTING.md)).
 
+**Dev / mock UI routes (non-contractual):** Pages under **`/test`**, **`/test-chord`**, **`/test-context`**, **`/test-sqlite`**, and similar **`/test*`** prefixes are **not** part of the REST or **`GET /api/capabilities`** contract. They may use fixtures, stubs, or legacy bundles; in **`NODE_ENV=production`** they return **404** unless **`OPENGRIMOIRE_ALLOW_TEST_ROUTES`** is set (see [`middleware.ts`](../middleware.ts) `TEST_ROUTE_PREFIXES`). **Do not** treat them as stable integration surfaces for harnesses—use **`/visualization`**, **`/constellation`**, and documented **`/api/*`** routes instead.
+
 **Harness integration paths (HTTP vs optional MCP):** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md) — primary stack is **REST + thin CLI**. **Optional MCP is product-constrained:** any future or workspace-registered tools must be **thin wrappers** over existing HTTP routes or published CLIs only—**no** second domain layer, **no** alternate persistence, **no** business logic that bypasses the REST contract. Workspace **least-privilege** server set for OpenGrimoire work: [Arc_Forge `docs/MCP_PROFILE_OPENGRIMOIRE.md`](../../Arc_Forge/docs/MCP_PROFILE_OPENGRIMOIRE.md). Optional stub: [`scripts/mcp-opengrimoire/README.md`](../scripts/mcp-opengrimoire/README.md).
 
 **Unified tool manifest (HTTP + workspace MCP):** [AGENT_TOOL_MANIFEST.md](./AGENT_TOOL_MANIFEST.md). **Trust tiers + curl examples:** [agent/HARNESS_ACTION_TIERS.md](./agent/HARNESS_ACTION_TIERS.md). **Retries:** [agent/ADR_IDEMPOTENCY_AND_RETRY.md](./agent/ADR_IDEMPOTENCY_AND_RETRY.md).
@@ -21,6 +23,15 @@ When anything conflicts, resolve in this order:
 ### Survey visualization UI coordination (non-normative)
 
 The **`/visualization`** client refetches survey rows and approved quotes when the browser dispatches the **`opengrimoire-survey-data-changed`** `CustomEvent` (see [`src/lib/survey/survey-data-change-event.ts`](../src/lib/survey/survey-data-change-event.ts)). The app fires this after successful **Sync Session** `POST /api/survey`, after **admin moderation** `PATCH`, when the moderation queue refetches on **window focus**, and when the operator clicks **Refresh** on the moderation panel—so open visualization tabs pick up new or approved data without a full reload. Harnesses may dispatch the same event after external writes if they share the origin.
+
+### Survey graph JSON (agent parity)
+
+There is **no** HTTP route that returns precomputed **`{ nodes, edges }`** graph payloads. The server exposes survey rows only via **`GET /api/survey/visualization`** (same production read gate as **`GET /api/survey/approved-qualities`** — see the quick reference table above and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints). Query semantics:
+
+- **`all=1`** — cohort alluvial/chord data path; **`showTestData`** is **ignored** (see [`src/app/api/survey/visualization/route.ts`](../src/app/api/survey/visualization/route.ts)).
+- **`all=0`** with **`showTestData=true`** or **`false`** — rows for network views, CSV export, and the Three **`/constellation`** page; see [`src/lib/visualization/surveyVisualizationFetch.ts`](../src/lib/visualization/surveyVisualizationFetch.ts) (SSOT) and thin [`fetchVisualizationData.ts`](../src/lib/visualization/fetchVisualizationData.ts). **`/constellation`** uses [`visualizationStore`](../src/store/visualizationStore.ts) filtered fetches (`all=0`); **`showTestData`** follows the store toggle (defaults **true** — align with moderation policy before shipping public demos). A separate [`constellationStore`](../src/store/constellationStore.ts) exists for D3-style layouts with **`fetchVisualizationData(false)`** if wired in future.
+
+After fetching rows, the browser runs **`processVisualizationData`** in [`src/lib/visualization/processData.ts`](../src/lib/visualization/processData.ts) (filters, mode, sort). **Agents** that need graph-shaped output should either **reuse that TypeScript** in a harness or Node context, or drive the UI through browser automation. Machine-readable UI ↔ API mapping: **`GET /api/capabilities`** → **`ui_surfaces`**. **Playwright / DOM hooks** for `/visualization` and `/constellation`: [agent/PLAYWRIGHT_VIZ_HARNESS_SELECTORS.md](./agent/PLAYWRIGHT_VIZ_HARNESS_SELECTORS.md).
 
 ### Agent session boundary (in-app vs harness)
 
@@ -100,7 +111,7 @@ Alternatively, set a real `ALIGNMENT_CONTEXT_API_SECRET` and send it on each req
 
 ## Machine-readable surface
 
-- **`GET /api/capabilities`** — routes, auth hints, workflow notes (hand-maintained; same PR as API changes when possible).
+- **`GET /api/capabilities`** — routes, auth hints, **`workflows[]`**, **`ui_surfaces[]`** (survey viz UI ↔ query patterns), workflow notes (hand-maintained; same PR as API changes when possible).
 - Human-friendly view: **`/capabilities`** in the app.
 
 **Observability:** There is **no** typed agent event or progress stream from this app. **Operator probe runs** are an optional, **internal** SQLite-backed surface: **`POST /api/operator-probes/ingest`** (session or ingest secret) stores allowlisted connectivity/path summaries for review under **`/admin/observability`** — see the quick reference table above and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). Server-side audit for auth failures remains **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). **Transcript compaction** is **out of scope** for the server (see § Agent transcripts above).

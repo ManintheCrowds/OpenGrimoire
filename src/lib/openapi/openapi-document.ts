@@ -237,15 +237,69 @@ export const openApiDocument = {
     '/api/survey/visualization': {
       get: {
         summary: 'Survey visualization (PII)',
+        description:
+          'Returns joined survey rows for visualization. When query `all=1`, all rows are returned and `showTestData` is ignored. Otherwise `showTestData` filters test vs production rows.',
         security: [{ SurveyVizKey: [] }, { AlignmentApiKey: [] }, { OperatorSession: [] }],
-        responses: { '200': { description: 'Rows' } },
+        parameters: [
+          {
+            name: 'all',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['0', '1'] },
+            description: '`1` = cohort/all rows path (ignores showTestData). Omit or `0` = apply showTestData filter.',
+          },
+          {
+            name: 'showTestData',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['true', 'false'] },
+            description: 'Only when `all` is not `1`: filter rows where test_data matches.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Survey rows with attendee join',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/SurveyVisualizationResponse' },
+              },
+            },
+          },
+          '401': { description: 'Survey read denied in production (see checkSurveyReadGate)' },
+          '500': {
+            description: 'Server error',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/SurveyVisualizationErrorBody' },
+              },
+            },
+          },
+        },
       },
     },
     '/api/survey/approved-qualities': {
       get: {
-        summary: 'Approved quotes',
+        summary: 'Approved unique_quality quotes (PII)',
         security: [{ SurveyVizKey: [] }, { AlignmentApiKey: [] }, { OperatorSession: [] }],
-        responses: { '200': { description: 'Rows' } },
+        responses: {
+          '200': {
+            description: 'Approved quotes with attendee names',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApprovedQualitiesResponse' },
+              },
+            },
+          },
+          '401': { description: 'Survey read denied in production (see checkSurveyReadGate)' },
+          '500': {
+            description: 'Server error',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/SurveyVisualizationErrorBody' },
+              },
+            },
+          },
+        },
       },
     },
     '/api/auth/login': {
@@ -331,6 +385,116 @@ export const openApiDocument = {
     },
   },
   components: {
+    schemas: {
+      SurveyVisualizationAttendee: {
+        type: 'object',
+        required: ['first_name', 'is_anonymous'],
+        properties: {
+          first_name: { type: 'string' },
+          last_name: { type: 'string', nullable: true },
+          is_anonymous: { type: 'boolean' },
+        },
+      },
+      ModerationStatusEntry: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: {
+            type: 'string',
+            description: 'pending | approved | rejected',
+          },
+        },
+      },
+      SurveyVisualizationRow: {
+        type: 'object',
+        required: [
+          'id',
+          'attendee_id',
+          'session_type',
+          'questionnaire_version',
+          'status',
+          'test_data',
+          'created_at',
+          'updated_at',
+          'attendee',
+        ],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          attendee_id: { type: 'string', format: 'uuid' },
+          session_type: { type: 'string' },
+          questionnaire_version: { type: 'string' },
+          tenure_years: { type: 'integer', nullable: true },
+          learning_style: {
+            type: 'string',
+            nullable: true,
+            description: 'visual | auditory | kinesthetic | reading_writing',
+          },
+          shaped_by: {
+            type: 'string',
+            nullable: true,
+            description: 'mentor | challenge | failure | success | team | other',
+          },
+          peak_performance: { type: 'string', nullable: true },
+          motivation: { type: 'string', nullable: true },
+          unique_quality: { type: 'string', nullable: true },
+          harness_profile_id: { type: 'string', format: 'uuid', nullable: true },
+          status: { type: 'string', description: 'Moderation status on survey_responses row' },
+          moderated_at: { type: 'string', format: 'date-time', nullable: true },
+          test_data: { type: 'boolean' },
+          created_at: { type: 'string', format: 'date-time' },
+          updated_at: { type: 'string', format: 'date-time' },
+          attendee: { $ref: '#/components/schemas/SurveyVisualizationAttendee' },
+          moderation: {
+            type: 'array',
+            nullable: true,
+            items: { $ref: '#/components/schemas/ModerationStatusEntry' },
+          },
+        },
+      },
+      SurveyVisualizationResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: {
+          data: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SurveyVisualizationRow' },
+          },
+        },
+      },
+      SurveyVisualizationErrorBody: {
+        type: 'object',
+        properties: {
+          error: { type: 'string' },
+        },
+      },
+      ApprovedQualityAttendee: {
+        type: 'object',
+        required: ['first_name', 'is_anonymous'],
+        properties: {
+          first_name: { type: 'string' },
+          last_name: { type: 'string', nullable: true },
+          is_anonymous: { type: 'boolean' },
+        },
+      },
+      ApprovedQualityItem: {
+        type: 'object',
+        required: ['unique_quality', 'attendee'],
+        properties: {
+          unique_quality: { type: 'string', nullable: true },
+          attendee: { $ref: '#/components/schemas/ApprovedQualityAttendee' },
+        },
+      },
+      ApprovedQualitiesResponse: {
+        type: 'object',
+        required: ['items'],
+        properties: {
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/ApprovedQualityItem' },
+          },
+        },
+      },
+    },
     securitySchemes: {
       AlignmentApiKey: {
         type: 'apiKey',

@@ -98,7 +98,7 @@ export function EnhancedVisualizationHeader({
         data-region="opengrimoire-viz-quote-slot"
       >
         {isLoading ? (
-          <span className="text-xs text-white/40" aria-live="polite">
+          <span className="text-xs text-white/70" aria-live="polite">
             Loading…
           </span>
         ) : hasQuotes && currentQuote ? (

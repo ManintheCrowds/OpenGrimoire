@@ -2,7 +2,7 @@
 
 > **Superseded runtime (2026-04):** Production alignment + survey persistence is **SQLite + Drizzle** in-app; there is no Supabase deploy path. This document is **historical** (design + migration file naming). For current ops, see [DEPLOYMENT.md](../../DEPLOYMENT.md) and [OPERATOR_ALIGNMENT_SETUP.md](../agent/OPERATOR_ALIGNMENT_SETUP.md).
 
-**Tracked task ID:** `OA-ALIGN-1` (see [pending_tasks.md](../../../.cursor/state/pending_tasks.md) § PENDING_OPENGRIMOIRE)  
+**Tracked task ID:** `OA-ALIGN-1` (see [MiscRepos `pending_tasks.md`](../../../MiscRepos/.cursor/state/pending_tasks.md) § PENDING_OPENGRIMOIRE when MiscRepos is a sibling of this repo)  
 **Status (historical):** Phases 1–4 were implemented against an earlier Postgres-oriented plan; **current repo** uses SQLite bootstrap instead of `supabase db push`.  
 **Design (approved):** [2026-03-19-OpenGrimoire-alignment-context-design.md](./2026-03-19-OpenGrimoire-alignment-context-design.md) — Approach B, `alignment_context_items` table.  
 **Reuse analysis (read first):** [2026-03-19-OpenGrimoire-refactor-reuse-alignment.md](./2026-03-19-OpenGrimoire-refactor-reuse-alignment.md)

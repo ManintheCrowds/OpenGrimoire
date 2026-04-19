@@ -8,12 +8,10 @@ interface Visualization {
   path: string;
 }
 
+/** Only `app/` routes that exist today (OA-FR-2 G-S2-04). */
 const visualizations: Visualization[] = [
+  { id: 'visualization', name: 'Survey charts', path: '/visualization' },
   { id: 'constellation', name: 'Constellation', path: '/constellation' },
-  { id: 'tapestry', name: 'Tapestry', path: '/tapestry' },
-  { id: 'comparison', name: 'Comparison', path: '/comparison' },
-  { id: 'waves', name: 'Waves', path: '/waves' },
-  { id: 'qualities', name: 'Qualities', path: '/qualities' },
 ];
 
 interface NavigationDotsProps {

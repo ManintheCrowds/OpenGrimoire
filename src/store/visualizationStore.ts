@@ -64,15 +64,9 @@ export const useVisualizationStore = create<VisualizationState & { showTestData:
     set({ isLoading: true, error: null });
 
     try {
-      console.log('Fetching visualization data...');
       const data = await fetchVisualizationData(state.showTestData);
-      console.log('Raw data from database:', data);
-      if (data && data.length > 0) {
-        console.log('First raw data point:', data[0]);
-      }
 
       if (!data || data.length === 0) {
-        console.log('No data received from database');
         set({ nodes: [], edges: [], error: 'No data available' });
         return;
       }
@@ -83,10 +77,6 @@ export const useVisualizationStore = create<VisualizationState & { showTestData:
         sortBy: state.sortBy,
         sortDirection: state.sortDirection,
       });
-      console.log('Processed nodes:', nodes);
-      console.log('First processed node:', nodes[0]);
-      console.log('Processed edges:', edges);
-      console.log('First processed edge:', edges[0]);
       set({ nodes, edges }); // Use all valid nodes and edges
     } catch (error) {
       console.error('Error updating visualization:', error);

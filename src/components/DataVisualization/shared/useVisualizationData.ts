@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { VisualizationSurveyRow } from '@/lib/types/database';
 import { OPENGRIMOIRE_SURVEY_DATA_CHANGED } from '@/lib/survey/survey-data-change-event';
+import { fetchSurveyVisualizationRows } from '@/lib/visualization/surveyVisualizationFetch';
 
 type SurveyRow = VisualizationSurveyRow & {
   attendee: VisualizationSurveyRow['attendee'];
@@ -148,14 +149,7 @@ export function useVisualizationData() {
           setError(null);
         }
 
-        const res = await fetch('/api/survey/visualization?all=1', {
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-        const json = (await res.json()) as { data?: VisualizationSurveyRow[] };
-        const responses = json.data ?? [];
+        const responses = await fetchSurveyVisualizationRows({ mode: 'cohort' });
 
         if (mounted) {
           if (responses.length > 0) {

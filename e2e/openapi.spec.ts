@@ -8,5 +8,15 @@ test.describe('OpenAPI partial', () => {
     expect(json.openapi).toMatch(/^3\./);
     expect(json.paths).toBeDefined();
     expect(Object.keys(json.paths ?? {}).length).toBeGreaterThan(0);
+
+    const paths = json.paths as Record<
+      string,
+      { get?: { responses?: Record<string, { content?: Record<string, { schema?: unknown }> }> } }
+    >;
+    const viz = paths['/api/survey/visualization']?.get?.responses?.['200']?.content?.['application/json']?.schema;
+    const approved =
+      paths['/api/survey/approved-qualities']?.get?.responses?.['200']?.content?.['application/json']?.schema;
+    expect(viz).toEqual({ $ref: '#/components/schemas/SurveyVisualizationResponse' });
+    expect(approved).toEqual({ $ref: '#/components/schemas/ApprovedQualitiesResponse' });
   });
 });

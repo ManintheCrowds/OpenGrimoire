@@ -13,7 +13,7 @@ export function MockSurveyDataBanner() {
 
   const message = error
     ? 'Could not load live survey data — showing sample data for layout preview.'
-    : 'No survey rows match the current filters — showing sample data.';
+    : 'No usable live survey rows (empty API or rows failed validation) — showing sample data.';
 
   return (
     <div

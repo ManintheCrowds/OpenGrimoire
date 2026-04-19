@@ -21,13 +21,13 @@ Set `OPENGRIMOIRE_BASE_URL` to your app origin (local dev defaults to port **300
 
 ## Browser automation (UI-only paths)
 
-Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and sibling-harness [Agent-Native-Testing.md](../../../docs/Agent-Native-Testing.md) (when `docs/` exists beside OpenGrimoire under `GitHub/`).
+Where there is no stable API for a user action, use **Playwright** (CI truth), **Maestro** (optional YAML smoke), or generic browser MCP — see [e2e/maestro/README.md](../../e2e/maestro/README.md) and sibling harness [MiscRepos `docs/Agent-Native-Testing.md`](../../../MiscRepos/docs/Agent-Native-Testing.md) (assumes **OpenGrimoire** and **MiscRepos** are sibling folders under the same parent, e.g. `GitHub/`).
 
 ---
 
 ## Optional future: thin MCP over REST
 
-A dedicated MCP server could expose **only** thin wrappers around existing endpoints — **not** a second orchestration or business layer. Workspace-wide MCP inventory: [`.cursor/docs/MCP_CAPABILITY_MAP.md`](../../../.cursor/docs/MCP_CAPABILITY_MAP.md).
+A dedicated MCP server could expose **only** thin wrappers around existing endpoints — **not** a second orchestration or business layer. Workspace-wide MCP inventory: [MiscRepos `.cursor/docs/MCP_CAPABILITY_MAP.md`](../../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) (sibling clone; there is **no** `mcp-server/` package in this repo — see [AGENT_TOOL_MANIFEST.md](../AGENT_TOOL_MANIFEST.md)).
 
 **Checklist (if you add an MCP server elsewhere):** map tools 1:1 to existing HTTP methods — e.g. `alignment_context_list` → `GET /api/alignment-context`, `alignment_context_create` → `POST /api/alignment-context`, `alignment_context_patch` → `PATCH /api/alignment-context/:id`, `alignment_context_delete` → `DELETE /api/alignment-context/:id`, `brain_map_graph_get` → `GET /api/brain-map/graph`. Pass through the same headers (`x-alignment-context-key`, `x-brain-map-key`) and env-backed secrets; do not embed business rules beyond request shaping.
 

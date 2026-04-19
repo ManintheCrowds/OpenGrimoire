@@ -1852,6 +1852,7 @@ export default function AlluvialDiagram({
       }}>
         <div style={{ pointerEvents: 'auto' }}>
           <select
+            aria-label="Alluvial flow source field"
             value={currentSource}
             onChange={(e) => setCurrentSource(e.target.value)}
             style={{
@@ -1873,6 +1874,7 @@ export default function AlluvialDiagram({
         </div>
         <div style={{ pointerEvents: 'auto' }}>
           <select
+            aria-label="Alluvial flow target field"
             value={currentTarget}
             onChange={(e) => setCurrentTarget(e.target.value)}
             style={{

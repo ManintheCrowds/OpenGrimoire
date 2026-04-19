@@ -45,6 +45,8 @@ Each row: **name**, **tier**, **doc / contract link** (see matrix for auth).
 
 MCP tools are **not** served by this app. They are configured in the Cursor host (multi-root workspace) and documented in the **MiscRepos** capability map.
 
+**There is no `mcp-server/` package directory in this repository.** Older plans or drafts sometimes assumed an in-tree MCP server tree; canonical guidance is **this manifest**, [`GET /api/capabilities`](../src/app/api/capabilities/route.ts), and the optional stub at [`scripts/mcp-opengrimoire/README.md`](../scripts/mcp-opengrimoire/README.md) (thin wrappers only).
+
 | Name | Tier | Documentation |
 |------|------|----------------|
 | MCP servers (playwright, docker, sqlite, git, …) | read / mutate / shell (per tool) | Sibling clone: [`MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md`](../../MiscRepos/.cursor/docs/MCP_CAPABILITY_MAP.md) |

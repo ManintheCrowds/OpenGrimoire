@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import AlluvialDiagram from './AlluvialDiagram';
 import ChordDiagram from './ChordDiagram';
 import { EnhancedVisualizationHeader } from './shared/EnhancedVisualizationHeader';
@@ -18,19 +18,6 @@ export function DataVisualization() {
   const { settings, toggleAutoPlay } = useAppContext();
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('alluvial');
   const [containerSize, setContainerSize] = useState({ width: 1920, height: 1080 });
-
-  // Only log when settings change
-  const prevAutoPlay = useRef(settings.isAutoPlayEnabled);
-  useEffect(() => {
-    if (prevAutoPlay.current !== settings.isAutoPlayEnabled) {
-      console.log('🎨 Animation setting changed:', {
-        isAutoPlayEnabled: settings.isAutoPlayEnabled,
-        autoPlaySpeed: settings.autoPlaySpeed,
-        visualizationType
-      });
-      prevAutoPlay.current = settings.isAutoPlayEnabled;
-    }
-  }, [settings.isAutoPlayEnabled, settings.autoPlaySpeed, visualizationType]);
 
   // Calculate container size based on viewport
   useEffect(() => {

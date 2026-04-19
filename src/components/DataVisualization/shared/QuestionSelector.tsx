@@ -61,6 +61,7 @@ export function QuestionSelector({
         <label className="w-full">
           <div className="relative w-fit">
             <select
+              aria-label="Chord diagram source attribute"
               style={selectStyle}
               className="custom-select"
               value={currentSource}
@@ -94,6 +95,7 @@ export function QuestionSelector({
         <label className="w-full flex justify-end">
           <div className="relative w-fit">
             <select
+              aria-label="Chord diagram target attribute"
               style={selectStyle}
               className="custom-select"
               value={currentTarget}

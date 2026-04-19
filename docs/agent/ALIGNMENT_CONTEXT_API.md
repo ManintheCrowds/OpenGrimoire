@@ -117,4 +117,4 @@ If secret is unset locally, CLI omits the header (matches open dev server behavi
 
 ## A2UI / declarative UI
 
-The visualization stack exposes `data-region` and `usageHint` on components (see [A2UI_FRONTEND_DESIGN_GUIDANCE.md](../../../.cursor/docs/A2UI_FRONTEND_DESIGN_GUIDANCE.md)). This document is the **operator data API** contract; it does not duplicate A2UI component schemas.
+The visualization stack exposes `data-region` and `usageHint` on operator-facing components; desk-audit inventory and gaps live in [gui-2026-04-16-opengrimoire-data-viz.md](../audit/gui-2026-04-16-opengrimoire-data-viz.md) § A2UI / catalog. This document is the **operator data API** contract; it does not duplicate component schemas.

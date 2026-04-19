@@ -1,3 +1,27 @@
+---
+status: archived
+supersedes: 'repo root `## Master System Prompt - DataVisualization Implem` (removed 2026-04-19)'
+canonical_docs:
+  - ../plans/OA_FR_2_SYSTEM2_DATA_VISUALIZATION.md
+  - ../AGENT_INTEGRATION.md
+  - ../ARCHITECTURE_REST_CONTRACT.md
+---
+
+# Archived: legacy “Master System Prompt” (DataVisualization)
+
+**Reason:** Content referenced **Supabase**, keynote/LED assumptions, and ad-hoc process guidance. OpenGrimoire survey + viz are **SQLite-first** with normative contracts in **OA_FR_2**, **AGENT_INTEGRATION**, and **ARCHITECTURE_REST_CONTRACT**.
+
+**Do not use** this artifact for implementation guidance. The body below is preserved read-only for history.
+
+---
+
+## Original file body (verbatim)
+
+<!-- prettier-ignore -->
+See the following block — it was the full contents of the removed root file.
+
+---
+
 ## Master System Prompt - DataVisualization Implementation
 
 ```markdown

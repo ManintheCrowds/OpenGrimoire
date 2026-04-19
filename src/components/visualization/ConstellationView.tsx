@@ -41,7 +41,6 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   onNodeClick,
   onNodeHover,
 }) => {
-  console.log("ConstellationView rendered");
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const { mode, setMode, nodes, edges, selectedNode, hoveredNode, setSelectedNode, setHoveredNode, isLoading, error, showTestData, toggleShowTestData, updateVisualization } = useVisualizationStore();
   const modes: VisualizationMode[] = ['learning_style', 'shaped_by', 'peak_performance', 'motivation'];
@@ -108,11 +107,6 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   };
 
   // All useEffect hooks must be here, before any conditional logic
-  useEffect(() => {
-    console.log('ConstellationView mounted');
-    console.log('Current state:', { mode, nodes, edges, isLoading, error });
-  }, [mode, nodes, edges, isLoading, error]);
-
   useEffect(() => {
     updateVisualization();
   }, [showTestData]);
@@ -357,9 +351,6 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
       }, 300);
     }
   };
-
-  // Debug logging disabled to prevent strobing
-  // console.log('=== ConstellationView Debug ===');
 
   // Early returns after all hooks
   if (isLoading) {

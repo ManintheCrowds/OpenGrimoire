@@ -20,6 +20,8 @@ const CAPABILITIES = {
     openapi_partial: 'GET /api/openapi or GET /api/openapi.json (partial OpenAPI 3; see src/lib/openapi/openapi-document.ts)',
     discovery_stability_gate: '/docs/engineering/DISCOVERY_STABILITY_GATE.md (repo; Phase A gate)',
     route_index: '/docs/api/ROUTE_INDEX.json (generated; scripts/generate-route-index.mjs)',
+    non_contractual_ui:
+      '/test, /test-chord, /test-context, /test-sqlite and other /test* app routes are dev/mock surfaces — not listed in routes[]; production 404 unless OPENGRIMOIRE_ALLOW_TEST_ROUTES; see docs/AGENT_INTEGRATION.md § Dev / mock UI routes',
     opencompass_brain_map_interop:
       'Portfolio: MiscRepos/trustgraph-local-repo/interop/OPENCOMPASS_OPENGRIMOIRE_INTEROP.md',
   },
@@ -50,12 +52,13 @@ const CAPABILITIES = {
       summary:
         'Alluvial/Chord cohort views over SQLite survey rows; header shows approved unique_quality quotes.',
       ui_path: '/visualization',
-      api: 'GET /api/survey/visualization?all=1; GET /api/survey/approved-qualities (same read gate)',
+      api:
+        'Cohort charts: GET /api/survey/visualization?all=1; network/constellation clients: GET /api/survey/visualization?all=0&showTestData=true|false (when all=1, showTestData is ignored per route handler); GET /api/survey/approved-qualities (same read gate)',
       data_source: 'Local SQLite via getVisualizationData / getApprovedUniqueQualities',
       refresh:
         'Remount; window CustomEvent opengrimoire-survey-data-changed after moderation or POST /api/survey (see AGENT_INTEGRATION.md); admin focus also dispatches from /admin',
       reference_note:
-        'Alternate UI paths: /visualization/dark, /visualization/alluvial. Constellation uses GET ?all=0&showTestData= via visualizationStore — different client shape than primary hook.',
+        'UI routes and query semantics: see ui_surfaces ids survey_cohort_charts and survey_network_constellation in this manifest.',
     },
     {
       id: 'operator_observability_probes',
@@ -66,6 +69,31 @@ const CAPABILITIES = {
       data_source: 'SQLite table operator_probe_runs (TTL via OPERATOR_PROBE_RETENTION_DAYS)',
       refresh: 'After POST ingest or delete; runner measures its own environment — not end-user browsers unless runner runs there',
       reference_note: 'See ARCHITECTURE_REST_CONTRACT.md matrix row; AGENT_INTEGRATION.md headers. Ingest: operator session cookie or OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key.',
+    },
+  ],
+  ui_surfaces: [
+    {
+      id: 'survey_cohort_charts',
+      paths: ['/visualization', '/visualization/dark', '/visualization/alluvial'],
+      fetch_pattern:
+        'GET /api/survey/visualization?all=1 — use credentials: include when using operator session cookie',
+      approved_quotes_api: 'GET /api/survey/approved-qualities (same survey read gate)',
+      client_module:
+        'src/lib/visualization/surveyVisualizationFetch.ts (cohort mode); src/components/DataVisualization/shared/useVisualizationData.ts',
+      survey_read_gate_hint: SURVEY_READ_GATE_CAPABILITIES_AUTH_ENV_HINT,
+      agent_note:
+        'Precomputed graph nodes/edges are not returned by HTTP; see docs/AGENT_INTEGRATION.md § Survey graph JSON (agent parity).',
+    },
+    {
+      id: 'survey_network_constellation',
+      paths: ['/constellation'],
+      fetch_pattern:
+        'GET /api/survey/visualization?all=0&showTestData=false (constellation); /visualization network mode uses the same path with showTestData toggled in src/store/visualizationStore.ts (default true)',
+      client_modules:
+        'src/lib/visualization/surveyVisualizationFetch.ts (filtered mode); src/lib/visualization/fetchVisualizationData.ts; src/store/constellationStore.ts; src/store/visualizationStore.ts; src/lib/utils/export.ts; src/lib/visualization/processData.ts',
+      survey_read_gate_hint: SURVEY_READ_GATE_CAPABILITIES_AUTH_ENV_HINT,
+      agent_note:
+        'No HTTP endpoint returns { nodes, edges }; see docs/AGENT_INTEGRATION.md § Survey graph JSON (agent parity).',
     },
   ],
   auth_env_hints: [

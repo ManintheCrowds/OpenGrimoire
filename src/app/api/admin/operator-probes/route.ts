@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
-import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
-import { logAccessDenied } from '@/lib/observability/access-denial-log';
+import { requireOperatorProbeAdminRoute } from '@/lib/operator-observability/admin-probe-auth';
 import { listOperatorProbeRuns } from '@/lib/storage/repositories/operator-probes';
 
 export async function GET(request: Request) {
-  const auth = await requireOpenGrimoireAdminRoute();
+  const auth = await requireOperatorProbeAdminRoute(request);
   if (!auth.ok) {
-    logAccessDenied({
-      request,
-      gate: 'operator_observability_read',
-      reason: 'session_required',
-      status: 401,
-    });
     return auth.response;
   }
 

@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { moderationPatchBodySchema } from '@/lib/admin/moderation-patch-body';
 import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { updateModerationStatus } from '@/lib/storage/repositories/survey';
-
-const bodySchema = z.object({
-  status: z.enum(['approved', 'rejected', 'pending']),
-  notes: z.string().optional(),
-});
 
 type RouteContext = { params: { responseId: string } };
 
@@ -28,7 +23,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(json);
+  const parsed = moderationPatchBodySchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Validation failed', issues: parsed.error.flatten() },

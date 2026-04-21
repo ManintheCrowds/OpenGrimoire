@@ -15,7 +15,7 @@ Each matching line is a single JSON object written with `console.info` (one line
 | Field | Type | Meaning |
 |-------|------|---------|
 | `event` | string | Always `access_denied`. |
-| `gate` | string | `alignment_context` \| `clarification_queue` \| `brain_map` \| `survey_read`. |
+| `gate` | string | `alignment_context` \| `clarification_queue` \| `brain_map` \| `survey_read` \| `operator_observability_ingest` \| `operator_observability_read` \| `operator_observability_admin`. |
 | `route` | string | Request pathname only (from `URL.pathname`). No query string. |
 | `reason` | string | `missing_header` \| `invalid_secret` \| `misconfigured` \| `session_required`. |
 | `status` | number | HTTP status returned with the response (401 or 503 today for these lines). |
@@ -24,7 +24,20 @@ Each matching line is a single JSON object written with `console.info` (one line
 
 ## Implementation
 
-[`src/lib/observability/access-denial-log.ts`](../../src/lib/observability/access-denial-log.ts) — wired from alignment context gate, clarification queue gate, brain-map graph route, and survey read gate.
+[`src/lib/observability/access-denial-log.ts`](../../src/lib/observability/access-denial-log.ts) — wired from alignment context gate, clarification queue gate, brain-map graph route, survey read gate, and operator observability auth.
+
+### Throttling **401** `invalid_secret` noise (OG-OH-09)
+
+Scanners can flood logs with wrong API keys. **`503` misconfigured** responses (e.g. probe ingest when no secret is configured) intentionally **do not** emit `access_denied` where documented.
+
+Optional **in-process** controls (each Node replica has its own counters; not shared across instances):
+
+| Env | Effect |
+|-----|--------|
+| **`ACCESS_DENIED_INVALID_SECRET_LOG_PROBABILITY`** | Float **0–1**, default **1**. After any per-IP cooldown check, each qualifying line is emitted with this probability (e.g. `0.05` ≈ 5%). |
+| **`ACCESS_DENIED_INVALID_SECRET_PER_IP_COOLDOWN_MS`** | Integer **≥ 0**, default **0** (off). Minimum milliseconds between emitted lines for the same **`gate` + `route` + client IP** (IP from `X-Forwarded-For` / `X-Real-IP` only when [`getClientIpFromRequest`](../../src/lib/rate-limit/get-client-ip.ts) trusts forwarded headers — same rules as middleware rate limits). |
+
+Only **`reason: invalid_secret`** with **`status: 401`** is filtered; other denial reasons always log.
 
 ## Operator probe ingest success (non-denial)
 

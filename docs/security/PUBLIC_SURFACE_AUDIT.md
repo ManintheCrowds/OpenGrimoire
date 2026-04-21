@@ -70,6 +70,7 @@ Expect: no real JWT material in tracked sources after remediation.
 ## Related docs
 
 - [NEXT_PUBLIC and brain-map auth notes](./NEXT_PUBLIC_AND_SECRETS.md) (same folder)
+- [Survey POST bootstrap token threat model](./SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md) — optional `SURVEY_POST_REQUIRE_TOKEN` / `x-survey-post-token`
 - [DEPLOYMENT.md](../../DEPLOYMENT.md)
 - [Alignment context agent/operator API](../agent/ALIGNMENT_CONTEXT_API.md)
 - [Operator alignment setup](../agent/OPERATOR_ALIGNMENT_SETUP.md)

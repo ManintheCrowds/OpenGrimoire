@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useVisualizationStore } from '@/store/visualizationStore';
-import type { VisualizationMode, NodeData, EdgeData } from '@/types/visualization';
+import type { NodeData, EdgeData } from '@/types/visualization';
 import ClientOnly from '@/components/shared/three/ClientOnly';
 import BaseScene from '@/components/shared/three/BaseScene';
 import type { Vector3 } from 'three';
@@ -42,8 +42,18 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   onNodeHover,
 }) => {
   const [isAutoPlay, setIsAutoPlay] = useState(false);
-  const { mode, setMode, nodes, edges, selectedNode, hoveredNode, setSelectedNode, setHoveredNode, isLoading, error, showTestData, toggleShowTestData } = useVisualizationStore();
-  const modes: VisualizationMode[] = ['learning_style', 'shaped_by', 'peak_performance', 'motivation'];
+  const {
+    nodes,
+    edges,
+    selectedNode,
+    hoveredNode,
+    setSelectedNode,
+    setHoveredNode,
+    isLoading,
+    error,
+    showTestData,
+    toggleShowTestData,
+  } = useVisualizationStore();
   const autoPlayInterval = useRef<NodeJS.Timeout>();
   const [nodePositions, setNodePositions] = useState<{ [id: string]: [number, number, number] }>({});
   const [currentAttribute, setCurrentAttribute] = useState('learning_style');
@@ -354,25 +364,50 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
 
   // Early returns after all hooks
   if (isLoading) {
-    return <div className="flex items-center justify-center w-full h-full">Loading...</div>;
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center"
+        data-testid="opengrimoire-viz-constellation-loading"
+        data-region="opengrimoire-viz-constellation-loading"
+      >
+        Loading...
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center w-full h-full text-red-800" role="alert">
+      <div
+        className="flex h-full w-full items-center justify-center text-red-800"
+        role="alert"
+        data-testid="opengrimoire-viz-constellation-error"
+        data-region="opengrimoire-viz-constellation-error"
+      >
         {error}
       </div>
     );
   }
 
   if (!validNodes.length || !validEdges.length) {
-    return <div className="flex items-center justify-center w-full h-full">No data to display</div>;
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center"
+        data-testid="opengrimoire-viz-constellation-empty"
+        data-region="opengrimoire-viz-constellation-empty"
+      >
+        No data to display
+      </div>
+    );
   }
 
   // Edge logging disabled to prevent strobing
 
   return (
-    <div className="relative w-full h-screen bg-gray-900 overflow-hidden">
+    <div
+      className="relative h-screen w-full overflow-hidden bg-gray-900"
+      data-testid="opengrimoire-viz-constellation-root"
+      data-region="opengrimoire-viz-constellation-root"
+    >
       {/* Full-screen Canvas */}
       <div className="absolute inset-0">
         <Canvas
@@ -479,27 +514,36 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
       {/* Fixed UI Layout - Top Left */}
       <div className="absolute top-6 left-6 space-y-4 z-10">
         {/* Cluster Control */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-          <h3 className="text-white font-medium mb-3">CLUSTER BY</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="rounded-lg bg-gray-800/90 p-4 shadow-lg backdrop-blur-sm">
+          <h3 className="mb-3 font-medium text-white">CLUSTER BY</h3>
+          <div
+            className="flex flex-wrap gap-2"
+            data-testid="opengrimoire-viz-constellation-cluster-controls"
+            data-region="opengrimoire-viz-constellation-cluster-controls"
+          >
             {availableAttributes.map((attr) => (
               <button
                 key={attr}
+                type="button"
+                data-testid={`opengrimoire-viz-constellation-cluster-${attr}`}
                 onClick={() => setCurrentAttribute(attr)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   currentAttribute === attr
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
-                {attr.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {attr.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               </button>
             ))}
           </div>
         </div>
 
         {/* Legend */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+        <div
+          className="rounded-lg bg-gray-800/90 p-4 shadow-lg backdrop-blur-sm"
+          data-region="opengrimoire-viz-constellation-legend"
+        >
           <h3 className="text-white font-medium mb-3">
             GROUPS ({currentAttribute.replace(/_/g, ' ').toUpperCase()})
           </h3>
@@ -521,17 +565,32 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
         </div>
       </div>
 
-      {/* Auto-play Control - Top Right */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Demo controls — top right (Zustand test rows + local autoplay) */}
+      <div
+        className="absolute right-6 top-6 z-10 flex flex-col items-end gap-2"
+        data-region="opengrimoire-viz-constellation-demo-controls"
+      >
         <button
+          type="button"
+          data-testid="opengrimoire-viz-constellation-autoplay"
+          aria-pressed={isAutoPlay}
           onClick={() => setIsAutoPlay(!isAutoPlay)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`rounded-lg px-4 py-2 font-medium transition-colors ${
             isAutoPlay
-              ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-green-600 hover:bg-green-700 text-white'
+              ? 'bg-red-600 text-white hover:bg-red-700'
+              : 'bg-green-600 text-white hover:bg-green-700'
           }`}
         >
           {isAutoPlay ? '⏸ Stop Auto-play' : '▶ Start Auto-play'}
+        </button>
+        <button
+          type="button"
+          data-testid="opengrimoire-viz-constellation-test-data-toggle"
+          aria-pressed={showTestData}
+          onClick={() => toggleShowTestData()}
+          className="rounded-lg border border-white/20 bg-gray-800/90 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm hover:bg-gray-700/90"
+        >
+          {showTestData ? 'Survey: demo rows on' : 'Survey: demo rows off'}
         </button>
       </div>
     </div>
@@ -539,4 +598,3 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
 };
 
 export { ConstellationView };
-export default ConstellationView; 

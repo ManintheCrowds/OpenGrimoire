@@ -29,7 +29,9 @@ test.describe('Visualization + constellation axe (OGAN-15)', () => {
 
   test('/constellation passes axe with canvas excluded', async ({ page }) => {
     await page.goto('/constellation');
-    await expect(page.getByText('Loading visualization...')).not.toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId('opengrimoire-viz-constellation-route-loading')).not.toBeVisible({
+      timeout: 30000,
+    });
     await expect(page.getByRole('heading', { name: 'Constellation View' })).toBeVisible({
       timeout: 20000,
     });

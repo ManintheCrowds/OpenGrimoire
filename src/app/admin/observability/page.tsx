@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { isOpenGrimoireAdminSessionUser } from '@/lib/opengrimoire-admin';
+import {
+  PROBE_LIST_RUNNER_TYPE_CHIP_CLASS,
+  PROBE_LIST_TARGET_HOST_CHIP_CLASS,
+} from './probeListChips';
 
 type ProbeListItem = {
   id: string;
@@ -101,8 +105,42 @@ export default function AdminObservabilityPage() {
             Loading runs…
           </div>
         ) : items.length === 0 ? (
-          <div className="text-gray-600" data-testid="operator-probe-empty">
-            No probe runs yet. POST to <code>/api/operator-probes/ingest</code> (see docs).
+          <div
+            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 text-gray-700 text-sm space-y-3"
+            data-testid="operator-probe-empty"
+          >
+            <p className="font-medium text-gray-900">No probe runs yet</p>
+            <p>
+              Send <code className="rounded bg-white px-1 py-0.5 text-xs border">POST /api/operator-probes/ingest</code>{' '}
+              from a trusted runner (see curl example in the integration guide).
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <a
+                  className="text-blue-600 underline"
+                  data-testid="operator-probe-empty-agent-integration-link"
+                  href="https://github.com/ManintheCrowds/OpenGrimoire/blob/master/docs/AGENT_INTEGRATION.md#operator-probe-ingest"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  AGENT_INTEGRATION.md
+                </a>{' '}
+                — ingest header, env vars, and curl sample (<code className="text-xs">#operator-probe-ingest</code>).
+              </li>
+              <li>
+                Machine-readable workflow{' '}
+                <code className="rounded bg-white px-1 py-0.5 text-xs border">operator_observability_probes</code> in{' '}
+                <Link className="text-blue-600 underline" href="/capabilities" data-testid="operator-probe-empty-capabilities-ui-link">
+                  /capabilities
+                </Link>{' '}
+                (JSON from{' '}
+                <a className="text-blue-600 underline" href="/api/capabilities" data-testid="operator-probe-empty-capabilities-api-link">
+                  GET /api/capabilities
+                </a>
+                ) — includes <code className="text-xs">workflows[]</code> and <code className="text-xs">routes[]</code> for ingest
+                and admin list/detail/delete.
+              </li>
+            </ul>
           </div>
         ) : (
           <div className="overflow-x-auto border rounded-lg" data-testid="operator-probe-runs-table">
@@ -125,7 +163,7 @@ export default function AdminObservabilityPage() {
                     <td className="p-3 whitespace-nowrap text-gray-700">{row.created_at}</td>
                     <td className="p-3">
                       <span
-                        className="inline-block rounded bg-slate-800 text-white text-xs font-semibold px-2 py-0.5"
+                        className={PROBE_LIST_TARGET_HOST_CHIP_CLASS}
                         data-testid={`operator-probe-target-host-${row.id}`}
                       >
                         {row.target_host}
@@ -134,7 +172,7 @@ export default function AdminObservabilityPage() {
                     <td className="p-3">
                       <div className="flex flex-col gap-1">
                         <span
-                          className="inline-block w-fit rounded bg-indigo-100 text-indigo-900 text-xs font-medium px-2 py-0.5"
+                          className={PROBE_LIST_RUNNER_TYPE_CHIP_CLASS}
                           data-testid={`operator-probe-runner-type-${row.id}`}
                         >
                           {row.runner_type}

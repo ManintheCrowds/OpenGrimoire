@@ -7,6 +7,10 @@ import {
 /**
  * Issues a short-lived JWT for POST /api/survey when SURVEY_POST_REQUIRE_TOKEN is enabled.
  * Same-origin Sync Session UI fetches this and sends the token as x-survey-post-token.
+ *
+ * **Threat model:** Public GET when the gate is on — thin control vs scripted same-origin clients and
+ * server-side automation; not a substitute for Turnstile, rate limits, or WAF. See
+ * [docs/security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md](../../../../../docs/security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md).
  */
 export async function GET() {
   if (!isSurveyPostTokenRequired()) {

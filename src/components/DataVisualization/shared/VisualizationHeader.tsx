@@ -18,7 +18,12 @@ export function VisualizationHeader({
   return (
     <header
       className="w-full flex flex-row items-center gap-8 py-6 px-8"
-      style={{ minHeight: 96, background: '#170F5F', alignItems: 'center', display: 'flex' }}
+      style={{
+        minHeight: 96,
+        background: 'var(--opengrimoire-viz-header-bg)',
+        alignItems: 'center',
+        display: 'flex',
+      }}
     >
       <img
         src={logoSrc}
@@ -30,19 +35,29 @@ export function VisualizationHeader({
         <div className="flex flex-row items-end gap-6 flex-wrap">
           <span
             className="text-2xl sm:text-3xl font-bold tracking-tight"
-            style={{ fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, \"SF Pro\", \"Roboto\", sans-serif', color: '#FFF' }}
+            style={{
+              fontFamily: 'var(--opengrimoire-viz-header-font)',
+              color: 'var(--opengrimoire-viz-on-brand-text)',
+            }}
           >
             {summitTitle}
           </span>
           <span
             className="text-xl sm:text-2xl font-semibold tracking-tight"
-            style={{ fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, \"SF Pro\", \"Roboto\", sans-serif', color: '#FFF' }}
+            style={{
+              fontFamily: 'var(--opengrimoire-viz-header-font)',
+              color: 'var(--opengrimoire-viz-on-brand-text)',
+            }}
           >
             {visualizationName}
           </span>
           <span
             className="text-lg sm:text-xl font-medium tracking-tight truncate"
-            style={{ fontFamily: 'Avenir Next World, -apple-system, BlinkMacSystemFont, \"SF Pro\", \"Roboto\", sans-serif', color: '#FFF', opacity: 0.85 }}
+            style={{
+              fontFamily: 'var(--opengrimoire-viz-header-font)',
+              color: 'var(--opengrimoire-viz-on-brand-text)',
+              opacity: 0.85,
+            }}
           >
             {viewName}
           </span>

@@ -61,6 +61,26 @@ describe('surveyPostBodySchema', () => {
     expect(parsed.success).toBe(false);
   });
 
+  it('rejects answers array longer than 64 rows', () => {
+    const answers = Array.from({ length: 65 }, (_, i) => ({
+      questionId: `q_${i}`,
+      answer: 'x',
+    }));
+    const parsed = surveyPostBodySchema.safeParse({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane@example.com',
+      answers,
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      const tooMany = parsed.error.issues.some(
+        (issue) => issue.path.join('.') === 'answers' && issue.code === 'too_big'
+      );
+      expect(tooMany).toBe(true);
+    }
+  });
+
   it('requires email when not anonymous', () => {
     const parsed = surveyPostBodySchema.safeParse({
       firstName: 'Jane',

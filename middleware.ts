@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getRateLimitClientIp } from './src/lib/rate-limit/get-client-ip';
 import { createRateLimiter } from './src/lib/rate-limit-in-memory';
 
 /**
@@ -17,7 +18,10 @@ const rateLimitSyncSessionSubmit = createRateLimiter(60_000, 30);
 /** POST /api/auth/login — stricter; brute-force protection (per-process only). */
 const rateLimitLogin = createRateLimiter(60_000, 10);
 
-/** POST /api/operator-probes/ingest — runner + operator ingest (per-process only). */
+/**
+ * POST /api/operator-probes/ingest — runner + operator ingest.
+ * Per-process in-memory window only; each horizontal replica has its own counter (see OPERATIONAL_TRADEOFFS / ARCHITECTURE § operator probe multi-instance).
+ */
 const rateLimitOperatorProbeIngest = createRateLimiter(60_000, 30);
 
 /**
@@ -51,14 +55,6 @@ function testRoutesAllowedInThisDeployment(): boolean {
   return v === '1' || v === 'true';
 }
 
-function getClientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -81,7 +77,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === '/api/survey' && request.method === 'POST') {
-    const ip = getClientIp(request);
+    const ip = getRateLimitClientIp(request);
     if (!rateLimitSyncSessionSubmit(ip)) {
       return NextResponse.json(
         { error: 'Too many requests', detail: 'Sync Session submit rate limit exceeded. Try again later.' },
@@ -91,7 +87,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === '/api/auth/login' && request.method === 'POST') {
-    const ip = getClientIp(request);
+    const ip = getRateLimitClientIp(request);
     if (!rateLimitLogin(ip)) {
       return NextResponse.json(
         { error: 'Too many requests', detail: 'Login rate limit exceeded. Try again later.' },
@@ -101,7 +97,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === '/api/operator-probes/ingest' && request.method === 'POST') {
-    const ip = getClientIp(request);
+    const ip = getRateLimitClientIp(request);
     if (!rateLimitOperatorProbeIngest(ip)) {
       return NextResponse.json(
         {
@@ -114,7 +110,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (request.method === 'GET' && DISCOVERY_GET_PATHS.has(pathname)) {
-    const ip = getClientIp(request);
+    const ip = getRateLimitClientIp(request);
     if (!rateLimitDiscoveryGet(ip)) {
       return NextResponse.json(
         {

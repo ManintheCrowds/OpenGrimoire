@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Admin operator-probes routes must use operator session guard only (no alignment-agent header).
+ * Admin operator-probes routes must use requireOperatorProbeAdminRoute (session or optional
+ * OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key) — never x-alignment-context-key.
  * Discovers route.ts under src/app/api/admin/operator-probes/.
  */
 import fs from 'fs';
@@ -13,7 +14,7 @@ const PROBES_DIR = path.join(root, 'src', 'app', 'api', 'admin', 'operator-probe
 const CAPABILITIES = path.join(root, 'src', 'app', 'api', 'capabilities', 'route.ts');
 
 const ALIGN_HEADER = 'x-alignment-context-key';
-const ADMIN_GUARD = 'requireOpenGrimoireAdminRoute';
+const PROBE_ADMIN_GUARD = 'requireOperatorProbeAdminRoute';
 
 function read(p) {
   return fs.readFileSync(p, 'utf8');
@@ -55,8 +56,8 @@ for (const file of routes) {
   if (text.includes(ALIGN_HEADER)) {
     fail(`${label}: must not reference ${ALIGN_HEADER}`);
   }
-  if (!text.includes(ADMIN_GUARD)) {
-    fail(`${label}: expected ${ADMIN_GUARD}`);
+  if (!text.includes(PROBE_ADMIN_GUARD)) {
+    fail(`${label}: expected ${PROBE_ADMIN_GUARD}`);
   }
 }
 

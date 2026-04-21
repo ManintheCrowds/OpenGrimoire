@@ -20,7 +20,12 @@ function expiresAtFromNow(): string {
   return d.toISOString();
 }
 
-/** Deletes rows past `expires_at`. Call after successful ingest to reclaim disk; not on admin GET paths (reads stay side-effect free). */
+/**
+ * Deletes rows with `expires_at` in the past.
+ * Invoked after successful ingest and at the start of admin **list** (`listOperatorProbeRuns`).
+ * Admin **detail by id** does not call this — expired rows may remain on disk until list or ingest.
+ * Multi-instance: each Node process purges **its own** SQLite file only.
+ */
 export function purgeExpiredOperatorProbeRuns(): number {
   const now = nowIso();
   const result = getDb().delete(operatorProbeRuns).where(lt(operatorProbeRuns.expiresAt, now)).run();
@@ -35,6 +40,7 @@ export type OperatorProbeRunRow = {
   runner_id: string;
   runner_type: string;
   summary_json: string;
+  /** Inline SQLite `TEXT` only (ingest cap 512k). External object storage is a documented future ADR path, not implemented here. */
   raw_blob: string | null;
   ingest_via: string;
   expires_at: string;
@@ -55,6 +61,7 @@ function rowToApi(row: typeof operatorProbeRuns.$inferSelect): OperatorProbeRunR
   };
 }
 
+/** List non-expired runs (newest first). Runs TTL purge first so the list doubles as reclaim when traffic hits this path. */
 export function listOperatorProbeRuns(limit = 100): OperatorProbeRunRow[] {
   purgeExpiredOperatorProbeRuns();
   const now = nowIso();
@@ -79,6 +86,7 @@ export function getOperatorProbeRunById(id: string): OperatorProbeRunRow | null 
   return rowToApi(row);
 }
 
+/** Persists a run; `rawBlob` is stored inline in SQLite (no bundled object store). */
 export function insertOperatorProbeRun(params: {
   probeType: string;
   targetHost: string;

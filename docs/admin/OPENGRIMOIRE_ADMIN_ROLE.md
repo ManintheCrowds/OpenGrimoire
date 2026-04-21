@@ -25,3 +25,7 @@ Older documentation referred to JWT / hosted-DB admin roles. The **only** suppor
 ## Backup
 
 Survey and alignment data live in **`OPENGRIMOIRE_DB_PATH`** (default `data/opengrimoire.sqlite`). Back up that file with your operator credentials; it is gitignored by default.
+
+## Survey visualization reads (production PII)
+
+Admin session satisfies **`GET /api/survey/visualization`** and **`GET /api/survey/approved-qualities`** in production. If you also grant **machine** access (headers, public demo, or alignment-key escape hatch), follow [SURVEY_READ_GATING_RUNBOOK.md](./SURVEY_READ_GATING_RUNBOOK.md) so automation keys do not widen PII exposure beyond intent.

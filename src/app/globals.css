@@ -11,6 +11,18 @@
   --opengrimoire-viz-header-bg: #170f5f;
   --opengrimoire-viz-header-font: 'Avenir Next World', -apple-system, BlinkMacSystemFont, 'SF Pro', 'Roboto',
     sans-serif;
+  /* Shell / layout (cohort viz chrome — not D3 categorical scales) */
+  --opengrimoire-viz-shell-bg-dark: #0a0a0f;
+  --opengrimoire-viz-shell-bg-light: #ffffff;
+  --opengrimoire-viz-primary-ink: #170f5f;
+  --opengrimoire-viz-on-brand-text: #ffffff;
+  --opengrimoire-viz-focus-accent-light: #1010eb;
+  --opengrimoire-viz-focus-accent-dark: #60a5fa;
+  --opengrimoire-viz-option-surface-dark: #1f2937;
+  --opengrimoire-viz-option-surface-muted-dark: #374151;
+  --opengrimoire-viz-option-surface-muted-light: #f3f4f6;
+  --opengrimoire-viz-option-text-muted-dark: #9ca3af;
+  --opengrimoire-viz-option-text-muted-light: #6b7280;
 }
 
 body {

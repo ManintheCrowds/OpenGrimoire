@@ -35,7 +35,7 @@ Each row: **name**, **tier**, **doc / contract link** (see matrix for auth).
 | Auth login/session | mutate / read | [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) |
 | Admin BFF routes (`/api/admin/*`) | read / mutate | Operator session; same matrix |
 | Operator probe ingest | mutate | `POST /api/operator-probes/ingest` — session or `OPERATOR_PROBE_INGEST_SECRET` + `x-operator-probe-ingest-key`; [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md), matrix § operator probe runs |
-| Operator probe admin reads | read / mutate | `GET`/`DELETE` `/api/admin/operator-probes`… — operator session only; UI `/admin/observability` |
+| Operator probe admin reads | read / mutate | `GET`/`DELETE` `/api/admin/operator-probes`… — operator session **or** optional `OPERATOR_PROBE_ADMIN_SECRET` + `x-operator-probe-admin-key`; UI `/admin/observability`; [ADR_OPERATOR_PROBE_ADMIN_MACHINE_AUTH.md](./agent/ADR_OPERATOR_PROBE_ADMIN_MACHINE_AUTH.md) |
 
 **Retry semantics:** [ADR_IDEMPOTENCY_AND_RETRY.md](./agent/ADR_IDEMPOTENCY_AND_RETRY.md).
 

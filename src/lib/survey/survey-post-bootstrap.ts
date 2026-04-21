@@ -1,6 +1,11 @@
 import 'server-only';
 import { SignJWT, jwtVerify } from 'jose';
 
+/**
+ * Survey POST bootstrap JWT (optional `SURVEY_POST_REQUIRE_TOKEN`).
+ * Threat model and hardening backlog: ../../../docs/security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md
+ */
+
 const PURPOSE = 'survey_post';
 
 function getSecret(): Uint8Array {

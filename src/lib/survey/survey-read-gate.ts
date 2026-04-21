@@ -17,6 +17,12 @@ export type SurveyReadGateResult =
 /**
  * Production survey read APIs (visualization + approved quotes) may expose PII.
  * In production, deny unless explicitly opened or caller presents auth.
+ *
+ * **NODE_ENV foot-gun:** When `NODE_ENV` is not **`production`**, this function **short-circuits**
+ * and always allows reads (same as local dev). There is **no** separate “staging gate” flag.
+ * Any host with **real survey PII** that should enforce the read gate **must** run the app with
+ * **`NODE_ENV=production`** (and configure secrets / `SURVEY_VISUALIZATION_*` per docs). See
+ * [DEPLOYMENT.md](../../../DEPLOYMENT.md) and [admin/SURVEY_READ_GATING_RUNBOOK.md](../../../docs/admin/SURVEY_READ_GATING_RUNBOOK.md).
  */
 export async function checkSurveyReadGate(request: Request): Promise<SurveyReadGateResult> {
   if (process.env.NODE_ENV !== 'production') {

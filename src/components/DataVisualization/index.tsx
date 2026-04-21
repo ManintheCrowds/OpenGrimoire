@@ -59,7 +59,9 @@ export function DataVisualization() {
       className="absolute top-0 left-0 w-screen h-screen flex flex-col bg-white overflow-hidden"
       style={{
         aspectRatio: '16/9',
-        background: settings.isDarkMode ? '#0A0A0F' : 'white',
+        background: settings.isDarkMode
+          ? 'var(--opengrimoire-viz-shell-bg-dark)'
+          : 'var(--opengrimoire-viz-shell-bg-light)',
       }}
     >
       <VisualizationSurveyDataProvider>

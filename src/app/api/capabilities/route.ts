@@ -68,7 +68,8 @@ const CAPABILITIES = {
       api: 'POST /api/operator-probes/ingest; GET /api/admin/operator-probes; GET|DELETE /api/admin/operator-probes/:id',
       data_source: 'SQLite table operator_probe_runs (TTL via OPERATOR_PROBE_RETENTION_DAYS)',
       refresh: 'After POST ingest or delete; runner measures its own environment — not end-user browsers unless runner runs there',
-      reference_note: 'See ARCHITECTURE_REST_CONTRACT.md matrix row; AGENT_INTEGRATION.md headers. Ingest: operator session cookie or OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key.',
+      reference_note:
+        'See ARCHITECTURE_REST_CONTRACT.md matrix row; AGENT_INTEGRATION.md headers. Ingest: operator session or OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key. Admin list/detail/delete: session or optional OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key.',
     },
   ],
   ui_surfaces: [
@@ -104,6 +105,8 @@ const CAPABILITIES = {
     'Harness profiles: operator session cookie or x-alignment-context-key for catalog/CRUD/OpenHarness bundle; /api/harness-profiles/select is public for Sync Session startup',
     'POST /api/auth/login: rate limited 10 requests per 60s per IP (middleware; single process)',
     'OPERATOR_PROBE_INGEST_SECRET + header x-operator-probe-ingest-key for POST /api/operator-probes/ingest when runners have no operator cookie; optional OPERATOR_PROBE_RETENTION_DAYS (default 30)',
+    'Optional OPERATOR_PROBE_ADMIN_SECRET + header x-operator-probe-admin-key for GET|DELETE /api/admin/operator-probes… without operator session (never use x-alignment-context-key here)',
+    'Optional ACCESS_DENIED_INVALID_SECRET_LOG_PROBABILITY (0–1, default 1) and/or ACCESS_DENIED_INVALID_SECRET_PER_IP_COOLDOWN_MS for access_denied JSON logs on 401 invalid_secret only — see access-denial-log.ts',
   ],
   routes: [
     {
@@ -176,12 +179,12 @@ const CAPABILITIES = {
     {
       path: '/api/admin/operator-probes',
       methods: ['GET'],
-      auth: 'OpenGrimoire operator session cookie',
+      auth: 'OpenGrimoire operator session cookie OR OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key when that env is set',
     },
     {
       path: '/api/admin/operator-probes/:id',
       methods: ['GET', 'DELETE'],
-      auth: 'OpenGrimoire operator session cookie',
+      auth: 'OpenGrimoire operator session cookie OR OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key when that env is set',
     },
     {
       path: '/api/operator-probes/ingest',

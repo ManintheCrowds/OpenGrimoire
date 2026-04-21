@@ -142,7 +142,7 @@ JSON body includes at least:
 
 | Status | Typical cause |
 |--------|----------------|
-| **400** | Invalid JSON, Zod validation (`issues`), answer mapping failure, missing/invalid Turnstile token when captcha enforced. |
+| **400** | Invalid JSON, Zod validation (`issues` — includes **`answers` over 64 rows**), answer mapping failure, missing/invalid Turnstile token when captcha enforced. |
 | **401** | `SURVEY_POST_REQUIRE_TOKEN=true` but missing/invalid **`x-survey-post-token`** (bootstrap from **`GET /api/survey/bootstrap-token`**). |
 | **409** | Unique constraint (e.g. duplicate email path for non-anonymous attendee). |
 | **503** | Token required but `SURVEY_POST_BOOTSTRAP_SECRET` unset; or captcha required but `TURNSTILE_SECRET_KEY` unset. |
@@ -156,7 +156,7 @@ JSON body includes at least:
 |-----------|------|
 | **Middleware rate limit** | Baseline throttle on `POST /api/survey` (per IP / process; see OPERATIONAL_TRADEOFFS). |
 | **Cloudflare Turnstile** | When enforced (`SURVEY_POST_CAPTCHA_REQUIRED` or production + secret set), body must include a valid **`turnstileToken`**; server site-verifies before DB write. |
-| **Bootstrap token** | When `SURVEY_POST_REQUIRE_TOKEN=true`, header **`x-survey-post-token`** must match token from **`GET /api/survey/bootstrap-token`** (same-origin UI typically fetches automatically). |
+| **Bootstrap token** | When `SURVEY_POST_REQUIRE_TOKEN=true`, header **`x-survey-post-token`** must match token from **`GET /api/survey/bootstrap-token`** (same-origin UI typically fetches automatically). **Threat model** (same-origin script vs cross-site vs server automation): [SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md](../security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md). |
 
 **Handler order** (401 vs 400 vs mapping errors): see [OPERATIONAL_TRADEOFFS.md](../engineering/OPERATIONAL_TRADEOFFS.md) § Survey POST handler order — agents should **not** treat all 4xx as “validation.”
 

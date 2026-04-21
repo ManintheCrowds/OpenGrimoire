@@ -21,9 +21,11 @@ const getSelectStyle = (isDarkMode: boolean): React.CSSProperties => ({
   WebkitAppearance: 'none',
   MozAppearance: 'none',
   background: 'none',
-  color: isDarkMode ? '#FFFFFF' : '#170F5F',
+  color: isDarkMode ? 'var(--opengrimoire-viz-on-brand-text)' : 'var(--opengrimoire-viz-primary-ink)',
   border: 0,
-  borderBottom: `4px solid ${isDarkMode ? '#FFFFFF' : '#170F5F'}`,
+  borderBottom: isDarkMode
+    ? '4px solid var(--opengrimoire-viz-on-brand-text)'
+    : '4px solid var(--opengrimoire-viz-primary-ink)',
   fontWeight: 700,
   paddingRight: 48,
   paddingLeft: 0,
@@ -41,8 +43,12 @@ export function QuestionSelector({
 }: QuestionSelectorProps) {
   const { settings } = useAppContext();
   const selectStyle = getSelectStyle(settings.isDarkMode);
-  const chevronColor = settings.isDarkMode ? '#FFFFFF' : '#170F5F';
-  const focusColor = settings.isDarkMode ? '#60A5FA' : '#1010EB';
+  const chevronColor = settings.isDarkMode
+    ? 'var(--opengrimoire-viz-on-brand-text)'
+    : 'var(--opengrimoire-viz-primary-ink)';
+  const focusColor = settings.isDarkMode
+    ? 'var(--opengrimoire-viz-focus-accent-dark)'
+    : 'var(--opengrimoire-viz-focus-accent-light)';
 
   return (
     <div 
@@ -121,13 +127,13 @@ export function QuestionSelector({
         .custom-select::-webkit-appearance { appearance: none; }
         .custom-select:focus { border-bottom-color: ${focusColor}; }
         .custom-select option {
-          background-color: ${settings.isDarkMode ? '#1f2937' : '#ffffff'};
-          color: ${settings.isDarkMode ? '#ffffff' : '#170F5F'};
+          background-color: ${settings.isDarkMode ? 'var(--opengrimoire-viz-option-surface-dark)' : 'var(--opengrimoire-viz-shell-bg-light)'};
+          color: ${settings.isDarkMode ? 'var(--opengrimoire-viz-on-brand-text)' : 'var(--opengrimoire-viz-primary-ink)'};
           padding: 8px 12px;
         }
         .custom-select option:disabled {
-          background-color: ${settings.isDarkMode ? '#374151' : '#f3f4f6'};
-          color: ${settings.isDarkMode ? '#9ca3af' : '#6b7280'};
+          background-color: ${settings.isDarkMode ? 'var(--opengrimoire-viz-option-surface-muted-dark)' : 'var(--opengrimoire-viz-option-surface-muted-light)'};
+          color: ${settings.isDarkMode ? 'var(--opengrimoire-viz-option-text-muted-dark)' : 'var(--opengrimoire-viz-option-text-muted-light)'};
         }
       `}</style>
     </div>

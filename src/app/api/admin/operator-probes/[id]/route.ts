@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
-import { logAccessDenied } from '@/lib/observability/access-denial-log';
+import { requireOperatorProbeAdminRoute } from '@/lib/operator-observability/admin-probe-auth';
 import {
   deleteOperatorProbeRunById,
   getOperatorProbeRunById,
@@ -9,14 +8,8 @@ import {
 type RouteContext = { params: { id: string } };
 
 export async function GET(request: Request, context: RouteContext) {
-  const auth = await requireOpenGrimoireAdminRoute();
+  const auth = await requireOperatorProbeAdminRoute(request);
   if (!auth.ok) {
-    logAccessDenied({
-      request,
-      gate: 'operator_observability_read',
-      reason: 'session_required',
-      status: 401,
-    });
     return auth.response;
   }
 
@@ -30,6 +23,7 @@ export async function GET(request: Request, context: RouteContext) {
     JSON.stringify({
       event: 'operator_probe_viewed',
       run_id: row.id,
+      auth_via: auth.via,
     })
   );
 
@@ -58,14 +52,8 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
-  const auth = await requireOpenGrimoireAdminRoute();
+  const auth = await requireOperatorProbeAdminRoute(request);
   if (!auth.ok) {
-    logAccessDenied({
-      request,
-      gate: 'operator_observability_read',
-      reason: 'session_required',
-      status: 401,
-    });
     return auth.response;
   }
 
@@ -84,6 +72,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     JSON.stringify({
       event: 'operator_probe_deleted',
       run_id: id,
+      auth_via: auth.via,
     })
   );
 

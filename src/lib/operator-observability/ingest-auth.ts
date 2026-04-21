@@ -8,9 +8,8 @@ import { logAccessDenied } from '@/lib/observability/access-denial-log';
 export const OPERATOR_PROBE_INGEST_HEADER = 'x-operator-probe-ingest-key';
 
 /**
- * Replay / tamper hardening (not implemented): signed body or HMAC(secret, timestamp + body) with
- * server-side skew window would reduce replay risk for header-only ingest keys on hostile networks.
- * Today: shared secret in header + timing-safe compare + middleware rate limit.
+ * Ingest auth posture (replay / tamper): shared header secret + timing-safe compare + middleware rate limit.
+ * Product decision and future HMAC/signed-body options: ARCHITECTURE_REST_CONTRACT.md § Operator probe ingest authentication (product posture).
  */
 
 export type OperatorProbeIngestGateResult =

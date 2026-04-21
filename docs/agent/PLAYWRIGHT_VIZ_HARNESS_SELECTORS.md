@@ -27,6 +27,15 @@ Playwright: `page.locator('#opengrimoire-viz-main-panel')`, etc.
 | `alluvial-diagram` | `/visualization` | Wrapper around Alluvial SVG |
 | `chord-diagram` | `/visualization` | Wrapper around Chord |
 | `opengrimoire-viz-mock-data-banner` | `/visualization` | Mock cohort banner ([`MockSurveyDataBanner`](../../src/components/DataVisualization/shared/MockSurveyDataBanner.tsx)) |
+| `opengrimoire-viz-constellation-route-loading` | `/constellation` | Next.js `dynamic()` loading shell ([`constellation/page.tsx`](../../src/app/constellation/page.tsx)) |
+| `opengrimoire-viz-constellation-root` | `/constellation` | Three shell ([`ConstellationView.tsx`](../../src/components/visualization/ConstellationView.tsx)) |
+| `opengrimoire-viz-constellation-loading` | `/constellation` | In-component loading |
+| `opengrimoire-viz-constellation-error` | `/constellation` | Error state |
+| `opengrimoire-viz-constellation-empty` | `/constellation` | No graph data |
+| `opengrimoire-viz-constellation-cluster-controls` | `/constellation` | CLUSTER BY button group |
+| `opengrimoire-viz-constellation-cluster-<attr>` | `/constellation` | One button per attribute key (`learning_style`, …) |
+| `opengrimoire-viz-constellation-autoplay` | `/constellation` | Attribute auto-cycle |
+| `opengrimoire-viz-constellation-test-data-toggle` | `/constellation` | Zustand `showTestData` (`all=0` query) |
 | `nav-link-visualization` | Global nav | Used in [`e2e/smoke.spec.ts`](../../e2e/smoke.spec.ts) |
 
 ---
@@ -44,15 +53,26 @@ From [`EnhancedVisualizationHeader`](../../src/components/DataVisualization/shar
 | `opengrimoire-viz-canvas` | Diagram panel ([`DataVisualization/index.tsx`](../../src/components/DataVisualization/index.tsx)) |
 | `opengrimoire-viz-mock-data-banner` | Same as test id (banner root) |
 
-Optional **`data-usage-hint`** on the header root documents operator intent for agents (string set in `DataVisualization`).
+**`data-usage-hint`:** On **`/visualization`**, when `usageHint` is passed into [`EnhancedVisualizationHeader`](../../src/components/DataVisualization/shared/EnhancedVisualizationHeader.tsx), the header root has **`data-usage-hint="<string>"`** together with **`data-region="opengrimoire-viz-header"`**. Documented in [AGENT_INTEGRATION.md](../AGENT_INTEGRATION.md) § Survey graph JSON.
 
 ---
 
 ## `/constellation` (Three / Zustand)
 
+| `data-testid` / `data-region` | Meaning |
+|-------------------------------|---------|
+| `opengrimoire-viz-constellation-route-loading` | Next.js `dynamic()` fallback while the client chunk loads ([`constellation/page.tsx`](../../src/app/constellation/page.tsx)) |
+| `opengrimoire-viz-constellation-root` | Constellation shell wrapper ([`ConstellationView.tsx`](../../src/components/visualization/ConstellationView.tsx)) |
+| `opengrimoire-viz-constellation-loading` | In-component fetch / process loading |
+| `opengrimoire-viz-constellation-error` | Error state (`role="alert"`) |
+| `opengrimoire-viz-constellation-empty` | No graph data |
+| `opengrimoire-viz-constellation-cluster-controls` | CLUSTER BY attribute buttons |
+| `opengrimoire-viz-constellation-autoplay` | Start / stop attribute cycling |
+| `opengrimoire-viz-constellation-test-data-toggle` | Zustand **`showTestData`** (demo rows on `GET` `all=0`) |
+
 - **Heading:** `getByRole('heading', { name: 'Constellation View' })` ([`constellation/page.tsx`](../../src/app/constellation/page.tsx)).
-- **Loading copy:** `getByText('Loading visualization...')` (dynamic import fallback).
-- **GL surface:** `canvas` (no `data-testid` on the WebGL layer today — exclude from axe; see OGAN-15 spec).
+- **Route loading:** Prefer `getByTestId('opengrimoire-viz-constellation-route-loading')` while the shell loads; it disappears when the chunk is ready (then assert heading or `opengrimoire-viz-constellation-root`).
+- **GL surface:** `canvas` (no stable `data-testid` on the WebGL layer — exclude from axe; see OGAN-15 spec).
 
 ---
 

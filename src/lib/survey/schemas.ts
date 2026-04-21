@@ -20,7 +20,10 @@ export const surveyPostBodySchema = z
     isAnonymous: z.boolean().optional().default(false),
     sessionType: z.string().trim().min(1).max(64).optional().default('profile'),
     questionnaireVersion: z.string().trim().min(1).max(32).optional().default('v1'),
-    answers: z.array(surveyAnswerRowSchema).min(1, 'At least one answer is required'),
+    answers: z
+      .array(surveyAnswerRowSchema)
+      .min(1, 'At least one answer is required')
+      .max(64, 'Too many answer rows'),
     harnessProfileId: z.string().uuid().optional(),
     /** Cloudflare Turnstile response when captcha enforcement is active. */
     turnstileToken: z.string().min(1).max(8000).optional(),

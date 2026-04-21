@@ -1,3 +1,7 @@
+/**
+ * Bottom “dot” nav between **`/visualization`** (survey charts) and **`/constellation`**.
+ * Mounted from [`VisualizationNavDots`](./VisualizationNavDots.tsx) on those routes (OA-FR-2 §1.7).
+ */
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -26,7 +30,7 @@ export function NavigationDots({ currentPath, className }: NavigationDotsProps) 
   return (
     <div
       className={cn(
-        'fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full px-4 py-2 shadow-lg',
+        'fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full px-4 py-2 shadow-lg',
         className
       )}
     >

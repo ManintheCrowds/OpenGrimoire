@@ -42,7 +42,7 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   onNodeHover,
 }) => {
   const [isAutoPlay, setIsAutoPlay] = useState(false);
-  const { mode, setMode, nodes, edges, selectedNode, hoveredNode, setSelectedNode, setHoveredNode, isLoading, error, showTestData, toggleShowTestData, updateVisualization } = useVisualizationStore();
+  const { mode, setMode, nodes, edges, selectedNode, hoveredNode, setSelectedNode, setHoveredNode, isLoading, error, showTestData, toggleShowTestData } = useVisualizationStore();
   const modes: VisualizationMode[] = ['learning_style', 'shaped_by', 'peak_performance', 'motivation'];
   const autoPlayInterval = useRef<NodeJS.Timeout>();
   const [nodePositions, setNodePositions] = useState<{ [id: string]: [number, number, number] }>({});
@@ -108,7 +108,7 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
 
   // All useEffect hooks must be here, before any conditional logic
   useEffect(() => {
-    updateVisualization();
+    void useVisualizationStore.getState().updateVisualization();
   }, [showTestData]);
 
   useEffect(() => {

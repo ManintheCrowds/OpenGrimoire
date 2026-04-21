@@ -54,15 +54,19 @@ The Next.js app **does not** compact, summarize, or prune **agent or IDE chat tr
 | Alignment CLI | **`node scripts/alignment-context-cli.mjs`** (`list`, `create`, `patch`, `delete`) |
 | Study / SRS (flashcards) | **`GET`/`POST` `/api/study/decks`**, **`GET`/`POST` `/api/study/decks/:deckId/cards`**, **`POST` `/api/study/cards/:cardId/review`** — operator session cookie **or** **`x-alignment-context-key`** when alignment secret is set. CSV export: **`npm run study:export -- --output ./export.csv`**. See [docs/learning/README.md](./learning/README.md). |
 | Clarification queue (async agent → human) | **`GET`/`POST` `/api/clarification-requests`**, **`GET`/`PATCH` `/api/clarification-requests/:id`** — **`x-alignment-context-key`** when using alignment secret, or **`x-clarification-queue-key`** when **`CLARIFICATION_QUEUE_API_SECRET`** is set (recommended for production harnesses that only poll clarification). Operator UI: **`/admin/clarification-queue`**. See [docs/agent/CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md). |
-| Sync Session handoff (IDs after submit) | Successful **`POST /api/survey`** returns **`attendeeId`**, **`surveyResponseId`**, and **`harnessProfileId`** — semantics, ledger correlation, and response contract in [SYNC_SESSION_HANDOFF.md](./agent/SYNC_SESSION_HANDOFF.md) §6–§7. Profile vs alignment context: §6.3. |
+| Sync Session handoff (IDs after submit) | Successful **`POST /api/survey`** returns **`attendeeId`**, **`surveyResponseId`**, and **`harnessProfileId`** — semantics, ledger correlation, and response contract in [SYNC_SESSION_HANDOFF.md](./agent/SYNC_SESSION_HANDOFF.md) §6–§7. Profile vs alignment context: §6.3. Optional **`SURVEY_POST_REQUIRE_TOKEN`** + bootstrap JWT: [security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md](./security/SURVEY_POST_BOOTSTRAP_THREAT_MODEL.md). |
 | Machine-readable routes | **`GET /api/capabilities`** — human UI: **`/capabilities`** |
 | Alignment secret | Set **`ALIGNMENT_CONTEXT_API_SECRET`**; send header **`x-alignment-context-key`** on each public alignment request when enforced |
 | Clarification secret (optional) | Set **`CLARIFICATION_QUEUE_API_SECRET`**; send **`x-clarification-queue-key`** on `/api/clarification-requests` only. **When unset**, clarification uses the **same** secret and header as alignment (one key gates both surfaces). Split keys to limit blast radius if alignment automation and clarification automation are owned by different systems. |
-| Survey read escape hatch | **`ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true`** lets **`x-alignment-context-key`** satisfy the production gate for **`GET /api/survey/visualization`** and **`GET /api/survey/approved-qualities`** (PII). **Default off.** Prefer **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`** for read-only survey data so a leaked alignment key does not automatically imply survey PII access. |
+| Survey read escape hatch | **`ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ=true`** lets **`x-alignment-context-key`** satisfy the production gate for **`GET /api/survey/visualization`** and **`GET /api/survey/approved-qualities`** (PII). **Default off.** Prefer **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`** for read-only survey data so a leaked alignment key does not automatically imply survey PII access. **Operators:** checklist + blast-radius order in [admin/SURVEY_READ_GATING_RUNBOOK.md](./admin/SURVEY_READ_GATING_RUNBOOK.md). |
 | Brain map | **`GET /api/brain-map/graph`** only (not bare `/brain-map-graph.json`); when **`BRAIN_MAP_SECRET`** is set: **`x-brain-map-key`** matching the secret **or** operator session cookie (same-origin UI sends **`credentials: 'include'`**) |
-| Operator observability (probe runs) | **`POST /api/operator-probes/ingest`** — operator session **`credentials: 'include'`** **or** **`OPERATOR_PROBE_INGEST_SECRET`** + header **`x-operator-probe-ingest-key`**. **`GET`** list / **`GET`** detail / **`DELETE`** via **`/api/admin/operator-probes`** (session only). UI **`/admin/observability`**. `target_host` must be on the server allowlist (see contract). |
+| Operator observability (probe runs) | **`POST /api/operator-probes/ingest`** — operator session **`credentials: 'include'`** **or** **`OPERATOR_PROBE_INGEST_SECRET`** + header **`x-operator-probe-ingest-key`**. **`GET`** list / **`GET`** detail / **`DELETE`** via **`/api/admin/operator-probes`** — operator session **or**, when **`OPERATOR_PROBE_ADMIN_SECRET`** is set, **`x-operator-probe-admin-key`** (same value as env; **do not** reuse **`ALIGNMENT_CONTEXT_API_SECRET`**). UI **`/admin/observability`**. `target_host` must be on the server allowlist (see contract). |
 | Admin / operator | **`POST /api/auth/login`** with password; session cookie (**`OPENGRIMOIRE_SESSION_SECRET`**, **`OPENGRIMOIRE_ADMIN_PASSWORD`** or hash) — see [OPENGRIMOIRE_ADMIN_ROLE.md](./admin/OPENGRIMOIRE_ADMIN_ROLE.md) |
-| Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`**. Development is unrestricted. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints. **CI / local prod matrix:** `npm run verify:survey-read-prod` ([`scripts/survey-read-gate-prod-smoke.mjs`](../scripts/survey-read-gate-prod-smoke.mjs)); workflow [`.github/workflows/survey-visualization-prod-smoke.yml`](../.github/workflows/survey-visualization-prod-smoke.yml). |
+| Survey reads (PII) in production | **`GET /api/survey/visualization`**, **`GET /api/survey/approved-qualities`** require admin session, alignment header, **`SURVEY_VISUALIZATION_API_SECRET`** + **`x-survey-visualization-key`**, or **`SURVEY_VISUALIZATION_ALLOW_PUBLIC=true`** when **`NODE_ENV=production`**. If **`NODE_ENV`** is not **`production`**, the read gate is **not** enforced (open). **Staging with real data:** use **`NODE_ENV=production`** for production semantics. Details: [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) § Survey read endpoints; [admin/SURVEY_READ_GATING_RUNBOOK.md](./admin/SURVEY_READ_GATING_RUNBOOK.md) § NODE_ENV and staging. **CI / local prod matrix:** `npm run verify:survey-read-prod` ([`scripts/survey-read-gate-prod-smoke.mjs`](../scripts/survey-read-gate-prod-smoke.mjs)); workflow [`.github/workflows/survey-visualization-prod-smoke.yml`](../.github/workflows/survey-visualization-prod-smoke.yml). |
+
+### Survey read gating (operators)
+
+Production survey read paths combine **session**, optional **visualization secret** header, optional **public demo** flag, and an optional **alignment-key escape hatch** (`ALIGNMENT_CONTEXT_KEY_ALLOWS_SURVEY_READ`). **Before changing env:** read [admin/SURVEY_READ_GATING_RUNBOOK.md](./admin/SURVEY_READ_GATING_RUNBOOK.md) — evaluation order, blast radius of `x-alignment-context-key`, and checklist to prefer **`x-survey-visualization-key`** for automation.
 
 ## Canonical naming (UX vs system)
 
@@ -89,8 +93,12 @@ When multiple local services run from the same workspace, prefer resolving OpenG
 | `x-clarification-queue-key` | When `CLARIFICATION_QUEUE_API_SECRET` is set: must match for `/api/clarification-requests` and `/api/clarification-requests/:id` (public routes only). |
 | `x-brain-map-key` | When `BRAIN_MAP_SECRET` is set: must match for programmatic access, unless the request uses a valid operator session cookie instead (`GET /api/brain-map/graph`). |
 | `x-operator-probe-ingest-key` | When `OPERATOR_PROBE_INGEST_SECRET` is set: must match for **`POST /api/operator-probes/ingest`** without operator session cookie (CI/runner ingest). **Do not** reuse `ALIGNMENT_CONTEXT_API_SECRET` for this surface. |
+| `x-operator-probe-admin-key` | When `OPERATOR_PROBE_ADMIN_SECRET` is set: must match for **`GET`/`DELETE`** **`/api/admin/operator-probes`**… without operator session (harness list/delete). **Do not** reuse `ALIGNMENT_CONTEXT_API_SECRET` or the ingest secret for this surface. |
+| `x-survey-visualization-key` | When `SURVEY_VISUALIZATION_API_SECRET` is set: must match for **`GET /api/survey/visualization`** and **`GET /api/survey/approved-qualities`** in production when using the **dedicated read secret** path (preferred for automation vs widening alignment key blast radius). See [admin/SURVEY_READ_GATING_RUNBOOK.md](./admin/SURVEY_READ_GATING_RUNBOOK.md). |
 
 **Brain map JSON:** Do not fetch `/brain-map-graph.json` or `/brain-map-graph.local.json` from the site root — those paths return **404**. Use **`GET /api/brain-map/graph`** only.
+
+<a id="operator-probe-ingest"></a>
 
 ### Operator probe ingest (curl)
 
@@ -99,6 +107,14 @@ curl -sS -X POST "$BASE/api/operator-probes/ingest" \
   -H "Content-Type: application/json" \
   -H "x-operator-probe-ingest-key: $OPERATOR_PROBE_INGEST_SECRET" \
   -d '{"probe_type":"cursor_path_analysis","target_host":"api.cursor.com","runner_id":"my-laptop","runner_type":"laptop_script","summary":{"ok":true,"hops":5}}'
+```
+
+When **`OPERATOR_PROBE_ADMIN_SECRET`** is set, list/detail/delete without a browser session:
+
+```bash
+curl -sS "$BASE/api/admin/operator-probes" -H "x-operator-probe-admin-key: $OPERATOR_PROBE_ADMIN_SECRET"
+curl -sS "$BASE/api/admin/operator-probes/$RUN_ID" -H "x-operator-probe-admin-key: $OPERATOR_PROBE_ADMIN_SECRET"
+curl -sS -X DELETE "$BASE/api/admin/operator-probes/$RUN_ID" -H "x-operator-probe-admin-key: $OPERATOR_PROBE_ADMIN_SECRET"
 ```
 
 ## Local development: alignment API
@@ -112,9 +128,10 @@ Alternatively, set a real `ALIGNMENT_CONTEXT_API_SECRET` and send it on each req
 ## Machine-readable surface
 
 - **`GET /api/capabilities`** — routes, auth hints, **`workflows[]`**, **`ui_surfaces[]`** (survey viz UI ↔ query patterns), workflow notes (hand-maintained; same PR as API changes when possible).
+- **Regression gates:** when you change this handler or add routes/workflows agents rely on, run **`npm run verify:capabilities`** and **`npm run verify:openapi`** locally (also part of `npm run verify`). Dedupe with **OGAN-02** when the same HTTP surface is tracked there. (**OG-OH-13** / **OA-1** discipline.)
 - Human-friendly view: **`/capabilities`** in the app.
 
-**Observability:** There is **no** typed agent event or progress stream from this app. **Operator probe runs** are an optional, **internal** SQLite-backed surface: **`POST /api/operator-probes/ingest`** (session or ingest secret) stores allowlisted connectivity/path summaries for review under **`/admin/observability`** — see the quick reference table above and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). Server-side audit for auth failures remains **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). **Transcript compaction** is **out of scope** for the server (see § Agent transcripts above).
+**Observability:** There is **no** typed agent event or progress stream from this app. **Operator probe runs** are an optional, **internal** SQLite-backed surface: **`POST /api/operator-probes/ingest`** (session or ingest secret) stores allowlisted connectivity/path summaries for review under **`/admin/observability`** — see the quick reference table above and [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md). Product vision for growing this area as an **internal monitoring hub** (observation, reflections, AI ops—without becoming a SIEM): [docs/plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md](./plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md) and [OPENGRIMOIRE_SYSTEMS_INVENTORY.md](./OPENGRIMOIRE_SYSTEMS_INVENTORY.md#internal-monitoring-hub-product-vision). Server-side audit for auth failures remains **structured JSON lines** (`event: access_denied`); see [engineering/OPERATOR_LOG_FIELDS.md](./engineering/OPERATOR_LOG_FIELDS.md). **Transcript compaction** is **out of scope** for the server (see § Agent transcripts above).
 
 ## CLI (alignment context)
 

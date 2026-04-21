@@ -8,7 +8,7 @@
 
 **Normative API/agent rules:** [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) (strict public REST, entity × HTTP × auth matrix, UI freshness tiers, verification appendix). **Integration paths:** [agent/INTEGRATION_PATHS.md](./agent/INTEGRATION_PATHS.md).
 
-**Last reviewed:** 2026-04-20
+**Last reviewed:** 2026-04-23
 
 **Persistence:** Survey, alignment, clarification, study, and moderation data use **local SQLite** only (`OPENGRIMOIRE_DB_PATH`, default `data/opengrimoire.sqlite`). There is **no** Supabase or hosted Postgres in the supported runtime path.
 
@@ -103,6 +103,12 @@ The **Karpathy-style LLM Wiki** is **not** implemented inside this Next.js repo.
 
 ---
 
+## Internal monitoring hub (product vision)
+
+**Charter (1p):** [docs/plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md](./plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md) — scope (observation, reflections, AI ops), non-goals (not a SIEM), retention/privacy pointers, and integration with Brain Map, **`GET /api/capabilities`**, and moderation / **`access_denied`** streams. **Execution slice (2026-04-23):** **Operations** admin header nav + `/admin` hub callout (**OG-OH-11**); correlation spike spec (**OG-OH-12** — [plan](./plans/2026-04-23-og-oh-12-correlation-spike.md)); capabilities/OpenAPI verify gates documented (**OG-OH-13**). Harness rows archived to MiscRepos `completed_tasks.md`.
+
+---
+
 ## OpenGrimoire — application surfaces
 
 
@@ -115,7 +121,7 @@ The **Karpathy-style LLM Wiki** is **not** implemented inside this Next.js repo.
 | Route           | `/wiki`, `/wiki/*`                                                   | Phase B read-only vault mirror (catch-all segment); see [WIKI_MIRROR.md](./WIKI_MIRROR.md)                                                                                                                                                     |
 | Route           | `/context-atlas`, `/brain-map`                                       | Context graph UI (same app); **GUI action map:** [GUI_ACTION_MAP_BRAIN_MAP.md](GUI_ACTION_MAP_BRAIN_MAP.md)                                                                                                                                    |
 | Route           | `/operator-intake`, `/survey`                                        | Sync Session form → `POST /api/survey` (SQLite)                                                                                                                                                                                                |
-| Route           | `/admin`, `/admin/alignment`, `/admin/clarification-queue`, `/admin/controls`, `/admin/observability`, `/admin/observability/[id]` | Operator console; needs `OPENGRIMOIRE_SESSION_SECRET` + operator password (see `.env.example`). **Clarification queue** = agent questions inbox (distinct from Sync Session). **Observability** = operator probes / internal monitoring hub   |
+| Route           | `/admin`, `/admin/alignment`, `/admin/clarification-queue`, `/admin/controls`, `/admin/observability`, `/admin/observability/[id]` | Operator console; needs `OPENGRIMOIRE_SESSION_SECRET` + operator password (see `.env.example`). **Clarification queue** = agent questions inbox (distinct from Sync Session). **Observability** = operator probes; **internal monitoring hub** vision: [charter](./plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md) + § [Internal monitoring hub (product vision)](#internal-monitoring-hub-product-vision) above   |
 | Route           | `/test`, `/test-sqlite`, `/test-chord`, `/test-context`               | Dev / diagnostic pages; gated in production like other `/test*` routes; authoritative list is enforced by `verify:route-index` (see [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md))                                            |
 | Static data     | `public/brain-map-graph.json`                                        | Served to viewer; regenerate via build script                                                                                                                                                                                                  |
 | API             | `GET /api/brain-map/graph`                                           | Serves graph JSON                                                                                                                                                                                                                              |
@@ -179,6 +185,7 @@ Env overrides for brain map: `CURSOR_STATE_DIRS`, `CURSOR_STATE_DIR_LABELS`, `BR
 | `docs/AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md`                           | Agent-native gap report vs contract                                                    |
 | `docs/OPEN_GRIMOIRE_LOCAL_FIRST_INTEGRATION.md`                     | OpenGrimoire trust/context local-first integration blueprint                           |
 | `docs/OPENGRIMOIRE_SYSTEMS_INVENTORY.md` (LLM Wiki vs OpenGrimoire) | Phase A brain map vs Phase B static wiki mirror; vault is SSOT                         |
+| `docs/plans/2026-04-23-opengrimoire-internal-monitoring-hub-charter.md` | Internal monitoring hub vision (OG-OH-10); links to contract + capabilities          |
 | `docs/learning/README.md`                                           | Study / SRS API + CSV export for Anki; links to MiscRepos spaced-repetition references |
 | `DEPLOYMENT.md`                                                     | Deploy notes                                                                           |
 

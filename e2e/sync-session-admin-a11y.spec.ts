@@ -32,6 +32,7 @@ test.describe('Sync Session + admin axe (OG-GUI-04)', () => {
 
   test('/admin has no axe violations after login', async ({ page }) => {
     await loginAsAdmin(page);
+    await expect(page.getByTestId('nav-admin-operations-hub')).toBeVisible({ timeout: 20000 });
     await expect(page.getByRole('heading', { name: /Response Moderation Queue/i })).toBeVisible({
       timeout: 20000,
     });

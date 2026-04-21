@@ -53,19 +53,44 @@ export default function AdminPage() {
           <p className="mt-4 text-lg text-gray-600">
             Review and moderate survey responses to ensure appropriate content for visualization.
           </p>
-          <p className="mt-3 text-sm text-gray-500">
-            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/alignment">
-              Alignment context (operator CRUD)
-            </a>
-            {' · '}
-            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/clarification-queue">
-              Clarification queue (async agent questions)
-            </a>
-            {' · '}
-            <a className="text-blue-600 underline hover:text-blue-800" href="/admin/observability">
-              Operator observability (probe runs)
-            </a>
-          </p>
+          <section
+            className="mt-6 mx-auto max-w-2xl text-left rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 sm:px-5"
+            aria-labelledby="operations-hub-heading"
+            data-testid="admin-operations-hub-section"
+          >
+            <h2 id="operations-hub-heading" className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              Operations hub
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Related operator consoles—same destinations as the header <strong>Operations</strong> bar.
+            </p>
+            <ul className="mt-3 space-y-2 text-sm text-gray-800 list-disc list-inside">
+              <li>
+                <a className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/alignment">
+                  Alignment
+                </a>{' '}
+                — operator CRUD for alignment context
+              </li>
+              <li>
+                <a className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/clarification-queue">
+                  Clarification queue
+                </a>{' '}
+                — async agent questions inbox
+              </li>
+              <li>
+                <a className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/observability">
+                  Observability
+                </a>{' '}
+                — operator probe runs (SQLite-backed)
+              </li>
+              <li>
+                <a className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/controls">
+                  Controls
+                </a>{' '}
+                — admin controls surface
+              </li>
+            </ul>
+          </section>
         </div>
 
         <ApiDiscoveryMirror />

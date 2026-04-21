@@ -20,7 +20,10 @@ test.describe('Smoke tests', () => {
     // Operator intake (home grid card)
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
-    await page.getByTestId('home-card-operator-intake').click();
+    await Promise.all([
+      page.waitForURL(/\/operator-intake/),
+      page.getByTestId('home-card-operator-intake').click(),
+    ]);
     await expect(page).toHaveURL(/\/operator-intake/);
     await expect(page.getByTestId('sync-session-form-container')).toBeVisible();
 

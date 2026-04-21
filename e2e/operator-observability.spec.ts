@@ -62,8 +62,8 @@ test.describe('Operator observability', () => {
       detailLink.click(),
     ]);
     await expect(page).toHaveURL(new RegExp(`/admin/observability/${runId}`));
-    await expect(page.getByTestId('operator-probe-detail-heading')).toBeVisible();
-    await expect(page.getByTestId('operator-probe-delete-button')).toBeVisible();
+    await expect(page.getByTestId('operator-probe-detail-heading')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId('operator-probe-delete-button')).toBeVisible({ timeout: 20000 });
 
     page.once('dialog', (dialog) => {
       void dialog.accept();

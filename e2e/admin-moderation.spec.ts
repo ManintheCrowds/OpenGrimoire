@@ -22,6 +22,8 @@ function minimalSurveyBody() {
 }
 
 test.describe('Admin moderation API', () => {
+  /** SQLite + admin flows contend under `fullyParallel`; serialize to avoid timeouts. */
+  test.describe.configure({ mode: 'serial' });
   test('seed → queue contains row → PATCH approved → 401 without session → 401 alignment key only', async ({
     page,
     request,

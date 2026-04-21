@@ -358,7 +358,11 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   }
 
   if (error) {
-    return <div className="flex items-center justify-center w-full h-full text-red-500">{error}</div>;
+    return (
+      <div className="flex items-center justify-center w-full h-full text-red-800" role="alert">
+        {error}
+      </div>
+    );
   }
 
   if (!validNodes.length || !validEdges.length) {

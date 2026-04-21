@@ -34,7 +34,7 @@ Production builds typically run **`npm run build`** (and may run a subset of tes
 
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs **`npm run verify`** and **`npm run test:e2e`** on push and pull request to the default branch. Add separate **post-deploy** smokes only if you need live-URL checks; they are not a substitute for `npm run verify`.
 
-**Playwright:** Running `npx playwright test` **without** the dev server yields `ERR_CONNECTION_REFUSED` on `localhost:3001`. Use **`npm run test:e2e`** or **`npm run verify:e2e`** so `playwright.config.ts` **`webServer`** starts `npm run dev` (or set `PLAYWRIGHT_BASE_URL` to an already-running instance).
+**Playwright:** Running `npx playwright test` **without** the dev server yields `ERR_CONNECTION_REFUSED` on `localhost:3001`. Use **`npm run test:e2e`** or **`npm run verify:e2e`** so `playwright.config.ts` **`webServer`** starts `npm run dev` (or set `PLAYWRIGHT_BASE_URL` to an already-running instance). For a **targeted a11y-only** pass (Sync Session + admin surfaces and visualization/constellation shells, canvas excluded in the viz spec), use **`npm run test:e2e:a11y`**.
 
 ## Related
 

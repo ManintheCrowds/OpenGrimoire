@@ -2,7 +2,7 @@
 
 **Role:** Gap report and **harness-facing scorecard** vs [ARCHITECTURE_REST_CONTRACT.md](./ARCHITECTURE_REST_CONTRACT.md) and [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md). This file is **not** a substitute for those contracts.
 
-**Last updated:** 2026-04-23 (full eight-explore compound re-pass — see [§ Refresh 2026-04-23](#refresh-2026-04-23))
+**Last updated:** 2026-04-23 (full eight-explore compound re-pass — see [§ Refresh 2026-04-23](#refresh-2026-04-23); **AN1 harness closure** — OGAN-01 Playwright second-`GET` sub-proof waived doc-only, see [§ OGAN backlog — closure policy](#ogan-backlog--closure-policy-2026-04-18))
 
 ---
 
@@ -34,7 +34,7 @@
 | 3 Context injection | **4 / 8** context types present (re-score: `workflows` + `ui_surfaces` in `GET /api/capabilities` close part of prior gap) | 50% | ❌ |
 | 4 Shared workspace | Single SQLite + same GET gates; mitigations (mock banner, `surveyVisualizationFetch` SSOT) | **9 / 10** | ✅ |
 | 5 CRUD completeness | HTTP over entities touching viz (qualitative; see §5 table) | ~55% strict · ~80% viz-read-scoped | ⚠️ |
-| 6 UI integration | Survey POST / moderation → `dispatchSurveyDataChanged` → hook refetch; still no Playwright “second GET” proof; external writers out-of-band | **7 / 10** | ⚠️ |
+| 6 UI integration | Survey POST / moderation → `dispatchSurveyDataChanged` → hook refetch; Playwright second-`GET` assertion **waived doc-only (2026-04-23)** per § OGAN closure; external writers out-of-band | **7 / 10** | ⚠️ |
 | 7 Capability discovery | `GET /api/capabilities` **workflows** + **`ui_surfaces`** + `documentation.non_contractual_ui`; seven-mechanism rubric unchanged | **5 / 7** (~**71%**) | ⚠️ |
 | 8 Prompt-native features | **0 / 8** viz behaviors defined as LLM prompts (all CODE) | 0% prompt | ⚠️ (expected for code-first viz) |
 
@@ -103,7 +103,7 @@ Single **`OPENGRIMOIRE_DB_PATH`** SQLite; user and gated agent hit same **`getVi
 
 `useVisualizationData` and `useApprovedQuotes` refetch when `refreshToken` increments; both register `window` listener for **`OPENGRIMOIRE_SURVEY_DATA_CHANGED`** via `dispatchSurveyDataChanged` from `useSyncSessionForm` (POST success), `AdminPanel` (moderation PATCH / focus / refresh), per [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md). **No** poll/SSE for unrelated writers — external SQLite mutators must dispatch the same event or reload.
 
-**Score:** **7 / 10** (~**70%**) — revised **+1** vs table-as-of-2026-04-22 to match code strength and prior “revised upward” note; **remaining:** Playwright proof of second `GET` after event; no push for out-of-process writers.
+**Score:** **7 / 10** (~**70%**) — revised **+1** vs table-as-of-2026-04-22 to match code strength and prior “revised upward” note; **Waived (2026-04-23):** automated Playwright proof of second `GET` after `opengrimoire-survey-data-changed` (operator accepts shipped hooks + prior verification logs; see § OGAN **OGAN-01**). **Remaining:** no dedicated push for out-of-process writers beyond [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md).
 
 ---
 
@@ -127,7 +127,7 @@ Alluvial/Chord/constellation lab: **CODE** (React + D3/Three). **0 / 8** rows cl
 
 | Priority | Action | Principle |
 |----------|--------|-------------|
-| P1 | **Refetch** path for viz + quotes after survey POST / moderation — **shipped** via `OPENGRIMOIRE_SURVEY_DATA_CHANGED` listeners (`survey-post` on POST success; `moderation-patch` on admin PATCH success, 2026-04-18); **remaining:** Playwright proof of second `GET` + external-writer dispatch doc. | UI integration |
+| P1 | **Refetch** path for viz + quotes after survey POST / moderation — **shipped** via `OPENGRIMOIRE_SURVEY_DATA_CHANGED` listeners (`survey-post` on POST success; `moderation-patch` on admin PATCH success, 2026-04-18); Playwright second-`GET` proof **waived (2026-04-23)** — see § OGAN **OGAN-01**; **remaining:** external-writer / out-of-process SQLite dispatch doc. | UI integration |
 | P2 | Extend **`GET /api/capabilities`** with `workflows` / `ui_surfaces` for `/visualization`, `/constellation`, query semantics (`all` vs `showTestData`). | **Shipped (2026-04-19):** `ui_surfaces[]` + workflow `api` string; matrix row in `ARCHITECTURE_REST_CONTRACT.md`; `e2e/capabilities.spec.ts`. |
 | P3 | Optional **GET** returning rows + optional **precomputed graph** for constellation mode (or document “must run `processVisualizationData` locally”). | **Doc path shipped (2026-04-19):** `AGENT_INTEGRATION.md` § Survey graph JSON; optional API remains backlog if product asks. |
 | P4 | **Banner** when `isMockData` / empty API — kill silent mock confusion. | **Shipped (2026-04-19):** `/visualization/alluvial` + copy tweak + `e2e/visualization-mock-banner.spec.ts` (main `/visualization` already had banner). |
@@ -181,7 +181,7 @@ Alluvial/Chord/constellation lab: **CODE** (React + D3/Three). **0 / 8** rows cl
 |-----------|------------------------------|---------------------|
 | 3 Context injection | **3 / 8** (~38%) | **4 / 8** (~50%) — `workflows` + `ui_surfaces` on `GET /api/capabilities` count toward machine-readable context |
 | 4 Shared workspace | **8.5 / 10** | **9 / 10** — mock banner + `surveyVisualizationFetch` SSOT reduce silent-divergence risk; residual `all=1` mix + env gate bypass keep it below 10 |
-| 6 UI integration | **6 / 10** | **7 / 10** — align narrative with shipped `dispatchSurveyDataChanged` + hook listeners; still missing second-GET Playwright proof + external-writer story |
+| 6 UI integration | **6 / 10** | **7 / 10** — align narrative with shipped `dispatchSurveyDataChanged` + hook listeners; second-GET Playwright proof **waived doc-only (2026-04-23)**; external-writer story unchanged |
 | 1, 2, 5, 7, 8 | unchanged | unchanged |
 
 **Blended posture:** ~**57%** → ~**58%** (same neutral handling of Principle 8 as the summary table note).
@@ -196,7 +196,7 @@ Alluvial/Chord/constellation lab: **CODE** (React + D3/Three). **0 / 8** rows cl
 
 | ID | Default disposition | Notes |
 |----|---------------------|--------|
-| OGAN-01 | **Done (2026-04-18)** | In-app: POST + PATCH dispatch `opengrimoire-survey-data-changed`; viz + approved-quotes hooks refetch. **Remaining:** Playwright “second GET” proof ([OPENGRIMOIRE_FULL_REVIEW_REFRESH](./plans/OPENGRIMOIRE_FULL_REVIEW_REFRESH_2026-04-17.md) checklist). |
+| OGAN-01 | **Done (2026-04-18)** | In-app: POST + PATCH dispatch `opengrimoire-survey-data-changed`; viz + approved-quotes hooks refetch. **Waived (2026-04-23):** Playwright “second GET” proof — operator sign-off; shipped `CustomEvent` + hook refetch treated as sufficient for harness closure ([OPENGRIMOIRE_FULL_REVIEW_REFRESH](./plans/OPENGRIMOIRE_FULL_REVIEW_REFRESH_2026-04-17.md) §5 dim 1). |
 | OGAN-02 | **Done (2026-04-19)** | `ui_surfaces[]` + workflow updates + contract row + capabilities e2e — see [completed_tasks.md § PENDING_AGENT_NATIVE](../../../MiscRepos/.cursor/state/completed_tasks.md). |
 | OGAN-03 | **Done (2026-04-19)** | Doc-first closure: `AGENT_INTEGRATION.md` § Survey graph JSON + capabilities `agent_note` pointers; no graph bundle API. |
 | OGAN-04 | **Done (2026-04-19)** | Mock banner on `/visualization/alluvial`, copy, Playwright — see completed_tasks. |
@@ -214,9 +214,11 @@ Alluvial/Chord/constellation lab: **CODE** (React + D3/Three). **0 / 8** rows cl
 | OGAN-16 | **Done (2026-04-19)** | `e2e/visualization-constellation-network-shape.spec.ts` — see completed_tasks. |
 | OGAN-17 | **Done (2026-04-19)** | `docs/agent/PLAYWRIGHT_VIZ_HARNESS_SELECTORS.md` + OA-FR-2 / AGENT_INTEGRATION links — see completed_tasks. |
 
-**Wave 10 note:** MiscRepos **OG-GUI-*** (System 1 GUI release) is **closed** 2026-04-18 — see [gui-2026-04-16-opengrimoire-survey.md](./audit/gui-2026-04-16-opengrimoire-survey.md) § Flow evidence. **AN1** remains **pending** until the table above is executed or formally waived row-by-row.
+**Wave 10 note:** MiscRepos **OG-GUI-*** (System 1 GUI release) is **closed** 2026-04-18 — see [gui-2026-04-16-opengrimoire-survey.md](./audit/gui-2026-04-16-opengrimoire-survey.md) § Flow evidence.
 
-**Harness status (2026-04-21):** MiscRepos [**AN1** / **OG-PR-4** rows](../../../MiscRepos/.cursor/state/pending_tasks.md#pending_agent_native) stay **`pending`** until the operator sets **AN1** to **`done`** and runs **`split_done_tasks_to_completed.py`**, or documents a formal **waive**, and until **OG-PR-4** (compound **`/ce-review`** on the PR branch, if required) is satisfied per policy. Narrative read-only review on merged **`master`** and this cross-link are recorded in [`CE_REVIEW_DEFERRAL.md`](./audit/evidence/og-system2-mcp-wave/CE_REVIEW_DEFERRAL.md) § **OG-PR-4 status (2026-04-21)**.
+**AN1 harness closure (2026-04-23):** Each **OGAN-*** row above is **implemented**, **waived** (OGAN-01 Playwright second-`GET` sub-proof only), or **deferred** (OGAN-09/10). MiscRepos **AN1** is marked **`done`** and archived via **`split_done_tasks_to_completed.py`**.
+
+**Harness status (2026-04-23):** **AN1** is **`done`** in MiscRepos — see [completed_tasks.md § PENDING_AGENT_NATIVE](../../../MiscRepos/.cursor/state/completed_tasks.md#pending_agent_native). **OG-PR-4** remains **`pending`** until compound **`/ce-review`** on a merge-candidate PR branch or an explicit operator waive — narrative read-only review on **`master`** is recorded in [`CE_REVIEW_DEFERRAL.md`](./audit/evidence/og-system2-mcp-wave/CE_REVIEW_DEFERRAL.md) § **OG-PR-4 status**.
 
 **Security + audit extras:** Labeled **OGSEC-***, **OG-AUDIT-***, **OG-DV-***, **OG-GUI-AUDIT-*** rows from GUI/security audits live in MiscRepos [pending_tasks.md § PENDING_OPENGRIMOIRE_GUI_AUDIT_FOLLOWUPS](../../../MiscRepos/.cursor/state/pending_tasks.md#pending_opengrimoire_gui_audit_followups) (implement or `done` + `split_done_tasks_to_completed.py` independently of **AN1** unless tied to an **OGAN-*** closure). **Operator observability hub:** **OG-OH-*** (internal monitoring / reflections / AI ops charter) lives in [pending_tasks.md § PENDING_OPENGRIMOIRE_OBSERVABILITY_HUB](../../../MiscRepos/.cursor/state/pending_tasks.md#pending_opengrimoire_observability_hub).
 

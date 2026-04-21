@@ -95,7 +95,7 @@
 
 ### 1 — Task success
 
-- [ ] Add Playwright spec that **dispatches `opengrimoire-survey-data-changed`** (or uses real POST + moderation) and asserts second `GET` to `/api/survey/visualization` — closes observer gap for System 2 REQ-S2.VIZ-REF.
+- [x] ~~Add Playwright spec that **dispatches `opengrimoire-survey-data-changed`** (or uses real POST + moderation) and asserts second `GET` to `/api/survey/visualization`**~~ — **Waived (2026-04-23)** — operator doc sign-off; see [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) § *OGAN backlog — closure policy* row **OGAN-01** (harness **AN1** closure).
 
 ### 2 — Cognitive load
 

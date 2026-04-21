@@ -23,14 +23,14 @@ Automatable subset executed on OpenGrimoire **`master`** (agent session):
 - **CI:** `gh run list --workflow CI` shows **success** on latest `master` pushes (same commit family as viz / E2E fixes).
 - **Spot routes:** `npx playwright test e2e/visualization.spec.ts e2e/auth-alignment-constellation.spec.ts` exit **0** (covers `/visualization` + `/constellation` shells).
 
-**Not done here (operator-owned):** compound **`/ce-review`** on the merge-candidate PR branch; **AN1** waive or `split_done` — update MiscRepos [`pending_tasks.md`](../../../../../MiscRepos/.cursor/state/pending_tasks.md) when policy closes AN1.
+**Not done here (operator-owned):** compound **`/ce-review`** on the merge-candidate PR branch. **AN1** (2026-04-23): Playwright second-`GET` sub-proof under **OGAN-01** **waived doc-only**; harness row set **`done`** + `split_done_tasks_to_completed.py` per [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../../../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) § *OGAN backlog — closure policy* and § *AN1 harness closure*.
 
 ### OG-PR-4 status (2026-04-21)
 
-**Harness rows (`pending_tasks` § Post-OGAN PR / merge hygiene):** **OG-PR-4** and **AN1** remain **`pending`**. This section records what is **done vs still open** so trackers and plans stay aligned.
+**Harness rows (`pending_tasks` § Post-OGAN PR / merge hygiene):** **AN1** closed **2026-04-23** (waived Playwright second-`GET` sub-proof + `split_done`). **OG-PR-4** remains **`pending`**. This section records what is **done vs still open** so trackers and plans stay aligned.
 
 | Gate | Status | Evidence / next step |
 |------|--------|----------------------|
 | **OG-PR-1…3, 5, 6** (automatable hygiene) | **Done on merged `master` (agent session)** | [§ OG-PR closure verification (2026-04-21)](#og-pr-closure-verification-2026-04-21) — git clean, tracked paths, `npm run verify`, `npm run test:e2e`, CI, spot Playwright. |
 | **OG-PR-4** — compound **`/ce-review`** | **`pending` (operator)** | Policy still calls for compound **`/ce-review`** on the **merge-candidate PR branch** when that artifact is required. A **Cursor** session additionally produced a **`mode:report-only`** narrative review on **`master`** at tip equality with `origin/master` (empty strict diff) plus a supplemental slice from `a32c2e5` through `HEAD` for viz/nav/E2E/docs; **no blocking findings** were reported there. That narrative **does not replace** the PR-branch compound tool unless the operator explicitly accepts post-merge documentation as sufficient. |
-| **AN1** — agent-native closure | **`pending` (operator)** | [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../../../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) § *OGAN backlog — closure policy* lists row-level **OGAN-*** dispositions (including **defer** for OGAN-09/10). Harness closure still requires updating MiscRepos **`pending_tasks.md`**: set **AN1** to **`done`** and run **`split_done_tasks_to_completed.py`**, **or** record a formal **waive** per policy — do not infer closure from this note alone. |
+| **AN1** — agent-native closure | **`done` (2026-04-23)** | Formal **waive** of OGAN-01 Playwright second-`GET` sub-proof + harness **`done`** + **`split_done_tasks_to_completed.py`**; canonical copy in [AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md](../../../AGENT_NATIVE_AUDIT_OPENGRIMOIRE.md) § *AN1 harness closure* / *OGAN backlog — closure policy*. |

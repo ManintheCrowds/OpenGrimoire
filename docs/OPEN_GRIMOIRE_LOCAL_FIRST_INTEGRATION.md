@@ -27,6 +27,15 @@ Purpose: define how TrustGraph, OpenCompass (upstream), and OpenGrimoire concept
 
 **Context atlas scope:** The **`/context-atlas`** / **`/brain-map`** UI renders **graph JSON** from `GET /api/brain-map/graph` (optional OpenGrimoire **node/edge** metadata when present in the file). It does **not** embed alignment-context records or admin tables. Alignment is a **separate** surface (API + [`/admin/alignment`](../src/app/admin/alignment/page.tsx) when logged in). Agent-facing routes and headers: [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md).
 
+## Open Brain bridge (separate from `GET /api/brain-map/graph`)
+
+The handoff-derived **brain map** (nodes, co-access edges) and the **Open Brain** **structured memory service** (Postgres + pgvector, `POST /memory/*` ingest/search/context) are different systems. They must not be silently merged.
+
+- **Canonical operator graph** in this app remains the JSON consumed by `GET /api/brain-map/graph` — it is *not* replaced by the memory service.
+- The optional **Open Brain** service lives in the local-proto operator workspace: `local-proto/workspace/services/open-brain-memory/` (README, Docker, Alembic). The boundary and glossary: `local-proto/workspace/docs/adr/0001-open-brain-structured-memory-boundary.md` (sibling-clone path resolution is machine-specific; search those paths in your `GitHub/` or `e:/local-proto` layout).
+- To **link** a node from the file-backed graph to a row in the Open Brain `entities` table, set **`metadata.brain_map_node_id`** on the entity you ingest to the same string as **`nodes[].id`** in the brain map JSON (same id space as [alignment `linked_node_id`](./AGENT_INTEGRATION.md) when a row references a graph node). Ingestion is one-way and explicit (no automatic dual-write to SQLite or the vault).
+- The Karpathy **LLM Wiki** (Obsidian `LLM-Wiki/`) stays human SSOT; optional one-way export to ingest JSON: `local-proto/workspace/scripts/export_llm_wiki_to_ingest_json.py`.
+
 ## Optional schema extensions (non-breaking)
 
 Node/edge optional fields:

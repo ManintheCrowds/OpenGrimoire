@@ -299,6 +299,9 @@ export function AdminPanel() {
     if (typeof window === 'undefined') return;
     try {
       const raw = window.localStorage.getItem(COCKPIT_SESSION_KEY);
+      // #region agent log
+      fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H2',location:'src/components/AdminPanel/index.tsx:localStorageHydration',message:'Admin cockpit session raw state loaded',data:{hasRaw:Boolean(raw),rawLength:raw?.length ?? 0},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (!raw) {
         setSessionHydrated(true);
         return;
@@ -309,6 +312,9 @@ export function AdminPanel() {
         activeRightTab?: RightColumnTab;
         selectedResponseId?: string | null;
       };
+      // #region agent log
+      fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H2',location:'src/components/AdminPanel/index.tsx:localStorageParsed',message:'Admin cockpit session parsed active tab',data:{activeRightTab:parsed.activeRightTab ?? null,statusFilter:parsed.statusFilter ?? null,ageSort:parsed.ageSort ?? null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (parsed.statusFilter) setStatusFilter(parsed.statusFilter);
       if (parsed.ageSort) setAgeSort(parsed.ageSort);
       if (parsed.activeRightTab) setActiveRightTab(parsed.activeRightTab);
@@ -346,6 +352,18 @@ export function AdminPanel() {
       document.removeEventListener('visibilitychange', onVis);
     };
   }, [queryClient]);
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const tabs = Array.from(document.querySelectorAll('[data-testid="admin-right-tabs"] [role="tab"]')).map((tab) => ({
+      id: tab.id,
+      ariaSelected: tab.getAttribute('aria-selected'),
+      ariaControls: tab.getAttribute('aria-controls'),
+    }));
+    // #region agent log
+    fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H1,H3,H4',location:'src/components/AdminPanel/index.tsx:tabDomSnapshot',message:'Admin cockpit tab DOM aria snapshot',data:{activeRightTab,tabs,invalidValues:tabs.filter((tab)=>tab.ariaSelected !== 'true' && tab.ariaSelected !== 'false'),selectedCount:tabs.filter((tab)=>tab.ariaSelected === 'true').length},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [activeRightTab]);
 
   const handleModeration = (
     responseId: string,
@@ -559,134 +577,252 @@ export function AdminPanel() {
               role="tablist"
               aria-label="Cockpit detail tabs"
               data-testid="admin-right-tabs"
+              data-agent-debug-build="aria-literal-tabs-v2"
               className="grid grid-cols-2 gap-2 sm:grid-cols-3"
             >
-              <button
-                id="admin-right-tab-context"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'context'}
-                aria-controls="admin-right-tabpanel-context"
-                data-testid="admin-right-tab-context"
-                onClick={() => setActiveRightTab('context')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'context' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Context
-              </button>
-              <button
-                id="admin-right-tab-backlog"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'backlog'}
-                aria-controls="admin-right-tabpanel-backlog"
-                data-testid="admin-right-tab-backlog"
-                onClick={() => setActiveRightTab('backlog')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'backlog' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Backlog
-              </button>
-              <button
-                id="admin-right-tab-activity"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'activity'}
-                aria-controls="admin-right-tabpanel-activity"
-                data-testid="admin-right-tab-activity"
-                onClick={() => setActiveRightTab('activity')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'activity' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Activity
-              </button>
-              <button
-                id="admin-right-tab-health"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'health'}
-                aria-controls="admin-right-tabpanel-health"
-                data-testid="admin-right-tab-health"
-                onClick={() => setActiveRightTab('health')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'health' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Health
-              </button>
-              <button
-                id="admin-right-tab-jobs"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'jobs'}
-                aria-controls="admin-right-tabpanel-jobs"
-                data-testid="admin-right-tab-jobs"
-                onClick={() => setActiveRightTab('jobs')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'jobs' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Jobs
-              </button>
-              <button
-                id="admin-right-tab-ops"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'ops'}
-                aria-controls="admin-right-tabpanel-ops"
-                data-testid="admin-right-tab-ops"
-                onClick={() => setActiveRightTab('ops')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'ops' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Ops
-              </button>
-              <button
-                id="admin-right-tab-local-ai"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'local-ai'}
-                aria-controls="admin-right-tabpanel-local-ai"
-                data-testid="admin-right-tab-local-ai"
-                onClick={() => setActiveRightTab('local-ai')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'local-ai' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Local AI
-              </button>
-              <button
-                id="admin-right-tab-recipes"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'recipes'}
-                aria-controls="admin-right-tabpanel-recipes"
-                data-testid="admin-right-tab-recipes"
-                onClick={() => setActiveRightTab('recipes')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'recipes' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Recipes
-              </button>
-              <button
-                id="admin-right-tab-local-activity"
-                type="button"
-                role="tab"
-                aria-selected={activeRightTab === 'local-activity'}
-                aria-controls="admin-right-tabpanel-local-activity"
-                data-testid="admin-right-tab-local-activity"
-                onClick={() => setActiveRightTab('local-activity')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  activeRightTab === 'local-activity' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                Activity Log
-              </button>
+              {activeRightTab === 'context' ? (
+                <button
+                  id="admin-right-tab-context"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-context"
+                  data-testid="admin-right-tab-context"
+                  onClick={() => setActiveRightTab('context')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Context
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-context"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-context"
+                  data-testid="admin-right-tab-context"
+                  onClick={() => setActiveRightTab('context')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Context
+                </button>
+              )}
+              {activeRightTab === 'backlog' ? (
+                <button
+                  id="admin-right-tab-backlog"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-backlog"
+                  data-testid="admin-right-tab-backlog"
+                  onClick={() => setActiveRightTab('backlog')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Backlog
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-backlog"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-backlog"
+                  data-testid="admin-right-tab-backlog"
+                  onClick={() => setActiveRightTab('backlog')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Backlog
+                </button>
+              )}
+              {activeRightTab === 'activity' ? (
+                <button
+                  id="admin-right-tab-activity"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-activity"
+                  data-testid="admin-right-tab-activity"
+                  onClick={() => setActiveRightTab('activity')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Activity
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-activity"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-activity"
+                  data-testid="admin-right-tab-activity"
+                  onClick={() => setActiveRightTab('activity')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Activity
+                </button>
+              )}
+              {activeRightTab === 'health' ? (
+                <button
+                  id="admin-right-tab-health"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-health"
+                  data-testid="admin-right-tab-health"
+                  onClick={() => setActiveRightTab('health')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Health
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-health"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-health"
+                  data-testid="admin-right-tab-health"
+                  onClick={() => setActiveRightTab('health')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Health
+                </button>
+              )}
+              {activeRightTab === 'jobs' ? (
+                <button
+                  id="admin-right-tab-jobs"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-jobs"
+                  data-testid="admin-right-tab-jobs"
+                  onClick={() => setActiveRightTab('jobs')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Jobs
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-jobs"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-jobs"
+                  data-testid="admin-right-tab-jobs"
+                  onClick={() => setActiveRightTab('jobs')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Jobs
+                </button>
+              )}
+              {activeRightTab === 'ops' ? (
+                <button
+                  id="admin-right-tab-ops"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-ops"
+                  data-testid="admin-right-tab-ops"
+                  onClick={() => setActiveRightTab('ops')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Ops
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-ops"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-ops"
+                  data-testid="admin-right-tab-ops"
+                  onClick={() => setActiveRightTab('ops')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Ops
+                </button>
+              )}
+              {activeRightTab === 'local-ai' ? (
+                <button
+                  id="admin-right-tab-local-ai"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-local-ai"
+                  data-testid="admin-right-tab-local-ai"
+                  onClick={() => setActiveRightTab('local-ai')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Local AI
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-local-ai"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-local-ai"
+                  data-testid="admin-right-tab-local-ai"
+                  onClick={() => setActiveRightTab('local-ai')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Local AI
+                </button>
+              )}
+              {activeRightTab === 'recipes' ? (
+                <button
+                  id="admin-right-tab-recipes"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-recipes"
+                  data-testid="admin-right-tab-recipes"
+                  onClick={() => setActiveRightTab('recipes')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Recipes
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-recipes"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-recipes"
+                  data-testid="admin-right-tab-recipes"
+                  onClick={() => setActiveRightTab('recipes')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Recipes
+                </button>
+              )}
+              {activeRightTab === 'local-activity' ? (
+                <button
+                  id="admin-right-tab-local-activity"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="admin-right-tabpanel-local-activity"
+                  data-testid="admin-right-tab-local-activity"
+                  onClick={() => setActiveRightTab('local-activity')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                >
+                  Activity Log
+                </button>
+              ) : (
+                <button
+                  id="admin-right-tab-local-activity"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="admin-right-tabpanel-local-activity"
+                  data-testid="admin-right-tab-local-activity"
+                  onClick={() => setActiveRightTab('local-activity')}
+                  className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                >
+                  Activity Log
+                </button>
+              )}
             </div>
             {!selectedItem && activeRightTab === 'context' ? (
               <p className="text-sm text-gray-500" data-testid="moderation-detail-empty">

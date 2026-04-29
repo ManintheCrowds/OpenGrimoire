@@ -48,7 +48,7 @@ export function SyncSessionForm() {
             Sync Session
           </h1>
           <p className="text-[var(--brand-secondary-text)] text-sm mb-2" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
-            Structured human-to-agent one-on-one for alignment context capture.
+            A short alignment pass for turning human context into durable agent memory.
           </p>
         </div>
 
@@ -69,7 +69,11 @@ export function SyncSessionForm() {
         <div className="form-container" data-testid="sync-session-form-steps">
           {error && (
             <div className="message message-error" role="alert">
-              {error}
+              <p>{error}</p>
+              <p className="mt-2 text-xs opacity-90">
+                Operator checks: <code>/api/survey/bootstrap-token</code>, <code>/api/survey</code>, rate limit,
+                and <code>OPENGRIMOIRE_DB_PATH</code>.
+              </p>
             </div>
           )}
 

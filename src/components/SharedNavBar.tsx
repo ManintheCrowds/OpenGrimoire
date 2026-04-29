@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems: { href: string; label: string; testId?: string }[] = [
-  { href: '/', label: 'Home' },
-  { href: '/context-atlas', label: 'Context graph' },
-  { href: '/wiki', label: 'LLM Wiki mirror' },
-  { href: '/visualization', label: 'Visualization' },
+  { href: '/', label: 'Base camp' },
+  { href: '/context-atlas', label: 'Context Atlas' },
+  { href: '/wiki', label: 'LLM Wiki' },
+  { href: '/visualization', label: 'Data Constellations' },
   { href: '/operator-intake', label: 'Sync Session', testId: 'nav-link-operator-intake' },
   { href: '/capabilities', label: 'Capabilities' },
-  { href: '/admin/controls', label: 'Admin' },
+  { href: '/admin', label: 'Operator Cockpit' },
+  { href: '/admin/controls', label: 'Controls' },
 ];
 
 export default function SharedNavBar() {
@@ -23,7 +24,12 @@ export default function SharedNavBar() {
       aria-label="Main navigation"
     >
       {navItems.map(({ href, label, testId }) => {
-        const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+        const isActive =
+          href === '/'
+            ? pathname === href
+            : href === '/admin'
+              ? pathname === href || pathname === '/admin/'
+              : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}

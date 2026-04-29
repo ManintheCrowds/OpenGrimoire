@@ -294,6 +294,21 @@ export default function BrainMapGraph() {
     [filteredData]
   );
 
+  const dataSourceSummary = useMemo(() => {
+    if (!data) return null;
+    const generated = data.generated ? new Date(data.generated) : null;
+    const sourceRoots = data.sourceRoots?.filter((root) => root.path || root.label) ?? [];
+    const vaultRoots = sourceRoots.filter((root) => /vault|obsidian|arc[_-]?forge/i.test(`${root.label} ${root.path}`));
+    return {
+      generatedLabel:
+        generated && !Number.isNaN(generated.getTime()) ? generated.toLocaleString() : data.generated || 'unknown',
+      nodeCount: data.nodes.length,
+      edgeCount: data.edges.length,
+      sourceRoots,
+      vaultRootCount: vaultRoots.length,
+    };
+  }, [data]);
+
   const renderGraph = useCallback(() => {
     if (!svgRef.current || !filteredData) return;
 
@@ -487,16 +502,42 @@ export default function BrainMapGraph() {
   return (
     <div className="flex h-full min-h-0 w-full max-w-full flex-col bg-gray-50">
       <div className="min-w-0 shrink-0 border-b bg-white px-3 py-2 sm:px-4">
-        <h1 className="text-base font-semibold text-gray-900 sm:text-lg">OpenGrimoire — context graph</h1>
+        <h1 className="text-base font-semibold text-gray-900 sm:text-lg">OpenGrimoire — Context Atlas</h1>
         <p className="text-xs text-gray-600 sm:text-sm">
-          Co-access across session journals and handoffs. After rebuilding JSON, use <strong>Refresh graph</strong>{' '}
-          below (or reload the page). Rebuild with{' '}
-          <code className="rounded bg-gray-100 px-1">python .cursor/scripts/build_brain_map.py</code> (from
-          portfolio-harness root). See <code className="rounded bg-gray-100 px-1">docs/BRAIN_MAP_SCHEMA.md</code>.
+          A generated map of handoffs, state files, and vault notes. Sync Session submissions go to SQLite; this
+          atlas updates only after rebuilding the brain-map JSON with the sibling{' '}
+          <code className="rounded bg-gray-100 px-1">MiscRepos/.cursor/scripts/build_brain_map.py</code> script.
         </p>
+        {dataSourceSummary && (
+          <div className="mt-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <span>
+                <strong>Generated:</strong> {dataSourceSummary.generatedLabel}
+              </span>
+              <span>
+                <strong>Nodes:</strong> {dataSourceSummary.nodeCount}
+              </span>
+              <span>
+                <strong>Edges:</strong> {dataSourceSummary.edgeCount}
+              </span>
+              <span>
+                <strong>Source roots:</strong> {dataSourceSummary.sourceRoots.length || 'none listed'}
+              </span>
+              <span>
+                <strong>Vault roots:</strong> {dataSourceSummary.vaultRootCount || 'not detected'}
+              </span>
+            </div>
+            {dataSourceSummary.sourceRoots.length > 0 && (
+              <p className="mt-1 truncate">
+                {dataSourceSummary.sourceRoots.map((root) => root.label || root.path).join(' / ')}
+              </p>
+            )}
+          </div>
+        )}
         {error && (
           <p className="mt-2 text-sm text-amber-800" role="alert">
-            Could not load graph from API ({error}). Showing placeholder graph.
+            Could not load graph from API ({error}). Showing a placeholder map. Check the generated JSON file,
+            `BRAIN_MAP_SECRET`, and the `/api/brain-map/graph` route.
           </p>
         )}
         {placeholderFromEmptyApi && (
@@ -505,12 +546,12 @@ export default function BrainMapGraph() {
             data-testid="brain-map-placeholder-hint"
             role="status"
           >
-            Placeholder graph — the API returned no nodes (<code className="rounded bg-gray-100 px-1">sessionCount: 0</code>).
-            Use Layer <strong>All</strong> or <strong>State</strong> (not Vault) to see sample nodes, or rebuild{' '}
-            <code className="rounded bg-gray-100 px-1">brain-map-graph.json</code> after citing{' '}
-            <code className="rounded bg-gray-100 px-1">.md</code> paths in handoffs/daily/decision-log (
-            <code className="rounded bg-gray-100 px-1">python .cursor/scripts/build_brain_map.py</code> from portfolio-harness
-            root).
+            Placeholder map — the API returned no nodes (<code className="rounded bg-gray-100 px-1">sessionCount: 0</code>).
+            Rebuild <code className="rounded bg-gray-100 px-1">brain-map-graph.local.json</code> after configuring{' '}
+            <code className="rounded bg-gray-100 px-1">CURSOR_STATE_DIRS</code> for handoffs and{' '}
+            <code className="rounded bg-gray-100 px-1">BRAIN_MAP_VAULT_ROOTS</code> for Arc_Forge/ObsidianVault.
+            Archived handoffs are included when the configured state root contains{' '}
+            <code className="rounded bg-gray-100 px-1">handoff_archive/*.md</code>.
           </p>
         )}
         {layerFilterEmpty && (

@@ -52,17 +52,18 @@ describe('syncSessionSubmitUserMessage', () => {
     const payload: SurveySubmitErrorPayload = {
       error: 'Survey post token required but server is not configured (SURVEY_POST_BOOTSTRAP_SECRET)',
     };
-    expect(syncSessionSubmitUserMessage(503, payload)).toContain('SURVEY_POST_BOOTSTRAP_SECRET');
+    const msg = syncSessionSubmitUserMessage(503, payload);
+    expect(msg).toContain('Sync Session intake is not configured yet');
+    expect(msg).toContain('SURVEY_POST_BOOTSTRAP_SECRET');
+    expect(msg).toContain('SQLite');
   });
 
-  it('uses message for other errors when present', () => {
+  it('uses operator-oriented copy for server errors', () => {
     const payload: SurveySubmitErrorPayload = { message: 'Custom server message' };
-    expect(syncSessionSubmitUserMessage(500, payload)).toBe('Custom server message');
+    expect(syncSessionSubmitUserMessage(500, payload)).toContain('server error');
   });
 
   it('falls back to generic for unknown 500', () => {
-    expect(syncSessionSubmitUserMessage(500, { error: 'Internal' })).toBe(
-      'An error occurred while submitting the form'
-    );
+    expect(syncSessionSubmitUserMessage(418, { error: 'Internal' })).toContain('could not save');
   });
 });

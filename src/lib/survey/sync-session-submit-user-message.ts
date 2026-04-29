@@ -59,15 +59,24 @@ export function syncSessionSubmitUserMessage(
       .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
       .map((s) => s.trim());
     if (parts.length > 0) {
-      return parts.join(' ');
+      return (
+        'Sync Session intake is not configured yet. ' +
+        parts.join(' ') +
+        ' Operator check: token, captcha, and SQLite environment settings.'
+      ).trim();
     }
+    return 'Sync Session intake is temporarily unavailable. Operator check: token, captcha, and SQLite environment settings.';
+  }
+
+  if (status >= 500) {
+    return 'Sync Session intake hit a server error. Your draft is still in this browser; wait a moment, then try again or ask an operator to check the intake logs.';
   }
 
   if (payload.message?.trim()) {
     return payload.message.trim();
   }
 
-  return 'An error occurred while submitting the form';
+  return 'Sync Session intake could not save this submission. Your draft is still in this browser; try again or ask an operator to check the intake logs.';
 }
 
 export const SYNC_SESSION_NETWORK_ERROR_MESSAGE =

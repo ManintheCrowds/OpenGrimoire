@@ -187,6 +187,41 @@ const CAPABILITIES = {
       auth: 'OpenGrimoire operator session cookie OR OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key when that env is set',
     },
     {
+      path: '/api/admin/activity',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/cockpit/health',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/cockpit/jobs',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/cockpit/ops',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/cockpit/local-ai/health',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie; read-only local runtime health snapshot',
+    },
+    {
+      path: '/api/admin/cockpit/local-ai/activity',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie; read-only local AI JSONL activity adapter',
+    },
+    {
+      path: '/api/admin/cockpit/workflow-recipes',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie; read-only curated local workflow recipes',
+    },
+    {
       path: '/api/operator-probes/ingest',
       methods: ['POST'],
       auth:

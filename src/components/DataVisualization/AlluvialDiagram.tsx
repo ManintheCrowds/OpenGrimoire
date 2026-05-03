@@ -454,23 +454,6 @@ export default function AlluvialDiagram({
     cycleCount: 0
   });
 
-  const setDistinctSource = useCallback((nextSource: string) => {
-    setCurrentSource(nextSource);
-    if (nextSource === currentTargetRef.current) {
-      const fallbackTarget = getFallbackFieldValue(nextSource, availableFields);
-      if (fallbackTarget) {
-        setCurrentTarget(fallbackTarget);
-        setLastCategoryChange({ source: nextSource, target: fallbackTarget });
-        onQuestionChange?.(nextSource, fallbackTarget);
-      }
-    }
-  }, [onQuestionChange]);
-
-  const setDistinctTarget = useCallback((nextTarget: string) => {
-    if (nextTarget === currentSourceRef.current) return;
-    setCurrentTarget(nextTarget);
-  }, []);
-
   // Check for reduced motion preference
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === 'undefined') return false;

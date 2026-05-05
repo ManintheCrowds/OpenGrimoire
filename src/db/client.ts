@@ -254,3 +254,9 @@ export function getDb() {
   drizzleInstance = drizzle(sqlite, { schema });
   return drizzleInstance;
 }
+
+export function resetDbForTests() {
+  sqliteInstance?.close();
+  sqliteInstance = null;
+  drizzleInstance = null;
+}

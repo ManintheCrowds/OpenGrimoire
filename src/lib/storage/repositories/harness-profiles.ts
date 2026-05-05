@@ -89,32 +89,31 @@ export function createHarnessProfile(input: Omit<HarnessProfileRow, 'id' | 'crea
   const db = getDb();
   const id = input.id ?? randomUUID();
   const ts = nowIso();
-  if (input.is_default) {
-    db.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
-  }
-  db.insert(harnessProfiles).values({
-    id,
-    name: input.name,
-    purpose: input.purpose,
-    questionStrategy: input.question_strategy,
-    riskPosture: input.risk_posture,
-    preferredClarificationModes: JSON.stringify(input.preferred_clarification_modes ?? []),
-    outputStyle: input.output_style,
-    isDefault: input.is_default,
-    createdAt: ts,
-    updatedAt: ts,
-  }).run();
-  const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
-  if (!row) throw new Error('Harness profile insert failed');
-  return rowToProfile(row);
+  return db.transaction((tx) => {
+    if (input.is_default) {
+      tx.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
+    }
+    tx.insert(harnessProfiles).values({
+      id,
+      name: input.name,
+      purpose: input.purpose,
+      questionStrategy: input.question_strategy,
+      riskPosture: input.risk_posture,
+      preferredClarificationModes: JSON.stringify(input.preferred_clarification_modes ?? []),
+      outputStyle: input.output_style,
+      isDefault: input.is_default,
+      createdAt: ts,
+      updatedAt: ts,
+    }).run();
+    const row = tx.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    if (!row) throw new Error('Harness profile insert failed');
+    return rowToProfile(row);
+  });
 }
 
 export function updateHarnessProfile(id: string, patch: Partial<Omit<HarnessProfileRow, 'id' | 'created_at' | 'updated_at'>>): HarnessProfileRow | null {
   const db = getDb();
   const ts = nowIso();
-  if (patch.is_default === true) {
-    db.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
-  }
   const set: Partial<typeof harnessProfiles.$inferInsert> = { updatedAt: ts };
   if (patch.name !== undefined) set.name = patch.name;
   if (patch.purpose !== undefined) set.purpose = patch.purpose;
@@ -126,10 +125,17 @@ export function updateHarnessProfile(id: string, patch: Partial<Omit<HarnessProf
   if (patch.output_style !== undefined) set.outputStyle = patch.output_style;
   if (patch.is_default !== undefined) set.isDefault = patch.is_default;
 
-  const result = db.update(harnessProfiles).set(set).where(eq(harnessProfiles.id, id)).run();
-  if (result.changes === 0) return null;
-  const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
-  return row ? rowToProfile(row) : null;
+  return db.transaction((tx) => {
+    const existing = tx.select({ id: harnessProfiles.id }).from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    if (!existing) return null;
+
+    if (patch.is_default === true) {
+      tx.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
+    }
+    tx.update(harnessProfiles).set(set).where(eq(harnessProfiles.id, id)).run();
+    const row = tx.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    return row ? rowToProfile(row) : null;
+  });
 }
 
 export function deleteHarnessProfile(id: string): boolean {

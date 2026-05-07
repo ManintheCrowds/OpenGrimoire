@@ -226,6 +226,8 @@ export default function BrainMapGraph() {
   const [data, setData] = useState<BrainMapData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('graph');
   const [layerFilter, setLayerFilter] = useState<LayerFilter>('all');
+  const [lastLayerBeforeAssist, setLastLayerBeforeAssist] = useState<LayerFilter | null>(null);
+  const [assistDismissed, setAssistDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
@@ -499,6 +501,19 @@ export default function BrainMapGraph() {
     [filteredData, selectedNode]
   );
 
+  const logUxAssistTelemetry = useCallback(async (summary: string, detail: string) => {
+    try {
+      await fetch('/api/admin/cockpit/local-ai/activity', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'ux_assist', summary, detail }),
+      });
+    } catch {
+      // telemetry failures should never block operator workflows
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-gray-50">
@@ -582,9 +597,60 @@ export default function BrainMapGraph() {
           </p>
         )}
         {layerFilterEmpty && (
-          <p className="mt-2 text-sm text-gray-600" role="status">
-            No nodes in this layer for the current filter. Choose <strong>All</strong> or another layer.
-          </p>
+          <div className="mt-2 rounded border border-blue-200 bg-blue-50 p-2 text-sm text-blue-900" role="status">
+            <p>
+              No nodes in this layer for the current filter.
+              <strong> AI suggestion:</strong> switch to <strong>All</strong> to restore full context.
+            </p>
+            {!assistDismissed ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                  onClick={() => {
+                    setLastLayerBeforeAssist(layerFilter);
+                    setLayerFilter('all');
+                    void logUxAssistTelemetry(
+                      'AI assist accepted: switched to All layer',
+                      `action=accept;from=${layerFilter};to=all;context=layer_empty`
+                    );
+                  }}
+                >
+                  Apply suggestion
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-100"
+                  onClick={() => {
+                    setAssistDismissed(true);
+                    void logUxAssistTelemetry(
+                      'AI assist dismissed: kept current layer',
+                      `action=dismiss;layer=${layerFilter};context=layer_empty`
+                    );
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-blue-800">Suggestion dismissed for this view.</p>
+            )}
+            {lastLayerBeforeAssist && layerFilter === 'all' && (
+              <button
+                type="button"
+                className="mt-2 rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-100"
+                onClick={() => {
+                  setLayerFilter(lastLayerBeforeAssist);
+                  void logUxAssistTelemetry(
+                    'AI assist undone: restored previous layer',
+                    `action=undo;restore=${lastLayerBeforeAssist};context=layer_empty`
+                  );
+                }}
+              >
+                Undo switch
+              </button>
+            )}
+          </div>
         )}
         <div
           className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-2"

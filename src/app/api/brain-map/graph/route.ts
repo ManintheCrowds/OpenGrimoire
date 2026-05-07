@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { createHash } from 'crypto';
 import {
   OPENGRIMOIRE_SESSION_COOKIE,
   verifyAdminSessionToken,
@@ -46,8 +47,50 @@ export async function GET(request: Request) {
       raw = await readFile(defaultPath, 'utf-8');
     }
     const graph = JSON.parse(raw);
+    const url = new URL(request.url);
+    const chunkSize = Math.max(0, Number.parseInt(url.searchParams.get('chunkSize') ?? '0', 10) || 0);
+    const chunkIndex = Math.max(0, Number.parseInt(url.searchParams.get('chunkIndex') ?? '0', 10) || 0);
+
+    const fingerprint = createHash('sha1').update(raw).digest('hex');
+    const etag = `W/\"brain-map-${fingerprint}\"`;
+    if (request.headers.get('if-none-match') === etag) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: {
+          ETag: etag,
+          'Cache-Control': 'public, max-age=0, must-revalidate',
+        },
+      });
+    }
+
+    if (chunkSize > 0) {
+      const nodeStart = chunkIndex * chunkSize;
+      const edgeStart = chunkIndex * chunkSize;
+      const chunked = {
+        ...graph,
+        nodes: graph.nodes.slice(nodeStart, nodeStart + chunkSize),
+        edges: graph.edges.slice(edgeStart, edgeStart + chunkSize),
+        chunkIndex,
+        chunkSize,
+        hasMoreNodes: nodeStart + chunkSize < graph.nodes.length,
+        hasMoreEdges: edgeStart + chunkSize < graph.edges.length,
+        fingerprint,
+      };
+      return NextResponse.json(chunked, {
+        headers: {
+          ETag: etag,
+          'Cache-Control': 'public, max-age=0, must-revalidate',
+          'X-Graph-Fingerprint': fingerprint,
+        },
+      });
+    }
+
     return NextResponse.json(graph, {
-      headers: { 'Cache-Control': 'no-store' },
+      headers: {
+        ETag: etag,
+        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'X-Graph-Fingerprint': fingerprint,
+      },
     });
   } catch {
     return NextResponse.json(

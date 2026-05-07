@@ -79,6 +79,7 @@ export interface BrainMapData {
 }
 
 type GraphNode = BrainMapNode & d3Force.SimulationNodeDatum;
+type LayoutPosition = { id: string; x: number; y: number };
 type GraphLink = Omit<BrainMapEdge, 'source' | 'target'> & d3Force.SimulationLinkDatum<GraphNode>;
 type AffectMetricKey =
   | 'concern_level'
@@ -236,6 +237,7 @@ export default function BrainMapGraph() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   /** True when API returned 200 but no nodes (empty build); UI shows placeholder graph — use All/State layer, or rebuild JSON. */
   const [placeholderFromEmptyApi, setPlaceholderFromEmptyApi] = useState(false);
+  const [layoutPositions, setLayoutPositions] = useState<Record<string, LayoutPosition>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -246,21 +248,45 @@ export default function BrainMapGraph() {
     }
     setLoading(true);
     setError(null);
-    const url = `/api/brain-map/graph?cb=${Date.now()}`;
-    fetch(url, { headers, credentials: 'include', cache: 'no-store' })
-      .then((res) => {
-        return res.ok ? res.json() : Promise.reject(new Error(`${res.status} ${res.statusText}`));
-      })
-      .then((graph: BrainMapData) => {
-        if (cancelled) return;
-        if (graph.nodes?.length > 0) {
-          setPlaceholderFromEmptyApi(false);
-          setData(graph);
-        } else {
-          setPlaceholderFromEmptyApi((graph.sessionCount ?? 0) === 0);
-          setData(EMPTY_GRAPH);
-        }
-      })
+    const chunkSize = 500;
+    const fetchChunk = async (chunkIndex: number): Promise<BrainMapData & { hasMoreNodes?: boolean; hasMoreEdges?: boolean }> => {
+      const url = `/api/brain-map/graph?chunkSize=${chunkSize}&chunkIndex=${chunkIndex}`;
+      const res = await fetch(url, { headers, credentials: 'include', cache: 'default' });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return res.json();
+    };
+
+    (async () => {
+      const chunks: BrainMapData[] = [];
+      let chunkIndex = 0;
+      while (!cancelled) {
+        const chunk = await fetchChunk(chunkIndex);
+        chunks.push(chunk);
+        const hasMore = Boolean(chunk.hasMoreNodes || chunk.hasMoreEdges);
+        if (!hasMore) break;
+        chunkIndex += 1;
+      }
+      if (cancelled) return;
+      const graph = chunks.reduce<BrainMapData>(
+        (acc, chunk) => ({
+          ...acc,
+          generated: chunk.generated,
+          sessionCount: chunk.sessionCount,
+          sourceRoots: chunk.sourceRoots,
+          nodes: acc.nodes.concat(chunk.nodes ?? []),
+          edges: acc.edges.concat(chunk.edges ?? []),
+        }),
+        { nodes: [], edges: [], generated: '', sessionCount: 0 }
+      );
+
+      if (graph.nodes?.length > 0) {
+        setPlaceholderFromEmptyApi(false);
+        setData(graph);
+      } else {
+        setPlaceholderFromEmptyApi((graph.sessionCount ?? 0) === 0);
+        setData(EMPTY_GRAPH);
+      }
+    })()
       .catch((err: unknown) => {
         if (cancelled) return;
         const msg = err instanceof Error ? err.message : 'Failed to load graph';
@@ -322,6 +348,22 @@ export default function BrainMapGraph() {
     return { state: 'stale', label: 'Stale (>72h)' };
   }, [data?.generated]);
 
+
+  useEffect(() => {
+    if (!filteredData || !svgRef.current || typeof Worker === 'undefined') return;
+    const worker = new Worker(new URL('./brainMapLayout.worker.ts', import.meta.url));
+    const width = svgRef.current.clientWidth || 800;
+    const height = svgRef.current.clientHeight || 600;
+    worker.postMessage({ nodes: filteredData.nodes, edges: filteredData.edges, width, height });
+    worker.onmessage = (event: MessageEvent<{ nodes: LayoutPosition[] }>) => {
+      const next: Record<string, LayoutPosition> = {};
+      for (const node of event.data.nodes) next[node.id] = node;
+      setLayoutPositions(next);
+      worker.terminate();
+    };
+    return () => worker.terminate();
+  }, [filteredData]);
+
   const renderGraph = useCallback(() => {
     if (!svgRef.current || !filteredData) return;
 
@@ -330,7 +372,7 @@ export default function BrainMapGraph() {
 
     select(svgRef.current).selectAll('*').remove();
 
-    const nodes: GraphNode[] = filteredData.nodes.map((n) => ({ ...n, x: 0, y: 0 }));
+    const nodes: GraphNode[] = filteredData.nodes.map((n) => ({ ...n, x: layoutPositions[n.id]?.x ?? 0, y: layoutPositions[n.id]?.y ?? 0 }));
     const links: GraphLink[] = filteredData.edges.map((e) => ({
       ...e,
       source: nodes.find((nn) => nn.id === e.source) ?? e.source,
@@ -477,7 +519,7 @@ export default function BrainMapGraph() {
     });
 
     return () => tooltip.remove();
-  }, [filteredData, affectOverlayMode, maxUnresolvedQuestions]);
+  }, [filteredData, affectOverlayMode, maxUnresolvedQuestions, layoutPositions]);
 
   useEffect(() => {
     renderGraph();

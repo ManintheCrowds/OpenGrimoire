@@ -192,6 +192,16 @@ const CAPABILITIES = {
       auth: 'OpenGrimoire operator session cookie',
     },
     {
+      path: '/api/admin/db/health',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/admin/db/lifecycle',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
       path: '/api/admin/cockpit/health',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie',

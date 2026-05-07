@@ -241,6 +241,15 @@ export function getSqlite(): Database.Database {
   ensureDataDir(dbPath);
   const sqlite = new Database(dbPath);
   sqlite.pragma('foreign_keys = ON');
+  sqlite.pragma('journal_mode = WAL');
+  const journalMode = String(sqlite.pragma('journal_mode', { simple: true }) ?? '').toUpperCase();
+  if (journalMode != 'WAL') {
+    console.warn(`[sqlite] Expected WAL mode but found ${journalMode || 'unknown'}`);
+  }
+  const integrity = String(sqlite.pragma('quick_check', { simple: true }) ?? '');
+  if (integrity !== 'ok') {
+    console.warn(`[sqlite] quick_check reported: ${integrity}`);
+  }
   runBootstrap(sqlite);
   sqliteInstance = sqlite;
   return sqlite;

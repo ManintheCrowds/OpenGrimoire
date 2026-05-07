@@ -30,6 +30,7 @@ export function SyncSessionForm() {
     formData,
     isSubmitting,
     error,
+    errorKind,
     updateFormData,
     nextStep,
     prevStep,
@@ -38,6 +39,7 @@ export function SyncSessionForm() {
 
   const CurrentStepComponent = steps[currentStep];
   const progress = ((currentStep + 1) / steps.length) * 100;
+  const showRetry = errorKind === 'network' || errorKind === 'submission_5xx' || errorKind === 'rate_limit';
 
   return (
     <div className="min-h-screen bg-[var(--brand-atmospheric-white)]" data-testid="sync-session-form-container">
@@ -70,10 +72,27 @@ export function SyncSessionForm() {
           {error && (
             <div className="message message-error" role="alert">
               <p>{error}</p>
+              {errorKind && (
+                <p className="mt-2 text-xs opacity-90" data-testid="sync-session-error-kind">
+                  Failure class: <code>{errorKind}</code>
+                </p>
+              )}
               <p className="mt-2 text-xs opacity-90">
                 Operator checks: <code>/api/survey/bootstrap-token</code>, <code>/api/survey</code>, rate limit,
                 and <code>OPENGRIMOIRE_DB_PATH</code>.
               </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {showRetry && (
+                  <button type="button" className="secondary-button" onClick={() => void submitForm()}>
+                    Retry submit
+                  </button>
+                )}
+                {errorKind === 'auth' || errorKind === 'bootstrap_token' ? (
+                  <button type="button" className="secondary-button" onClick={() => window.location.reload()}>
+                    Reload session
+                  </button>
+                ) : null}
+              </div>
             </div>
           )}
 

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { dispatchSurveyDataChanged } from '@/lib/survey/survey-data-change-event';
 import {
+  classifySyncSessionErrorKind,
   isLikelyNetworkFetchError,
   SYNC_SESSION_NETWORK_ERROR_MESSAGE,
   syncSessionSubmitUserMessage,
+  type SyncSessionErrorKind,
   type SurveySubmitErrorPayload,
 } from '@/lib/survey/sync-session-submit-user-message';
 import type { SyncSessionFormData } from './types';
@@ -59,6 +61,7 @@ export function useSyncSessionForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<SyncSessionErrorKind | null>(null);
   const [formData, setFormData] = useState<SyncSessionFormData>({
     first_name: '',
     is_anonymous: false,
@@ -131,6 +134,7 @@ export function useSyncSessionForm() {
     try {
       setIsSubmitting(true);
       setError(null);
+      setErrorKind(null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (postTokenRef.current) {
@@ -148,6 +152,7 @@ export function useSyncSessionForm() {
         payload = (await res.json()) as SurveySubmitErrorPayload;
       } catch {
         if (!res.ok) {
+          setErrorKind(classifySyncSessionErrorKind(res.status, {}));
           setError(
             syncSessionSubmitUserMessage(res.status, {}, {
               retryAfterSeconds: res.headers.get('Retry-After'),
@@ -160,6 +165,7 @@ export function useSyncSessionForm() {
       }
 
       if (!res.ok) {
+        setErrorKind(classifySyncSessionErrorKind(res.status, payload));
         setError(
           syncSessionSubmitUserMessage(res.status, payload, {
             retryAfterSeconds: res.status === 429 ? res.headers.get('Retry-After') : null,
@@ -173,8 +179,10 @@ export function useSyncSessionForm() {
     } catch (err) {
       console.error('Sync Session submission error:', err);
       if (isLikelyNetworkFetchError(err)) {
+        setErrorKind('network');
         setError(SYNC_SESSION_NETWORK_ERROR_MESSAGE);
       } else {
+        setErrorKind('unknown');
         setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
       }
     } finally {
@@ -187,6 +195,7 @@ export function useSyncSessionForm() {
     formData,
     isSubmitting,
     error,
+    errorKind,
     updateFormData,
     nextStep,
     prevStep,

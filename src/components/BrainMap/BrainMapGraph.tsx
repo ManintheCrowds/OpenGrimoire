@@ -219,6 +219,7 @@ function filterGraphByLayer(data: BrainMapData, layer: LayerFilter): BrainMapDat
 }
 
 type ViewMode = 'graph' | 'table';
+type FreshnessState = 'fresh' | 'aging' | 'stale' | 'unknown';
 
 export default function BrainMapGraph() {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -308,6 +309,16 @@ export default function BrainMapGraph() {
       vaultRootCount: vaultRoots.length,
     };
   }, [data]);
+
+  const freshness = useMemo((): { state: FreshnessState; label: string } => {
+    if (!data?.generated) return { state: 'unknown', label: 'Unknown freshness' };
+    const generated = new Date(data.generated);
+    if (Number.isNaN(generated.getTime())) return { state: 'unknown', label: 'Unknown freshness' };
+    const ageHours = (Date.now() - generated.getTime()) / (1000 * 60 * 60);
+    if (ageHours <= 24) return { state: 'fresh', label: 'Fresh (≤24h)' };
+    if (ageHours <= 72) return { state: 'aging', label: 'Aging (24-72h)' };
+    return { state: 'stale', label: 'Stale (>72h)' };
+  }, [data?.generated]);
 
   const renderGraph = useCallback(() => {
     if (!svgRef.current || !filteredData) return;
@@ -513,6 +524,22 @@ export default function BrainMapGraph() {
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <span>
                 <strong>Generated:</strong> {dataSourceSummary.generatedLabel}
+              </span>
+              <span data-testid="brain-map-freshness-state">
+                <strong>Freshness:</strong>{' '}
+                <span
+                  className={
+                    freshness.state === 'fresh'
+                      ? 'text-emerald-700'
+                      : freshness.state === 'aging'
+                        ? 'text-amber-700'
+                        : freshness.state === 'stale'
+                          ? 'text-rose-700'
+                          : 'text-slate-700'
+                  }
+                >
+                  {freshness.label}
+                </span>
               </span>
               <span>
                 <strong>Nodes:</strong> {dataSourceSummary.nodeCount}

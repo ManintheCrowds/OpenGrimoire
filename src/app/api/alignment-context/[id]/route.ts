@@ -5,6 +5,7 @@ import {
   deleteAlignmentContextItem,
   updateAlignmentContextItem,
 } from '@/lib/storage/repositories/alignment';
+import { appendSecurityAuditEvent } from '@/lib/security/audit-log';
 
 type RouteContext = { params: { id: string } };
 
@@ -74,6 +75,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
+  appendSecurityAuditEvent({ ts: new Date().toISOString(), event: 'sensitive_mutation', route: '/api/alignment-context/:id', method: 'PATCH', status: 200 });
   return NextResponse.json({ item: data });
 }
 
@@ -106,5 +108,6 @@ export async function DELETE(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
+  appendSecurityAuditEvent({ ts: new Date().toISOString(), event: 'sensitive_mutation', route: '/api/alignment-context/:id', method: 'DELETE', status: 200 });
   return NextResponse.json({ ok: true, id });
 }

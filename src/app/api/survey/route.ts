@@ -9,6 +9,7 @@ import {
 } from '@/lib/survey/survey-post-bootstrap';
 import { surveyPostBodySchema } from '@/lib/survey/schemas';
 import { getHarnessProfileById } from '@/lib/storage/repositories/harness-profiles';
+import { appendSecurityAuditEvent } from '@/lib/security/audit-log';
 
 function isUniqueConstraintError(e: unknown): boolean {
   return (
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
       categories: mapped.data.categories,
     });
 
+    appendSecurityAuditEvent({ ts: new Date().toISOString(), event: 'sensitive_mutation', route: '/api/survey', method: 'POST', status: 200 });
     return NextResponse.json({
       success: true,
       message: 'Survey submitted successfully',

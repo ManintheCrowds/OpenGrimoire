@@ -4,6 +4,7 @@ import {
   signAdminSession,
   verifyOperatorPassword,
 } from '@/lib/auth/session';
+import { appendSecurityAuditEvent } from '@/lib/security/audit-log';
 
 export async function POST(request: Request) {
   let json: unknown;
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
   }
 
   if (!verifyOperatorPassword(password)) {
+    appendSecurityAuditEvent({ ts: new Date().toISOString(), event: 'auth_failed', route: '/api/auth/login', method: 'POST', status: 401, reason: 'invalid_credentials' });
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 

@@ -187,6 +187,11 @@ const CAPABILITIES = {
       auth: 'OpenGrimoire operator session cookie OR OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key when that env is set',
     },
     {
+      path: '/api/admin/security-posture',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie',
+    },
+    {
       path: '/api/admin/activity',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie',

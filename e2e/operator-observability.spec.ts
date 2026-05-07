@@ -128,4 +128,39 @@ test.describe('Operator observability', () => {
     await expect(page).toHaveURL(/\/admin\/observability$/);
     await expect(page.getByTestId(`operator-probe-run-${runId}`)).toHaveCount(0);
   });
+
+  test('detail back link returns to list with run row still visible (continuity)', async ({ request, page }) => {
+    const runnerId = `e2e-probe-continuity-${Date.now()}`;
+    const ingest = await request.post('/api/operator-probes/ingest', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-operator-probe-ingest-key': E2E_OPERATOR_PROBE_INGEST_SECRET,
+      },
+      data: {
+        probe_type: 'cursor_path_analysis',
+        target_host: 'continuity.cursor.com',
+        runner_id: runnerId,
+        runner_type: 'ci',
+        summary: { continuity: true },
+      },
+    });
+    expect(ingest.status()).toBe(201);
+    const { id: runId } = (await ingest.json()) as { id: string };
+
+    await loginAsAdmin(page);
+    await page.goto('/admin/observability');
+    await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible();
+
+    await Promise.all([
+      page.waitForURL(`**/admin/observability/${runId}`),
+      page.getByTestId(`operator-probe-detail-link-${runId}`).click(),
+    ]);
+    await expect(page.getByTestId('operator-probe-detail-heading')).toBeVisible();
+
+    await Promise.all([
+      page.waitForURL('**/admin/observability'),
+      page.getByRole('link', { name: 'All probe runs' }).click(),
+    ]);
+    await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible();
+  });
 });

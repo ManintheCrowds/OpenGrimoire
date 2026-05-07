@@ -4,7 +4,7 @@ import path from 'node:path';
 export interface LocalAiActivityEvent {
   id: string;
   ts: string;
-  kind: 'bootstrap' | 'health' | 'workflow' | 'verification' | 'training';
+  kind: 'bootstrap' | 'health' | 'workflow' | 'verification' | 'training' | 'ux_assist';
   summary: string;
   detail?: string;
 }
@@ -87,4 +87,16 @@ export function readLocalAiActivityLog(deps: ActivityLogDeps = {}): LocalAiActiv
     events,
     skippedMalformedLines,
   };
+}
+
+export function appendLocalAiActivityEvent(
+  event: LocalAiActivityEvent,
+  deps: Pick<ActivityLogDeps, 'cwd' | 'env'> = {}
+): { ok: true; logPath: string } {
+  const cwd = deps.cwd ?? process.cwd();
+  const env = deps.env ?? process.env;
+  const logPath = defaultLogPath(cwd, env);
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  fs.appendFileSync(logPath, `${JSON.stringify(event)}\n`, 'utf8');
+  return { ok: true, logPath };
 }

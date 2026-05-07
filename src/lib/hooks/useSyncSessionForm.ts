@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { dispatchSurveyDataChanged } from '@/lib/survey/survey-data-change-event';
 import {
+  classifySyncSessionErrorKind,
   isLikelyNetworkFetchError,
   SYNC_SESSION_NETWORK_ERROR_MESSAGE,
   syncSessionSubmitUserMessage,
+  type SyncSessionErrorKind,
   type SurveySubmitErrorPayload,
 } from '@/lib/survey/sync-session-submit-user-message';
 import type { SyncSessionFormData } from './types';
@@ -59,12 +61,36 @@ export function useSyncSessionForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<SyncSessionErrorKind | null>(null);
   const [formData, setFormData] = useState<SyncSessionFormData>({
     first_name: '',
     is_anonymous: false,
   });
   const [hydrated, setHydrated] = useState(false);
+  const [bootstrapTokenStatus, setBootstrapTokenStatus] = useState<'idle' | 'ok' | 'failed'>('idle');
+  const [recentRetries, setRecentRetries] = useState<Array<{ ts: string; status: number | null; requestId?: string }>>([]);
   const postTokenRef = useRef<string | null>(null);
+  const bootstrapAttemptedRef = useRef(false);
+
+  const fetchBootstrapToken = async () => {
+    bootstrapAttemptedRef.current = true;
+    try {
+      const res = await fetch('/api/survey/bootstrap-token');
+      if (!res.ok) {
+        setBootstrapTokenStatus('failed');
+        return;
+      }
+      const data = (await res.json()) as { token?: string | null };
+      if (data.token) {
+        postTokenRef.current = data.token;
+        setBootstrapTokenStatus('ok');
+      } else {
+        setBootstrapTokenStatus('failed');
+      }
+    } catch {
+      setBootstrapTokenStatus('failed');
+    }
+  };
 
   useEffect(() => {
     const d = loadDraft();
@@ -78,14 +104,8 @@ export function useSyncSessionForm() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const res = await fetch('/api/survey/bootstrap-token');
-        if (!res.ok) return;
-        const data = (await res.json()) as { token?: string | null };
-        if (!cancelled && data.token) postTokenRef.current = data.token;
-      } catch {
-        /* ignore */
-      }
+      await fetchBootstrapToken();
+      if (cancelled) return;
     })();
     return () => {
       cancelled = true;
@@ -131,8 +151,14 @@ export function useSyncSessionForm() {
     try {
       setIsSubmitting(true);
       setError(null);
+      setErrorKind(null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (bootstrapAttemptedRef.current && bootstrapTokenStatus === 'failed') {
+        setErrorKind('bootstrap_token');
+        setError('Submission token setup failed before submit. Request a new token and retry.');
+        return;
+      }
       if (postTokenRef.current) {
         headers['x-survey-post-token'] = postTokenRef.current;
       }
@@ -148,6 +174,7 @@ export function useSyncSessionForm() {
         payload = (await res.json()) as SurveySubmitErrorPayload;
       } catch {
         if (!res.ok) {
+          setErrorKind(classifySyncSessionErrorKind(res.status, {}));
           setError(
             syncSessionSubmitUserMessage(res.status, {}, {
               retryAfterSeconds: res.headers.get('Retry-After'),
@@ -160,6 +187,11 @@ export function useSyncSessionForm() {
       }
 
       if (!res.ok) {
+        setRecentRetries((prev) => [
+          { ts: new Date().toISOString(), status: res.status, requestId: res.headers.get('x-request-id') ?? undefined },
+          ...prev,
+        ].slice(0, 5));
+        setErrorKind(classifySyncSessionErrorKind(res.status, payload));
         setError(
           syncSessionSubmitUserMessage(res.status, payload, {
             retryAfterSeconds: res.status === 429 ? res.headers.get('Retry-After') : null,
@@ -173,8 +205,10 @@ export function useSyncSessionForm() {
     } catch (err) {
       console.error('Sync Session submission error:', err);
       if (isLikelyNetworkFetchError(err)) {
+        setErrorKind('network');
         setError(SYNC_SESSION_NETWORK_ERROR_MESSAGE);
       } else {
+        setErrorKind('unknown');
         setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
       }
     } finally {
@@ -187,9 +221,13 @@ export function useSyncSessionForm() {
     formData,
     isSubmitting,
     error,
+    errorKind,
     updateFormData,
     nextStep,
     prevStep,
     submitForm,
+    fetchBootstrapToken,
+    bootstrapTokenStatus,
+    recentRetries,
   };
 }

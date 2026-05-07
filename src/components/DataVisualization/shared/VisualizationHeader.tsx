@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface VisualizationHeaderProps {
   logoSrc: string;
@@ -25,9 +26,11 @@ export function VisualizationHeader({
         display: 'flex',
       }}
     >
-      <img
+      <Image
         src={logoSrc}
         alt=""
+        width={320}
+        height={96}
         style={{ height: 96, width: 'auto', flexShrink: 0 }}
         className="mr-6"
       />

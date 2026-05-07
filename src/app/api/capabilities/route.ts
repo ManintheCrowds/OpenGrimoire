@@ -213,8 +213,13 @@ const CAPABILITIES = {
     },
     {
       path: '/api/admin/cockpit/local-ai/activity',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie; local AI JSONL activity adapter (read + append)',
+    },
+    {
+      path: '/api/admin/cockpit/ux-metrics',
       methods: ['GET'],
-      auth: 'OpenGrimoire operator session cookie; read-only local AI JSONL activity adapter',
+      auth: 'OpenGrimoire operator session cookie; derived UX telemetry metrics adapter',
     },
     {
       path: '/api/admin/cockpit/workflow-recipes',

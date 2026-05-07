@@ -89,4 +89,23 @@ test.describe('Context Atlas (Brain Map)', () => {
     await expect(page.getByTestId('brain-map-placeholder-hint')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('brain-map-placeholder-hint')).toContainText('Placeholder graph');
   });
+
+  test('mocked graph older than 72h shows stale freshness state', async ({ page }) => {
+    const staleGenerated = new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString();
+    const body = JSON.stringify({
+      nodes: [{ id: 'n1', group: 'memory', accessCount: 1, path: '.cursor/state/old.md', layer: 'state' }],
+      edges: [],
+      generated: staleGenerated,
+      sessionCount: 1,
+    });
+    await page.route('**/api/brain-map/graph**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body,
+      });
+    });
+    await page.goto('/context-atlas');
+    await expect(page.getByTestId('brain-map-freshness-state')).toContainText('Stale');
+  });
 });

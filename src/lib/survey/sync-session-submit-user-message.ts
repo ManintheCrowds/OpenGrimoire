@@ -10,6 +10,25 @@ export type SurveySubmitErrorPayload = {
   issues?: unknown;
 };
 
+export type SyncSessionErrorKind =
+  | 'bootstrap_token'
+  | 'submission_5xx'
+  | 'rate_limit'
+  | 'db_unavailable'
+  | 'network'
+  | 'validation'
+  | 'auth'
+  | 'unknown';
+
+export function classifySyncSessionErrorKind(status: number, payload: SurveySubmitErrorPayload): SyncSessionErrorKind {
+  if (status === 429) return 'rate_limit';
+  if (status === 401) return 'auth';
+  if (status === 400 && payload.error === 'Validation failed') return 'validation';
+  if (status === 503) return 'db_unavailable';
+  if (status >= 500) return 'submission_5xx';
+  return 'unknown';
+}
+
 function parseRetryAfterSeconds(raw: string | null | undefined): number | null {
   if (raw == null || raw === '') return null;
   const n = Number.parseInt(String(raw).trim(), 10);

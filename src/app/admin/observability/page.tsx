@@ -11,6 +11,8 @@ import {
   PROBE_LIST_TARGET_HOST_CHIP_CLASS,
 } from './probeListChips';
 
+type SecurityPosture = { requiredEnv: Record<string, boolean>; toggles: { insecureLocalAlignmentMode: boolean; surveyPostRequireToken: boolean; surveyCaptchaRequired: boolean } };
+
 type ProbeListItem = {
   id: string;
   created_at: string;
@@ -50,6 +52,16 @@ export default function AdminObservabilityPage() {
     };
     void checkAuth();
   }, [router]);
+
+  const postureQuery = useQuery({
+    queryKey: ['admin', 'security-posture'],
+    enabled: !!user,
+    queryFn: async () => {
+      const res = await fetch('/api/admin/security-posture', { credentials: 'include' });
+      if (!res.ok) throw new Error(`Failed to load security posture (${res.status})`);
+      return (await res.json()) as SecurityPosture;
+    },
+  });
 
   const probesQuery = useQuery({
     queryKey: ['admin', 'operator-probes'],
@@ -96,6 +108,17 @@ export default function AdminObservabilityPage() {
               Admin home
             </Link>
           </p>
+        </div>
+
+        {postureQuery.data?.toggles.insecureLocalAlignmentMode ? (
+          <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+            Warning: insecure local alignment mode is enabled. Set ALIGNMENT_CONTEXT_API_SECRET to harden API auth.
+          </div>
+        ) : null}
+
+        <div className="mb-4 rounded border border-gray-200 bg-gray-50 p-3 text-sm">
+          <p className="font-semibold text-gray-900">Security posture</p>
+          <p className="text-gray-700">Required env vars: {postureQuery.data ? Object.entries(postureQuery.data.requiredEnv).map(([k,v]) => `${k}=${v ? 'ok' : 'missing'}`).join(', ') : 'loading…'}</p>
         </div>
 
         {err ? (

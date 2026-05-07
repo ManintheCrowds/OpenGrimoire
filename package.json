@@ -35,7 +35,8 @@
     "alignment:cli": "node scripts/alignment-context-cli.mjs",
     "study:export": "node scripts/study-export.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "check:next-public-secrets": "node scripts/check-next-public-secrets.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

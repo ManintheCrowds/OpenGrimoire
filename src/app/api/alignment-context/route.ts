@@ -3,6 +3,7 @@ import { checkAlignmentContextApiGate } from '@/lib/alignment-context/api-auth';
 import { listAlignmentContextItems } from '@/lib/alignment-context/db';
 import { insertAlignmentContextItem } from '@/lib/storage/repositories/alignment';
 import { alignmentContextCreateBodySchema } from '@/lib/alignment-context/schemas';
+import { appendSecurityAuditEvent } from '@/lib/security/audit-log';
 
 const LIMIT_DEFAULT = 100;
 const LIMIT_MAX = 500;
@@ -110,5 +111,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create alignment context item' }, { status: 500 });
   }
 
+  appendSecurityAuditEvent({ ts: new Date().toISOString(), event: 'sensitive_mutation', route: '/api/alignment-context', method: 'POST', status: 201 });
   return NextResponse.json({ item: data }, { status: 201 });
 }

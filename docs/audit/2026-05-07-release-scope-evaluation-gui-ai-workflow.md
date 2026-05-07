@@ -57,6 +57,11 @@ Emit `bootstrap_token` when bootstrap-token fetch fails before submit, and expos
 2. Confirm whether AI-assist "edit" should mean text edits, parameter changes, or alternate action selection.
 3. Confirm retention/rotation policy for local UX telemetry JSONL in operator environments.
 
+### Operator response captured (2026-05-07)
+- Recovery SLO preference: success within **2-3 retries** is acceptable baseline.
+- AI-assist edit definition: includes **text edits, parameter changes, and alternate action selection**.
+- Retention policy: keep prior policy for now; create pending task for explicit future decision.
+
 ## Separate decomposed task workflows
 
 ### Task A — Telemetry Schema Hardening
@@ -78,3 +83,8 @@ Emit `bootstrap_token` when bootstrap-token fetch fails before submit, and expos
 - Remove blanket exhaustive-deps suppressions.
 - Stabilize effect dependencies and animation cleanup behavior.
 - Add regression tests for playback/filtering transitions.
+
+### Task E — Pending retention/rotation decision (operator follow-up)
+- Owner: operator.
+- Decision target: define explicit retention/rotation for local UX telemetry JSONL.
+- Inputs needed: disk budget, compliance/privacy constraints, and desired forensic window.

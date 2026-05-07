@@ -35,6 +35,9 @@ export function SyncSessionForm() {
     nextStep,
     prevStep,
     submitForm,
+    fetchBootstrapToken,
+    bootstrapTokenStatus,
+    recentRetries,
   } = useSyncSessionForm();
 
   const CurrentStepComponent = steps[currentStep];
@@ -92,7 +95,33 @@ export function SyncSessionForm() {
                     Reload session
                   </button>
                 ) : null}
+                {errorKind === 'bootstrap_token' ? (
+                  <button type="button" className="secondary-button" onClick={() => void fetchBootstrapToken()}>
+                    Request new token
+                  </button>
+                ) : null}
               </div>
+              <details className="mt-3 rounded border border-red-200 bg-white p-2 text-xs text-red-900">
+                <summary className="cursor-pointer font-medium">Operator diagnostics</summary>
+                <div className="mt-2 space-y-1" data-testid="sync-session-diagnostics-drawer">
+                  <p>
+                    Token status: <code>{bootstrapTokenStatus}</code>
+                  </p>
+                  <p>Recent retries (latest first):</p>
+                  <ul className="list-disc pl-4">
+                    {recentRetries.length === 0 ? (
+                      <li>none</li>
+                    ) : (
+                      recentRetries.map((retry) => (
+                        <li key={`${retry.ts}-${retry.status ?? 'none'}`}>
+                          <code>{retry.ts}</code> status=<code>{retry.status ?? 'network'}</code>{' '}
+                          requestId=<code>{retry.requestId ?? 'n/a'}</code>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              </details>
             </div>
           )}
 

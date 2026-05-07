@@ -120,6 +120,33 @@ test.describe('Sync Session flow', () => {
     await expect(page.getByTestId('sync-session-error-kind')).toContainText('rate_limit');
     await expect(page.getByRole('button', { name: 'Retry submit' })).toBeVisible();
   });
+
+  test('Sync Session shows bootstrap-token CTA when token bootstrap fails', async ({ page }) => {
+    await page.route('**/api/survey/bootstrap-token', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'down' }) });
+    });
+
+    await page.goto('/operator-intake');
+    await expect(page.getByTestId('name-input')).toBeVisible();
+    await page.getByTestId('name-input').fill('Bootstrap');
+    await page.getByTestId('email-input').fill('bootstrap@example.com');
+    await page.getByTestId('next-button').click();
+    await page.getByText('1-2 years').click();
+    await page.getByTestId('next-button').click();
+    await page.getByTestId('sync-session-form-container').getByText('Visual', { exact: true }).click();
+    await page.getByTestId('next-button').click();
+    await page.getByText('Mentorship').first().click();
+    await page.getByTestId('next-button').click();
+    await page.getByText('Extrovert, Morning').first().click();
+    await page.getByTestId('next-button').click();
+    await page.getByText('Making an Impact').first().click();
+    await page.getByTestId('next-button').click();
+    await page.getByTestId('unique-quality-input').fill('bootstrap token failure');
+    await page.getByTestId('submit-button').click();
+
+    await expect(page.getByTestId('sync-session-error-kind')).toContainText('bootstrap_token');
+    await expect(page.getByRole('button', { name: 'Request new token' })).toBeVisible();
+  });
 });
 
 /** When `SURVEY_POST_REQUIRE_TOKEN=true` is passed through to the Playwright webServer (e.g. CI matrix), these run; otherwise skipped. */

@@ -67,7 +67,30 @@ export function useSyncSessionForm() {
     is_anonymous: false,
   });
   const [hydrated, setHydrated] = useState(false);
+  const [bootstrapTokenStatus, setBootstrapTokenStatus] = useState<'idle' | 'ok' | 'failed'>('idle');
+  const [recentRetries, setRecentRetries] = useState<Array<{ ts: string; status: number | null; requestId?: string }>>([]);
   const postTokenRef = useRef<string | null>(null);
+  const bootstrapAttemptedRef = useRef(false);
+
+  const fetchBootstrapToken = async () => {
+    bootstrapAttemptedRef.current = true;
+    try {
+      const res = await fetch('/api/survey/bootstrap-token');
+      if (!res.ok) {
+        setBootstrapTokenStatus('failed');
+        return;
+      }
+      const data = (await res.json()) as { token?: string | null };
+      if (data.token) {
+        postTokenRef.current = data.token;
+        setBootstrapTokenStatus('ok');
+      } else {
+        setBootstrapTokenStatus('failed');
+      }
+    } catch {
+      setBootstrapTokenStatus('failed');
+    }
+  };
 
   useEffect(() => {
     const d = loadDraft();
@@ -81,14 +104,8 @@ export function useSyncSessionForm() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const res = await fetch('/api/survey/bootstrap-token');
-        if (!res.ok) return;
-        const data = (await res.json()) as { token?: string | null };
-        if (!cancelled && data.token) postTokenRef.current = data.token;
-      } catch {
-        /* ignore */
-      }
+      await fetchBootstrapToken();
+      if (cancelled) return;
     })();
     return () => {
       cancelled = true;
@@ -137,6 +154,11 @@ export function useSyncSessionForm() {
       setErrorKind(null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (bootstrapAttemptedRef.current && bootstrapTokenStatus === 'failed') {
+        setErrorKind('bootstrap_token');
+        setError('Submission token setup failed before submit. Request a new token and retry.');
+        return;
+      }
       if (postTokenRef.current) {
         headers['x-survey-post-token'] = postTokenRef.current;
       }
@@ -165,6 +187,10 @@ export function useSyncSessionForm() {
       }
 
       if (!res.ok) {
+        setRecentRetries((prev) => [
+          { ts: new Date().toISOString(), status: res.status, requestId: res.headers.get('x-request-id') ?? undefined },
+          ...prev,
+        ].slice(0, 5));
         setErrorKind(classifySyncSessionErrorKind(res.status, payload));
         setError(
           syncSessionSubmitUserMessage(res.status, payload, {
@@ -200,5 +226,8 @@ export function useSyncSessionForm() {
     nextStep,
     prevStep,
     submitForm,
+    fetchBootstrapToken,
+    bootstrapTokenStatus,
+    recentRetries,
   };
 }

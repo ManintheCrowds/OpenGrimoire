@@ -117,6 +117,36 @@ const Slider: React.FC<{
 export default function GlobalControlsPage() {
   const { settings, updateCategoryColor, toggleDarkMode, toggleTestData, updateAutoPlaySpeed, toggleAutoPlay, resetToDefaults } = useAppContext();
   const [colorEditMode, setColorEditMode] = useState<'light' | 'dark'>('light');
+  const [lifecycleMsg, setLifecycleMsg] = useState<string>('');
+
+  const runLifecycleAction = async (action: 'prune' | 'backup') => {
+    const res = await fetch('/api/admin/db/lifecycle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action }),
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) {
+      setLifecycleMsg(`Action failed: ${String(data.error ?? res.status)}`);
+      return;
+    }
+    setLifecycleMsg(action === 'prune' ? `Prune complete: ${JSON.stringify(data.deleted ?? {})}` : `Backup created: ${String(data.backupPath ?? '')}`);
+  };
+
+  const exportTable = async (table: 'survey_responses' | 'clarification_requests' | 'study_reviews') => {
+    const res = await fetch(`/api/admin/db/lifecycle?action=export&table=${table}`, { credentials: 'include' });
+    const data = (await res.json()) as { rows?: unknown[] };
+    const blob = new Blob([JSON.stringify(data.rows ?? [], null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${table}-export.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setLifecycleMsg(`Exported ${table}.`);
+  };
+
 
   // Category labels for display
   const categoryLabels: { [key: string]: string } = {
@@ -223,6 +253,22 @@ export default function GlobalControlsPage() {
                   unit="ms"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Data Lifecycle */}
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Data Lifecycle</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Prune old rows, create SQLite backups, and export managed tables for diagnostics.</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button onClick={() => void runLifecycleAction('prune')} className="px-3 py-2 text-sm rounded bg-amber-600 text-white">Prune by retention</button>
+                <button onClick={() => void runLifecycleAction('backup')} className="px-3 py-2 text-sm rounded bg-emerald-700 text-white">Create DB backup</button>
+                <button onClick={() => void exportTable('survey_responses')} className="px-3 py-2 text-sm rounded bg-gray-700 text-white">Export survey</button>
+                <button onClick={() => void exportTable('clarification_requests')} className="px-3 py-2 text-sm rounded bg-gray-700 text-white">Export clarification</button>
+                <button onClick={() => void exportTable('study_reviews')} className="px-3 py-2 text-sm rounded bg-gray-700 text-white">Export study</button>
+              </div>
+              {lifecycleMsg ? <p className="text-sm text-gray-700 dark:text-gray-200">{lifecycleMsg}</p> : null}
             </div>
           </div>
 

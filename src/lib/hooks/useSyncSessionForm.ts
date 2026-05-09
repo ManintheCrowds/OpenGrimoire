@@ -83,10 +83,10 @@ export function useSyncSessionForm() {
       const data = (await res.json()) as { token?: string | null };
       if (data.token) {
         postTokenRef.current = data.token;
-        setBootstrapTokenStatus('ok');
       } else {
-        setBootstrapTokenStatus('failed');
+        postTokenRef.current = null;
       }
+      setBootstrapTokenStatus('ok');
     } catch {
       setBootstrapTokenStatus('failed');
     }

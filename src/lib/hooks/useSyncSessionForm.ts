@@ -57,6 +57,13 @@ function buildSyncSessionPostBody(formData: SyncSessionFormData) {
   };
 }
 
+export function resolveBootstrapTokenPayload(data: { token?: string | null }): { status: 'ok'; token: string | null } {
+  return {
+    status: 'ok',
+    token: data.token && data.token.length > 0 ? data.token : null,
+  };
+}
+
 export function useSyncSessionForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,12 +88,9 @@ export function useSyncSessionForm() {
         return;
       }
       const data = (await res.json()) as { token?: string | null };
-      if (data.token) {
-        postTokenRef.current = data.token;
-        setBootstrapTokenStatus('ok');
-      } else {
-        setBootstrapTokenStatus('failed');
-      }
+      const tokenResult = resolveBootstrapTokenPayload(data);
+      postTokenRef.current = tokenResult.token;
+      setBootstrapTokenStatus(tokenResult.status);
     } catch {
       setBootstrapTokenStatus('failed');
     }

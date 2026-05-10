@@ -5,6 +5,8 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backupDatabaseFile } from './data-lifecycle';
 
+vi.mock('server-only', () => ({}));
+
 describe('backupDatabaseFile', () => {
   const tempDirs: string[] = [];
 

@@ -127,7 +127,8 @@ Follow this once after `npm run dev` so you have a **single runnable story** for
 | `npm run test` | Vitest unit tests (`src/**/*.test.ts`) |
 | `npm run verify` | **Merge gate:** `lint` + `type-check` + `test` + `verify:capabilities` + `verify:openapi` + `verify:route-index` |
 | `npm run verify:e2e` | `verify` then Playwright (`test:e2e`; dev server started by Playwright config when needed) |
-| `npm run test:e2e` | Playwright |
+| `npm run test:e2e` | Playwright (full `e2e/` suite) |
+| `npm run test:e2e:smoke` | Playwright smoke only: `e2e/smoke.spec.ts` (`/` + `/context-atlas`). Uses `PLAYWRIGHT_BASE_URL` when set; defaults to `http://localhost:3001` (see `playwright.config.ts`). |
 | `npm run test:maestro` | Maestro mobile smoke (optional; requires [Maestro](https://maestro.mobile.dev/) CLI) |
 
 **CI:** Run **`npm run verify`** (and optionally **`npm run verify:e2e`**) locally or in your own pipeline; an in-repo `.github/workflows/` tree may or may not be present depending on checkout—see [docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md](docs/plans/OA_FR_X_CROSS_CUTTING_GO_LIVE.md) §4 and [docs/engineering/DEPLOY_AND_VERIFY.md](docs/engineering/DEPLOY_AND_VERIFY.md).

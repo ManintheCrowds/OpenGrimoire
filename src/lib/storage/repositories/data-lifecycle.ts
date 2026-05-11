@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import Database from 'better-sqlite3';
 import { getSqlite } from '@/db/client';
 
 type ManagedTable = 'survey_responses' | 'clarification_requests' | 'study_reviews';
@@ -70,6 +71,11 @@ export async function backupDatabaseFile(): Promise<string> {
   if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const outPath = path.join(backupDir, `opengrimoire-${stamp}.sqlite`);
-  await getSqlite().backup(outPath);
+  const sqlite = new Database(dbPath, { readonly: true, fileMustExist: true });
+  try {
+    await sqlite.backup(outPath);
+  } finally {
+    sqlite.close();
+  }
   return outPath;
 }

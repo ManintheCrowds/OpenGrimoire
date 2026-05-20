@@ -25,7 +25,6 @@ export function UniqueQualityStep({
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('UniqueQualityStep handleSubmit called', { isLastStep, formData });
     e.preventDefault();
     if (!formData.unique_quality?.trim()) {
       setError('Please share your unique quality');

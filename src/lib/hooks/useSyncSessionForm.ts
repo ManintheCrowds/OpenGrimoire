@@ -8,11 +8,13 @@ import {
   type SyncSessionErrorKind,
   type SurveySubmitErrorPayload,
 } from '@/lib/survey/sync-session-submit-user-message';
+import { SYNC_SESSION_QUESTIONNAIRE_VERSION } from '@/lib/survey/sync-session-v2-questions';
+import { parseBootstrapTokenResponse } from '@/lib/survey/sync-session-bootstrap';
 import type { SyncSessionFormData } from './types';
 
 export type { SyncSessionFormData } from './types';
 
-const DRAFT_KEY = 'opengrimoire.syncSession.v1';
+const DRAFT_KEY = 'opengrimoire.syncSession.v2';
 /** Last form step index before Success (0-based). Success step clears draft. */
 const LAST_FORM_STEP_INDEX = 6;
 
@@ -26,7 +28,7 @@ function loadDraft(): { currentStep: number; formData: Partial<SyncSessionFormDa
       currentStep?: number;
       formData?: Partial<SyncSessionFormData>;
     };
-    if (parsed.v !== 1 || typeof parsed.currentStep !== 'number') return null;
+    if ((parsed.v !== 1 && parsed.v !== 2) || typeof parsed.currentStep !== 'number') return null;
     if (parsed.currentStep < 0 || parsed.currentStep > LAST_FORM_STEP_INDEX) return null;
     return { currentStep: parsed.currentStep, formData: parsed.formData ?? {} };
   } catch {
@@ -34,15 +36,15 @@ function loadDraft(): { currentStep: number; formData: Partial<SyncSessionFormDa
   }
 }
 
-/** Body shape for `POST /api/survey` (survey API unchanged). */
+/** Body shape for `POST /api/survey`. */
 function buildSyncSessionPostBody(formData: SyncSessionFormData) {
   const lastName = formData.last_name?.trim() || '—';
   const answers = [
-    { questionId: 'tenure_years', answer: String(formData.tenure_years ?? 0) },
-    { questionId: 'learning_style', answer: formData.learning_style ?? '' },
+    { questionId: 'session_intent', answer: formData.session_intent ?? '' },
+    { questionId: 'session_context', answer: formData.session_context ?? '' },
     { questionId: 'shaped_by', answer: formData.shaped_by ?? '' },
-    { questionId: 'peak_performance', answer: formData.peak_performance ?? '' },
-    { questionId: 'motivation', answer: formData.motivation ?? '' },
+    { questionId: 'working_style', answer: formData.working_style ?? '' },
+    { questionId: 'constraints', answer: formData.constraints ?? '' },
     { questionId: 'unique_quality', answer: formData.unique_quality ?? '' },
   ];
   return {
@@ -51,7 +53,7 @@ function buildSyncSessionPostBody(formData: SyncSessionFormData) {
     email: formData.is_anonymous ? '' : formData.email ?? '',
     isAnonymous: formData.is_anonymous,
     sessionType: 'profile',
-    questionnaireVersion: 'v1',
+    questionnaireVersion: SYNC_SESSION_QUESTIONNAIRE_VERSION,
     answers,
     harnessProfileId: formData.harness_profile_id,
   };
@@ -71,6 +73,7 @@ export function useSyncSessionForm() {
   const [recentRetries, setRecentRetries] = useState<Array<{ ts: string; status: number | null; requestId?: string }>>([]);
   const postTokenRef = useRef<string | null>(null);
   const bootstrapAttemptedRef = useRef(false);
+  const bootstrapRequiredRef = useRef(false);
 
   const fetchBootstrapToken = async () => {
     bootstrapAttemptedRef.current = true;
@@ -80,9 +83,15 @@ export function useSyncSessionForm() {
         setBootstrapTokenStatus('failed');
         return;
       }
-      const data = (await res.json()) as { token?: string | null };
-      if (data.token) {
-        postTokenRef.current = data.token;
+      const data = (await res.json()) as {
+        token?: string | null;
+        required?: boolean;
+        expiresIn?: number | null;
+      };
+      const parsed = parseBootstrapTokenResponse(data);
+      if (parsed.status === 'ok') {
+        bootstrapRequiredRef.current = parsed.required;
+        postTokenRef.current = parsed.token;
         setBootstrapTokenStatus('ok');
       } else {
         setBootstrapTokenStatus('failed');
@@ -125,7 +134,7 @@ export function useSyncSessionForm() {
     try {
       localStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({ v: 1, currentStep, formData })
+        JSON.stringify({ v: 2, currentStep, formData })
       );
     } catch {
       /* quota */
@@ -154,7 +163,11 @@ export function useSyncSessionForm() {
       setErrorKind(null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (bootstrapAttemptedRef.current && bootstrapTokenStatus === 'failed') {
+      if (
+        bootstrapAttemptedRef.current &&
+        bootstrapTokenStatus === 'failed' &&
+        bootstrapRequiredRef.current
+      ) {
         setErrorKind('bootstrap_token');
         setError('Submission token setup failed before submit. Request a new token and retry.');
         return;

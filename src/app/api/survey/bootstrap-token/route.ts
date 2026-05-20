@@ -14,7 +14,7 @@ import {
  */
 export async function GET() {
   if (!isSurveyPostTokenRequired()) {
-    return NextResponse.json({ token: null, expiresIn: null });
+    return NextResponse.json({ token: null, expiresIn: null, required: false });
   }
   if (!process.env.SURVEY_POST_BOOTSTRAP_SECRET?.trim()) {
     return NextResponse.json(
@@ -24,7 +24,7 @@ export async function GET() {
   }
   try {
     const token = await signSurveyPostBootstrapToken();
-    return NextResponse.json({ token, expiresIn: 900 });
+    return NextResponse.json({ token, expiresIn: 900, required: true });
   } catch (e) {
     console.error('[survey/bootstrap-token]', e);
     return NextResponse.json({ error: 'Could not issue token' }, { status: 500 });

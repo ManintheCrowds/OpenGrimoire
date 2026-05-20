@@ -30,12 +30,12 @@ const CAPABILITIES = {
       id: 'opencompass_brain_map',
       summary:
         'OpenGrimoire offline pipeline: ingest OpenCompass summary_*.csv and merge into public/brain-map-graph.local.json via trustgraph-local-repo scripts; no POST API on OpenGrimoire for this.',
-      ui_path: '/context-atlas',
+      ui_path: '/brain-map',
       api: 'GET /api/brain-map/graph',
       data_source: 'public/brain-map-graph.local.json',
       refresh: 'manual_after_merge',
       reference_note:
-        'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE). Legacy path /brain-map redirects to /context-atlas.',
+        'See documentation.opencompass_brain_map_interop; refresh browser after file merge (no live SSE). Legacy path /context-atlas redirects to /brain-map.',
     },
     {
       id: 'llm_wiki_mirror_read',
@@ -277,6 +277,16 @@ const CAPABILITIES = {
       methods: ['GET'],
       auth:
         'When BRAIN_MAP_SECRET set: x-brain-map-key matching secret or OpenGrimoire operator session cookie',
+    },
+    {
+      path: '/api/brain-map/meta',
+      methods: ['GET'],
+      auth: 'Public read of effective vault/state dirs and active graph file metadata',
+    },
+    {
+      path: '/api/admin/brain-map/sources',
+      methods: ['GET', 'PUT'],
+      auth: 'OpenGrimoire operator session cookie',
     },
     {
       path: '/api/survey',

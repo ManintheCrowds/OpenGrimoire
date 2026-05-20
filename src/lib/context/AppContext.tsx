@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 // Define the structure for category colors with theme support
 export interface CategoryColors {
@@ -117,7 +117,7 @@ const defaultSettings: VisualizationSettings = {
     light: defaultLightColors,
     dark: defaultDarkColors
   },
-  isDarkMode: false,
+  isDarkMode: true,
   useTestData: true,
   autoPlaySpeed: 5000, // 5 seconds
   isAutoPlayEnabled: true
@@ -139,8 +139,18 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Provider component
+const THEME_STORAGE_KEY = 'opengrimoire.theme';
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<VisualizationSettings>(defaultSettings);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    const dark = stored === 'light' ? false : true;
+    setSettings((prev) => ({ ...prev, isDarkMode: dark }));
+    document.documentElement.classList.toggle('dark', dark);
+  }, []);
 
   const updateCategoryColor = (category: string, answer: string, color: string, theme?: 'light' | 'dark') => {
     const targetTheme = theme || (settings.isDarkMode ? 'dark' : 'light');
@@ -161,10 +171,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleDarkMode = () => {
-    setSettings(prev => ({
-      ...prev,
-      isDarkMode: !prev.isDarkMode
-    }));
+    setSettings((prev) => {
+      const nextDark = !prev.isDarkMode;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(THEME_STORAGE_KEY, nextDark ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', nextDark);
+      }
+      return { ...prev, isDarkMode: nextDark };
+    });
   };
 
   const toggleTestData = () => {

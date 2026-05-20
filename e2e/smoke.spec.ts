@@ -10,8 +10,8 @@ test.describe('Local dev smoke', () => {
     await expect(page.getByRole('heading', { name: 'OpenGrimoire' })).toBeVisible();
   });
 
-  test('context atlas loads', async ({ page }) => {
-    await page.goto('/context-atlas');
+  test('brain map loads', async ({ page }) => {
+    await page.goto('/brain-map');
     await expect(
       page.getByText(/Loading brain map|Loading context graph|Co-access|No nodes|nodes/)
     ).toBeVisible({ timeout: 10000 });

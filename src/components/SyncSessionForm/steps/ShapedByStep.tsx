@@ -1,7 +1,8 @@
 "use client";
 import React from 'react';
 import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
-import type { ShapedBy } from '@/lib/types/database';
+import { SHAPED_BY_OPTIONS } from '@/lib/survey/sync-session-v2-questions';
+import { SyncStepNav } from './SyncStepNav';
 
 interface ShapedByStepProps {
   formData: SyncSessionFormData;
@@ -9,39 +10,6 @@ interface ShapedByStepProps {
   nextStep: () => void;
   prevStep: () => void;
 }
-
-const shapedByOptions: { value: ShapedBy; label: string; description: string }[] = [
-  {
-    value: 'mentor',
-    label: 'Mentorship',
-    description: 'A mentor or role model who guided and inspired you',
-  },
-  {
-    value: 'challenge',
-    label: 'Challenge',
-    description: 'A significant challenge or obstacle you overcame',
-  },
-  {
-    value: 'failure',
-    label: 'Failure',
-    description: 'A failure that taught you valuable lessons',
-  },
-  {
-    value: 'success',
-    label: 'Success',
-    description: 'A significant achievement or success that motivated you',
-  },
-  {
-    value: 'team',
-    label: 'Team',
-    description: 'Collaboration and support from your team members',
-  },
-  {
-    value: 'other',
-    label: 'Other',
-    description: 'Another significant influence not listed above',
-  },
-];
 
 export function ShapedByStep({
   formData,
@@ -64,10 +32,10 @@ export function ShapedByStep({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div aria-invalid={!!error} aria-describedby={error ? 'shaped_by_error' : undefined}>
         <label className="block text-lg font-medium text-gray-900 mb-4">
-          What has most significantly shaped your career journey here?
+          What has most significantly shaped your career journey?
         </label>
         <div className="grid grid-cols-1 gap-4">
-          {shapedByOptions.map((option) => (
+          {SHAPED_BY_OPTIONS.map((option) => (
             <button
               key={option.value}
               type="button"

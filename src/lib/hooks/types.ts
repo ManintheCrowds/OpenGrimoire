@@ -1,20 +1,16 @@
-import type {
-  LearningStyle,
-  MotivationType,
-  PeakPerformanceType,
-  ShapedBy,
-} from '@/lib/types/database';
+import type { ShapedBy } from '@/lib/types/database';
+import type { WorkingStyle } from '@/lib/survey/sync-session-v2-questions';
 
 export type SyncSessionFormData = {
   first_name: string;
   last_name?: string;
   email?: string;
   is_anonymous: boolean;
-  tenure_years?: number;
-  learning_style?: LearningStyle;
+  session_intent?: string;
+  session_context?: string;
   shaped_by?: ShapedBy;
-  peak_performance?: PeakPerformanceType;
-  motivation?: MotivationType;
+  working_style?: WorkingStyle;
+  constraints?: string;
   unique_quality?: string;
   harness_profile_id?: string;
 };

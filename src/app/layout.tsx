@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'OpenGrimoire',
   description:
-    'Operator context atlas: visualize co-access across session journals and handoffs. Includes D3 demos and a legacy multi-step intake form.',
+    'Operator brain map: visualize co-access across session journals and handoffs. Sync Session alignment intake and cohort visualizations.',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en" className={`${inter.className} dark`} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
         <ClientProviders>
           <SharedNavBar />

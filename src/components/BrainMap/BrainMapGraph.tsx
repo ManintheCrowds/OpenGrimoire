@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as d3Force from 'd3-force';
 import { select, zoom, drag } from 'd3';
+import { BrainMapSourcesPanel } from '@/components/BrainMap/BrainMapSourcesPanel';
 
 const GROUP_COLORS: Record<string, string> = {
   core: '#c8a84b',
@@ -568,14 +569,15 @@ export default function BrainMapGraph() {
     Boolean(data && data.nodes.length > 0 && filteredData && filteredData.nodes.length === 0);
 
   return (
-    <div className="flex h-full min-h-0 w-full max-w-full flex-col bg-gray-50">
-      <div className="min-w-0 shrink-0 border-b bg-white px-3 py-2 sm:px-4">
-        <h1 className="text-base font-semibold text-gray-900 sm:text-lg">OpenGrimoire — Context Atlas</h1>
-        <p className="text-xs text-gray-600 sm:text-sm">
+    <div className="flex h-full min-h-0 w-full max-w-full flex-col bg-gray-50 dark:bg-gray-950">
+      <div className="min-w-0 shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-700 px-3 py-2 sm:px-4">
+        <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100 sm:text-lg">OpenGrimoire — Brain Map</h1>
+        <p className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
           A generated map of handoffs, state files, and vault notes. Sync Session submissions go to SQLite; this
-          atlas updates only after rebuilding the brain-map JSON with the sibling{' '}
-          <code className="rounded bg-gray-100 px-1">MiscRepos/.cursor/scripts/build_brain_map.py</code> script.
+          map updates only after rebuilding the brain-map JSON with the sibling{' '}
+          <code className="rounded bg-gray-100 dark:bg-gray-800 px-1">MiscRepos/.cursor/scripts/build_brain_map.py</code> script.
         </p>
+        <BrainMapSourcesPanel />
         {dataSourceSummary && (
           <div className="mt-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
             <div className="flex flex-wrap gap-x-4 gap-y-1">

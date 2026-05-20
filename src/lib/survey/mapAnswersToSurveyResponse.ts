@@ -22,6 +22,14 @@ export type SessionType = string;
 export type QuestionnaireVersion = string;
 
 const LEARNING_STYLE = z.enum(['visual', 'auditory', 'kinesthetic', 'reading_writing']);
+const WORKING_STYLE_V2 = z.enum(['independent', 'collaborative', 'structured', 'exploratory']);
+
+const WORKING_STYLE_TO_LEARNING: Record<z.infer<typeof WORKING_STYLE_V2>, LearningStyle> = {
+  independent: 'reading_writing',
+  collaborative: 'auditory',
+  structured: 'visual',
+  exploratory: 'kinesthetic',
+};
 const SHAPED_BY = z.enum(['mentor', 'challenge', 'failure', 'success', 'team', 'other']);
 const PEAK_PERFORMANCE = z.enum([
   'Extrovert, Morning',
@@ -171,11 +179,91 @@ function mapProfileV1(answersById: Map<string, string>) {
   return { ok: true as const, data: out, categories };
 }
 
+const profileV2QuestionIds = new Set([
+  'session_intent',
+  'session_context',
+  'shaped_by',
+  'working_style',
+  'constraints',
+  'unique_quality',
+]);
+
+function mapProfileV2(answersById: Map<string, string>) {
+  const out: Omit<SurveyResponseFields, 'session_type' | 'questionnaire_version'> = {};
+  const categories: IntentCategoryPayload[] = [];
+
+  for (const [questionId, raw] of Array.from(answersById.entries())) {
+    if (!profileV2QuestionIds.has(questionId)) {
+      return {
+        ok: false as const,
+        error: { message: `Unknown questionId: ${questionId}`, field: questionId },
+      };
+    }
+
+    const trimmed = raw.trim();
+    if (trimmed === '') {
+      continue;
+    }
+
+    switch (questionId) {
+      case 'session_intent':
+        categories.push({ category: 'signals', content: trimmed });
+        break;
+      case 'session_context':
+        categories.push({ category: 'needs', content: trimmed });
+        break;
+      case 'constraints':
+        categories.push({ category: 'constraints', content: trimmed });
+        break;
+      case 'shaped_by': {
+        const p = SHAPED_BY.safeParse(trimmed);
+        if (!p.success) {
+          return {
+            ok: false as const,
+            error: { message: 'Invalid shaped_by value', field: 'shaped_by' },
+          };
+        }
+        out.shaped_by = p.data;
+        break;
+      }
+      case 'working_style': {
+        const p = WORKING_STYLE_V2.safeParse(trimmed);
+        if (!p.success) {
+          return {
+            ok: false as const,
+            error: { message: 'Invalid working_style value', field: 'working_style' },
+          };
+        }
+        out.learning_style = WORKING_STYLE_TO_LEARNING[p.data];
+        break;
+      }
+      case 'unique_quality': {
+        if (trimmed.length > 4000) {
+          return {
+            ok: false as const,
+            error: { message: 'unique_quality exceeds max length', field: 'unique_quality' },
+          };
+        }
+        out.unique_quality = trimmed;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return { ok: true as const, data: out, categories };
+}
+
 const QUESTIONNAIRE_MAPPERS: Record<string, Record<string, QuestionnaireMapper>> = {
   profile: {
     v1: {
       knownQuestionIds: profileV1QuestionIds,
       map: mapProfileV1,
+    },
+    v2: {
+      knownQuestionIds: profileV2QuestionIds,
+      map: mapProfileV2,
     },
   },
 };

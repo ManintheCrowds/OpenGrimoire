@@ -16,7 +16,7 @@ const navGroups: { label: string; items: { href: string; label: string; testId?:
   {
     label: 'Inspect',
     items: [
-      { href: '/context-atlas', label: 'Context Atlas' },
+      { href: '/brain-map', label: 'Brain Map', testId: 'nav-link-brain-map' },
       { href: '/visualization', label: 'Data Constellations' },
       { href: '/wiki', label: 'LLM Wiki' },
       { href: '/capabilities', label: 'Capabilities' },

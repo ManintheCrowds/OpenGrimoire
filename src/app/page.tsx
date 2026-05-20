@@ -9,10 +9,10 @@ const primaryCards = [
     description: 'Align human intent with agent memory before the next run.',
   },
   {
-    href: '/context-atlas',
-    testId: 'nav-link-context-atlas',
+    href: '/brain-map',
+    testId: 'nav-link-brain-map',
     eyebrow: 'Memory map',
-    title: 'Context Atlas',
+    title: 'Brain Map',
     description: 'Trace how handoffs, vault notes, and archived context cluster together.',
   },
   {

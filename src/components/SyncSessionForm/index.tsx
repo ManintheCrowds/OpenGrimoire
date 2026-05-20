@@ -2,22 +2,22 @@
 
 import { useSyncSessionForm } from '@/lib/hooks/useSyncSessionForm';
 import { AttendeeStep } from './steps/AttendeeStep';
-import { YearsStep } from './steps/YearsStep';
-import { LearningStyleStep } from './steps/LearningStyleStep';
+import { IntentStep } from './steps/IntentStep';
+import { ContextStep } from './steps/ContextStep';
 import { ShapedByStep } from './steps/ShapedByStep';
-import { PeakPerformanceStep } from './steps/PeakPerformanceStep';
-import { MotivationStep } from './steps/MotivationStep';
+import { WorkingStyleStep } from './steps/WorkingStyleStep';
+import { ConstraintsStep } from './steps/ConstraintsStep';
 import { UniqueQualityStep } from './steps/UniqueQualityStep';
 import { SuccessStep } from './steps/SuccessStep';
 import '@/styles/brand.css';
 
 const steps = [
   AttendeeStep,
-  YearsStep,
-  LearningStyleStep,
+  IntentStep,
+  ContextStep,
   ShapedByStep,
-  PeakPerformanceStep,
-  MotivationStep,
+  WorkingStyleStep,
+  ConstraintsStep,
   UniqueQualityStep,
   SuccessStep,
 ];
@@ -45,7 +45,7 @@ export function SyncSessionForm() {
   const showRetry = errorKind === 'network' || errorKind === 'submission_5xx' || errorKind === 'rate_limit';
 
   return (
-    <div className="min-h-screen bg-[var(--brand-atmospheric-white)]" data-testid="sync-session-form-container">
+    <div className="min-h-screen bg-[var(--brand-atmospheric-white)] dark:bg-gray-950" data-testid="sync-session-form-container">
       <div className="max-w-xl w-full mx-auto px-0 pt-4 pb-8">
         {/* Header */}
         <div className="text-center mb-8">

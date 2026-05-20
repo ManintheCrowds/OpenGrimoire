@@ -299,9 +299,6 @@ export function AdminPanel() {
     if (typeof window === 'undefined') return;
     try {
       const raw = window.localStorage.getItem(COCKPIT_SESSION_KEY);
-      // #region agent log
-      fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H2',location:'src/components/AdminPanel/index.tsx:localStorageHydration',message:'Admin cockpit session raw state loaded',data:{hasRaw:Boolean(raw),rawLength:raw?.length ?? 0},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (!raw) {
         setSessionHydrated(true);
         return;
@@ -312,9 +309,6 @@ export function AdminPanel() {
         activeRightTab?: RightColumnTab;
         selectedResponseId?: string | null;
       };
-      // #region agent log
-      fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H2',location:'src/components/AdminPanel/index.tsx:localStorageParsed',message:'Admin cockpit session parsed active tab',data:{activeRightTab:parsed.activeRightTab ?? null,statusFilter:parsed.statusFilter ?? null,ageSort:parsed.ageSort ?? null},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (parsed.statusFilter) setStatusFilter(parsed.statusFilter);
       if (parsed.ageSort) setAgeSort(parsed.ageSort);
       if (parsed.activeRightTab) setActiveRightTab(parsed.activeRightTab);
@@ -360,9 +354,6 @@ export function AdminPanel() {
       ariaSelected: tab.getAttribute('aria-selected'),
       ariaControls: tab.getAttribute('aria-controls'),
     }));
-    // #region agent log
-    fetch('http://127.0.0.1:7713/ingest/8fdb4202-1934-46c9-88cd-ef079adb7a06',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0032f5'},body:JSON.stringify({sessionId:'0032f5',runId:'pre-fix',hypothesisId:'H1,H3,H4',location:'src/components/AdminPanel/index.tsx:tabDomSnapshot',message:'Admin cockpit tab DOM aria snapshot',data:{activeRightTab,tabs,invalidValues:tabs.filter((tab)=>tab.ariaSelected !== 'true' && tab.ariaSelected !== 'false'),selectedCount:tabs.filter((tab)=>tab.ariaSelected === 'true').length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
   }, [activeRightTab]);
 
   const handleModeration = (

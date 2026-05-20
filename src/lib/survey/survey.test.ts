@@ -166,4 +166,28 @@ describe('mapAnswersToSurveyResponsePayload', () => {
       expect(mapped.data.surveyResponse.tenure_years).toBe(7);
     }
   });
+
+  it('maps profile v2 answers to intent categories and columns', () => {
+    const mapped = mapAnswersToSurveyResponsePayload({
+      sessionType: 'profile',
+      questionnaireVersion: 'v2',
+      answers: [
+        { questionId: 'session_intent', answer: 'Ship OG-HV' },
+        { questionId: 'session_context', answer: 'Local dev only' },
+        { questionId: 'shaped_by', answer: 'mentor' },
+        { questionId: 'working_style', answer: 'collaborative' },
+        { questionId: 'constraints', answer: 'No prod secrets' },
+        { questionId: 'unique_quality', answer: 'Systems thinking' },
+      ],
+    });
+    expect(mapped.ok).toBe(true);
+    if (mapped.ok) {
+      expect(mapped.data.surveyResponse.questionnaire_version).toBe('v2');
+      expect(mapped.data.surveyResponse.shaped_by).toBe('mentor');
+      expect(mapped.data.surveyResponse.learning_style).toBe('auditory');
+      expect(mapped.data.categories.map((c) => c.category).sort()).toEqual(
+        ['constraints', 'needs', 'signals'].sort()
+      );
+    }
+  });
 });

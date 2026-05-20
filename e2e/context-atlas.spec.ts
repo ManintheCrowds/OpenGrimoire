@@ -17,9 +17,10 @@ test.describe('Context Atlas (Brain Map)', () => {
     await expect(page.getByTestId('brain-map-graph')).toBeVisible({ timeout: 15000 });
   });
 
-  test('context-atlas heading is present', async ({ page }) => {
+  test('context-atlas redirects and shows Brain Map heading', async ({ page }) => {
     await page.goto('/context-atlas');
-    await expect(page.getByRole('heading', { name: /context graph/ })).toBeVisible({ timeout: 10000 });
+    await expect(page).toHaveURL(/\/brain-map/);
+    await expect(page.getByRole('heading', { name: /Brain Map/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('mocked state-only graph: All shows table row; Vault shows empty-layer message', async ({

@@ -2,7 +2,19 @@
 
 OpenGrimoire is a local-first context graph and alignment workspace for human-to-agent collaboration. Its core workflow, Sync Session, is a structured virtual one-on-one that aligns intent, context, and constraints before execution. **Sync Session** submissions use `POST /api/survey` (survey rows in SQLite); **Alignment Context** is a separate surface—alignment items persisted and served via `/api/alignment-context` and the alignment CLI, not the form submit path.
 
-**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **GitHub:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire). **Local clone folder:** use **`OpenGrimoire`** (recommended). If your checkout is still named **`OpenGrimoire`**, that is a **legacy** folder name only—rename when practical so sibling-repo paths in docs match. If you still see a stale `Med-Vis` directory (e.g. locked `node_modules`), close IDEs/processes using it and delete that folder.
+[![CI](https://github.com/ManintheCrowds/OpenGrimoire/actions/workflows/ci.yml/badge.svg)](https://github.com/ManintheCrowds/OpenGrimoire/actions/workflows/ci.yml)
+
+**Product:** OpenGrimoire. **Package name:** `open-grimoire`. **GitHub:** [`ManintheCrowds/OpenGrimoire`](https://github.com/ManintheCrowds/OpenGrimoire). **Local clone folder:** use **`OpenGrimoire`** (recommended).
+
+## Problem → Solution → Impact
+
+- **Problem:** Operator context (handoffs, decisions, daily notes) is scattered across markdown files; agents lack a navigable graph and a structured alignment surface before execution.
+- **Solution:** Static/brain-map JSON graph viewer, Sync Session intake, alignment-context API, and integration docs for harness + MCP hosts.
+- **Impact:** Inspectable local-first workspace—no hosted DB required for the graph file path; SQLite for survey/alignment on the dev server.
+
+## Tech stack
+
+Next.js (App Router), TypeScript, SQLite, D3/Three.js visualizations, Vitest, Playwright.
 
 ## Key Concepts
 
@@ -135,6 +147,10 @@ Follow this once after `npm run dev` so you have a **single runnable story** for
 
 **Tagged releases:** See [RELEASING.md](RELEASING.md) (`verify`, E2E, optional Maestro).
 
-## License / attribution
+## Roadmap
 
-Portfolio-derived sample; anonymized from earlier client work. Not a medical product.
+See [ROADMAP.md](ROADMAP.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE). Portfolio-derived sample; anonymized from earlier client work. Not a medical product.

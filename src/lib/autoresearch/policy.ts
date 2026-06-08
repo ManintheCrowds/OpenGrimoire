@@ -44,12 +44,20 @@ function normalizeLocalPath(value: string): string {
   return value.replace(/\\/g, '/');
 }
 
+function isWindowsStyleAbsolute(value: string): boolean {
+  return /^[A-Za-z]:[\\/]/.test(value);
+}
+
 export function resolveHarnessRoot(
   env: NodeJS.ProcessEnv | Record<string, string | undefined>,
   eventsLogPath: string
 ): string | null {
   if (env.OPENGRIMOIRE_HARNESS_ROOT?.trim()) {
-    return normalizeLocalPath(path.resolve(env.OPENGRIMOIRE_HARNESS_ROOT.trim()));
+    const harnessRoot = env.OPENGRIMOIRE_HARNESS_ROOT.trim();
+    if (isWindowsStyleAbsolute(harnessRoot)) {
+      return normalizeLocalPath(harnessRoot);
+    }
+    return normalizeLocalPath(path.resolve(harnessRoot));
   }
   const normalized = normalizeLocalPath(eventsLogPath);
   const stateDir = path.posix.dirname(normalized);

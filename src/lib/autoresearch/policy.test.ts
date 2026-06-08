@@ -65,6 +65,15 @@ describe('resolveHarnessRoot', () => {
     );
     expect(root).toBe('D:/harness');
   });
+
+  it('keeps windows-style OPENGRIMOIRE_HARNESS_ROOT on unix-like resolvers', () => {
+    const root = resolveHarnessRoot(
+      { OPENGRIMOIRE_HARNESS_ROOT: 'D:/harness' },
+      '/home/runner/work/OpenGrimoire/OpenGrimoire/.cursor/state/autoresearch_events.jsonl'
+    );
+    expect(root).toBe('D:/harness');
+    expect(root).not.toContain('/home/runner');
+  });
 });
 
 describe('readEvalRunsJsonl', () => {

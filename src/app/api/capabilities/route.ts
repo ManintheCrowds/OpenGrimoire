@@ -71,6 +71,17 @@ const CAPABILITIES = {
       reference_note:
         'See ARCHITECTURE_REST_CONTRACT.md matrix row; AGENT_INTEGRATION.md headers. Ingest: operator session or OPERATOR_PROBE_INGEST_SECRET + x-operator-probe-ingest-key. Admin list/detail/delete: session or optional OPERATOR_PROBE_ADMIN_SECRET + x-operator-probe-admin-key.',
     },
+    {
+      id: 'autoresearch_observability',
+      summary:
+        'Harness autoresearch ratchet experiments: read JSONL events from MiscRepos autoresearch_events.jsonl; policy trace and iteration timeline in admin cockpit.',
+      ui_path: '/admin',
+      api: 'GET /api/admin/cockpit/autoresearch; GET /api/admin/cockpit/autoresearch/{experimentId}; POST /api/admin/cockpit/autoresearch',
+      data_source: 'OPENGRIMOIRE_AUTORESEARCH_EVENTS_LOG (default: ../MiscRepos/.cursor/state/autoresearch_events.jsonl)',
+      refresh: 'After harness Emit-AutoresearchEvent.ps1 or policy merge script',
+      reference_note:
+        'Panel contract OG-OC-17; policy ADR in MiscRepos docs/agent/ADR_AUTORESEARCH_POLICY_MERGE.md',
+    },
   ],
   ui_surfaces: [
     {
@@ -230,6 +241,16 @@ const CAPABILITIES = {
       path: '/api/admin/cockpit/ux-metrics',
       methods: ['GET'],
       auth: 'OpenGrimoire operator session cookie; derived UX telemetry metrics adapter',
+    },
+    {
+      path: '/api/admin/cockpit/autoresearch',
+      methods: ['GET', 'POST'],
+      auth: 'OpenGrimoire operator session cookie; harness autoresearch JSONL adapter (read + append)',
+    },
+    {
+      path: '/api/admin/cockpit/autoresearch/:experimentId',
+      methods: ['GET'],
+      auth: 'OpenGrimoire operator session cookie; single experiment detail + policy trace',
     },
     {
       path: '/api/admin/cockpit/workflow-recipes',

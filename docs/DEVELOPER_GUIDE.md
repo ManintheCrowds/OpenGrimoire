@@ -58,7 +58,25 @@ OPENGRIMOIRE_SESSION_SECRET=change-me-long-random
 OPENGRIMOIRE_ADMIN_PASSWORD=change-me
 ALIGNMENT_CONTEXT_ALLOW_INSECURE_LOCAL=true
 NODE_ENV=development
+
+# Autoresearch observability (OG-OC-17) — optional; defaults to ../MiscRepos/.cursor/state/
+OPENGRIMOIRE_AUTORESEARCH_EVENTS_LOG=C:/Users/you/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_events.jsonl
+OPENGRIMOIRE_AUTORESEARCH_FOCUS_JSON=C:/Users/you/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_focus.json
+OG_AUTORESEARCH_PANEL=1
 ```
+
+**Autoresearch env (admin cockpit):**
+
+| Variable | Purpose |
+|----------|---------|
+| `OPENGRIMOIRE_AUTORESEARCH_EVENTS_LOG` | Absolute path to harness `autoresearch_events.jsonl` (JSONL adapter input) |
+| `OPENGRIMOIRE_EVAL_RUNS_LOG` | Optional; defaults to sibling `eval_runs.jsonl` under `.cursor/state/` |
+| `OPENGRIMOIRE_HARNESS_ROOT` | Optional MiscRepos repo root; enables local git diff on detail view (else GitHub compare link) |
+| `OPENGRIMOIRE_AUTORESEARCH_FOCUS_JSON` | Absolute path to `autoresearch_focus.json` (active experiment id) |
+| `AUTORESEARCH_AUTO_MERGE` | OG server process env; `0` = kill switch (detail badge when merge blocked on that predicate) |
+| `OG_AUTORESEARCH_PANEL` | Set to `0` to hide the Admin **Autoresearch** tab (API still serves data) |
+
+Detail route: `/admin/autoresearch/[experimentId]` — policy predicate table, timeline, mutable asset diff stats. Panel contract: [OG-OC-17-autoresearch-experiments.md](integrations/panel-contracts/OG-OC-17-autoresearch-experiments.md).
 
 ## Code Organization
 

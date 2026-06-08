@@ -168,6 +168,54 @@ test.describe('Admin moderation API', () => {
         }),
       });
     });
+    await page.route('**/api/admin/cockpit/autoresearch', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          panel: 'autoresearch-experiments',
+          mode: 'jsonl_adapter',
+          panel_enabled: true,
+          logPath: 'C:/Users/Dell/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_events.jsonl',
+          focusPath: 'C:/Users/Dell/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_focus.json',
+          summary: 'Read 2 autoresearch events across 1 experiment.',
+          active_experiment_id: '2026-06-06-foam-pkm',
+          skippedMalformedLines: 0,
+          experiments: [
+            {
+              experiment_id: '2026-06-06-foam-pkm',
+              asset: 'foam-pkm',
+              branch: 'autoresearch/2026-06-06-foam-pkm',
+              status: 'merged',
+              iteration_count: 1,
+              latest_metric: '5/5',
+              latest_pass: true,
+              started_at: '2026-06-06T12:30:00Z',
+              updated_at: '2026-06-07T00:00:00Z',
+              github_compare_url: 'https://github.com/example/MiscRepos/pull/17',
+            },
+          ],
+          events: [
+            {
+              event: 'tier_b_complete',
+              ts: '2026-06-06T20:30:00Z',
+              experiment_id: '2026-06-06-foam-pkm',
+              asset: 'foam-pkm',
+              branch: 'autoresearch/2026-06-06-foam-pkm',
+              metric: '5/5',
+              pass: true,
+            },
+          ],
+          policy_trace: {
+            event: 'merge_applied',
+            ts: '2026-06-07T00:00:00Z',
+            pass: true,
+            detail: 'All predicates passed',
+            policy: { predicate: 'all', result: true, detail: 'tier_b_pass,critic_pass' },
+          },
+        }),
+      });
+    });
 
     const seed = await request.post('/api/survey', {
       headers: { 'Content-Type': 'application/json' },
@@ -296,8 +344,15 @@ test.describe('Admin moderation API', () => {
     await expect(page.getByTestId('admin-local-activity-panel')).toBeVisible();
     await expect(page.getByTestId('admin-local-activity-log-path')).toContainText('local-ai-activity.jsonl');
 
+    await page.getByTestId('admin-right-tab-autoresearch').click();
+    await expect(page.getByTestId('admin-right-tab-autoresearch')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('admin-right-tabpanel-autoresearch')).toBeVisible();
+    await expect(page.getByTestId('admin-autoresearch-panel')).toBeVisible();
+    await expect(page.getByTestId('admin-autoresearch-policy-trace')).toContainText('merge_applied');
+    await expect(page.getByTestId('admin-autoresearch-experiment-2026-06-06-foam-pkm')).toContainText('foam-pkm');
+
     await page.reload();
-    await expect(page.getByTestId('admin-right-tab-local-activity')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('admin-right-tab-autoresearch')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('moderation-queue-status-filter')).toHaveValue('pending');
     await expect(page.getByTestId('moderation-queue-age-sort')).toHaveValue('newest_first');
   });

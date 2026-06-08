@@ -38,7 +38,7 @@ export default function SharedNavBar() {
     >
       {navGroups.map((group) => (
         <div key={group.label} className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{group.label}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-600">{group.label}</span>
           {group.items.map(({ href, label, testId }) => {
             const isActive =
               href === '/'

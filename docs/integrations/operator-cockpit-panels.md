@@ -70,6 +70,7 @@ Use the template in [operator-cockpit-panel-contract-template.md](operator-cockp
 - [OG-OC-14 local runtime health panel](panel-contracts/OG-OC-14-local-runtime-health.md)
 - [OG-OC-15 workflow recipes panel](panel-contracts/OG-OC-15-workflow-recipes.md)
 - [OG-OC-16 local AI activity log panel](panel-contracts/OG-OC-16-local-ai-activity-log.md)
+- [OG-OC-17 autoresearch experiments panel](panel-contracts/OG-OC-17-autoresearch-experiments.md)
 
 ---
 

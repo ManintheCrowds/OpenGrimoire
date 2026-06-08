@@ -39,7 +39,8 @@ type RightColumnTab =
   | 'ops'
   | 'local-ai'
   | 'recipes'
-  | 'local-activity';
+  | 'local-activity'
+  | 'autoresearch';
 
 interface ActivityFeedResponse {
   mode: 'placeholder';
@@ -136,6 +137,51 @@ interface LocalAiActivityResponse {
     summary: string;
     detail?: string;
   }>;
+}
+
+interface AutoresearchCockpitResponse {
+  panel: string;
+  mode: string;
+  panel_enabled?: boolean;
+  logPath: string;
+  focusPath: string;
+  summary: string;
+  active_experiment_id: string | null;
+  skippedMalformedLines: number;
+  experiments: Array<{
+    experiment_id: string;
+    asset: string;
+    branch: string;
+    status: string;
+    iteration_count: number;
+    latest_metric: string;
+    latest_pass: boolean | null;
+    started_at: string;
+    updated_at: string;
+    github_compare_url?: string;
+  }>;
+  events: Array<{
+    event: string;
+    ts: string;
+    experiment_id: string;
+    asset: string;
+    branch: string;
+    iteration?: number;
+    phase?: string;
+    metric?: string;
+    pass?: boolean;
+    detail?: string;
+    policy?: { predicate: string; result: boolean; detail?: string };
+    github?: { pr?: number; compare_url?: string };
+  }>;
+  policy_trace: {
+    event: string;
+    ts: string;
+    pass: boolean | null;
+    detail?: string;
+    policy?: { predicate: string; result: boolean; detail?: string };
+    github?: { pr?: number; compare_url?: string };
+  } | null;
 }
 
 const COCKPIT_SESSION_KEY = 'opengrimoire.adminCockpit.v1';
@@ -271,6 +317,23 @@ export function AdminPanel() {
       return (await res.json()) as LocalAiActivityResponse;
     },
   });
+  const autoresearchQuery = useQuery({
+    queryKey: ['admin', 'cockpit-autoresearch'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/cockpit/autoresearch', { credentials: 'include' });
+      if (!res.ok) {
+        throw new Error(`Failed to load autoresearch panel (${res.status})`);
+      }
+      return (await res.json()) as AutoresearchCockpitResponse;
+    },
+  });
+  const showAutoresearchPanel = autoresearchQuery.data?.panel_enabled !== false;
+
+  React.useEffect(() => {
+    if (!showAutoresearchPanel && activeRightTab === 'autoresearch') {
+      setActiveRightTab('local-activity');
+    }
+  }, [showAutoresearchPanel, activeRightTab]);
 
   const error =
     queueQuery.error instanceof Error
@@ -814,6 +877,34 @@ export function AdminPanel() {
                   Activity Log
                 </button>
               )}
+              {showAutoresearchPanel &&
+                (activeRightTab === 'autoresearch' ? (
+                  <button
+                    id="admin-right-tab-autoresearch"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="admin-right-tabpanel-autoresearch"
+                    data-testid="admin-right-tab-autoresearch"
+                    onClick={() => setActiveRightTab('autoresearch')}
+                    className="rounded-md px-3 py-2 text-sm font-medium bg-slate-900 text-white"
+                  >
+                    Autoresearch
+                  </button>
+                ) : (
+                  <button
+                    id="admin-right-tab-autoresearch"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="admin-right-tabpanel-autoresearch"
+                    data-testid="admin-right-tab-autoresearch"
+                    onClick={() => setActiveRightTab('autoresearch')}
+                    className="rounded-md px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700"
+                  >
+                    Autoresearch
+                  </button>
+                ))}
             </div>
             {!selectedItem && activeRightTab === 'context' ? (
               <p className="text-sm text-gray-500" data-testid="moderation-detail-empty">
@@ -1251,6 +1342,104 @@ export function AdminPanel() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    )}
+                  </section>
+                )}
+                {showAutoresearchPanel && activeRightTab === 'autoresearch' && (
+                  <section
+                    role="tabpanel"
+                    id="admin-right-tabpanel-autoresearch"
+                    aria-labelledby="admin-right-tab-autoresearch"
+                    data-testid="admin-right-tabpanel-autoresearch"
+                    className="rounded-lg border border-gray-200 bg-gray-50 p-4"
+                  >
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                      Autoresearch experiments
+                    </h3>
+                    {autoresearchQuery.isPending ? (
+                      <p className="mt-2 text-sm text-gray-600">Loading autoresearch events...</p>
+                    ) : autoresearchQuery.isError ? (
+                      <p className="mt-2 text-sm text-amber-700" data-testid="admin-autoresearch-error">
+                        Autoresearch panel unavailable right now.
+                      </p>
+                    ) : (
+                      <div data-testid="admin-autoresearch-panel" className="mt-2 space-y-4 text-sm text-gray-700">
+                        <p>{autoresearchQuery.data?.summary}</p>
+                        <p className="font-mono text-xs">{autoresearchQuery.data?.logPath}</p>
+                        {autoresearchQuery.data?.policy_trace && (
+                          <div
+                            data-testid="admin-autoresearch-policy-trace"
+                            className="rounded border border-gray-200 bg-white p-3"
+                          >
+                            <p className="font-medium">Policy trace</p>
+                            <p className="text-xs text-gray-500">
+                              {autoresearchQuery.data.policy_trace.event} /{' '}
+                              {autoresearchQuery.data.policy_trace.ts}
+                            </p>
+                            <p>{autoresearchQuery.data.policy_trace.detail}</p>
+                            {autoresearchQuery.data.policy_trace.policy && (
+                              <p className="text-xs">
+                                {autoresearchQuery.data.policy_trace.policy.predicate}:{' '}
+                                {String(autoresearchQuery.data.policy_trace.policy.result)}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          {(autoresearchQuery.data?.experiments ?? []).map((experiment) => (
+                            <article
+                              key={experiment.experiment_id}
+                              data-testid={`admin-autoresearch-experiment-${experiment.experiment_id}`}
+                              className="rounded border border-gray-200 bg-white p-3"
+                            >
+                              <p className="font-medium">
+                                {experiment.asset} ({experiment.experiment_id})
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {experiment.status} · {experiment.iteration_count} iterations · metric{' '}
+                                {experiment.latest_metric || '—'}
+                              </p>
+                              <p className="font-mono text-xs">{experiment.branch}</p>
+                              {experiment.github_compare_url && (
+                                <a
+                                  href={experiment.github_compare_url}
+                                  className="text-xs text-blue-700 underline"
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  View compare on GitHub
+                                </a>
+                              )}
+                              <a
+                                href={`/admin/autoresearch/${encodeURIComponent(experiment.experiment_id)}`}
+                                className="ml-2 text-xs text-blue-700 underline"
+                              >
+                                Detail
+                              </a>
+                            </article>
+                          ))}
+                        </div>
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="py-1 pr-2">Event</th>
+                              <th className="py-1 pr-2">Phase</th>
+                              <th className="py-1 pr-2">Metric</th>
+                              <th className="py-1">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(autoresearchQuery.data?.events ?? []).slice(0, 20).map((event, index) => (
+                              <tr key={`${event.ts}-${index}`} className="border-b border-gray-100">
+                                <td className="py-1 pr-2">{event.event}</td>
+                                <td className="py-1 pr-2">{event.phase ?? '—'}</td>
+                                <td className="py-1 pr-2">{event.metric ?? '—'}</td>
+                                <td className="py-1">{event.ts}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </section>

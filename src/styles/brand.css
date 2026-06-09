@@ -258,6 +258,26 @@ html.dark .form-container {
   border-color: #374151;
 }
 
+html.dark .form-label {
+  color: #f3f4f6;
+}
+
+html.dark .form-input {
+  background: #111827;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+html.dark .form-input:focus {
+  background: #1f2937;
+  border-color: #60a5fa;
+}
+
+html.dark {
+  --brand-body-text: #e5e7eb;
+  --brand-secondary-text: #d1d5db;
+}
+
 html.dark body {
   background-color: #030712;
   color: #e5e7eb;

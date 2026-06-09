@@ -47,33 +47,38 @@ test.describe('OG-GUI-01 evidence', () => {
 
   test('flow 1: operator-intake submit → success or error + screenshot', async ({ page }) => {
     const dump = wireDiagnostics(page);
+    const bootstrapOk = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/survey/bootstrap-token') &&
+        res.request().method() === 'GET' &&
+        res.ok(),
+      { timeout: 15000 }
+    );
     await page.goto('/operator-intake');
+    await bootstrapOk;
+
     const surveyPost = page.waitForResponse(
       (res) => res.url().includes('/api/survey') && res.request().method() === 'POST'
     );
 
     await expect(page.getByTestId('sync-session-form-container')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('name-input')).toBeVisible({ timeout: 10000 });
     await page.getByTestId('name-input').fill('OG-GUI-01');
     await page.getByTestId('email-input').fill('og-gui-01@example.com');
     await page.getByTestId('next-button').click();
 
-    await page.getByText('1-2 years').click();
+    await page.getByTestId('session-intent-input').fill('Align agent memory for OG-GUI-01 evidence');
     await page.getByTestId('next-button').click();
 
-    await page
-      .getByTestId('sync-session-form-container')
-      .getByText('Visual', { exact: true })
-      .click();
+    await page.getByTestId('session-context-input').fill('BrowserReview evidence run for Wave 10 audit');
     await page.getByTestId('next-button').click();
 
     await page.getByText('Mentorship').first().click();
     await page.getByTestId('next-button').click();
 
-    await page.getByText('Extrovert, Morning').first().click();
+    await page.getByTestId('working-style-collaborative').click();
     await page.getByTestId('next-button').click();
 
-    await page.getByText('Making an Impact').first().click();
+    await page.getByTestId('constraints-input').fill('No production deploy this week');
     await page.getByTestId('next-button').click();
 
     await page.getByTestId('unique-quality-input').fill('OG-GUI-01 BrowserReview evidence run.');

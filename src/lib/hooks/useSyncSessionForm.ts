@@ -94,6 +94,9 @@ export function useSyncSessionForm() {
         postTokenRef.current = parsed.token;
         setBootstrapTokenStatus('ok');
       } else {
+        const required =
+          data.required === true || (data.required !== false && data.expiresIn != null);
+        bootstrapRequiredRef.current = required;
         setBootstrapTokenStatus('failed');
       }
     } catch {

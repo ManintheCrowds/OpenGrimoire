@@ -56,7 +56,11 @@ test.describe('Sync Session flow (v2)', () => {
 
   test('Sync Session shows bootstrap-token CTA when token bootstrap fails', async ({ page }) => {
     await page.route('**/api/survey/bootstrap-token', async (route) => {
-      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'down' }) });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: null, required: true }),
+      });
     });
 
     await page.goto('/operator-intake');

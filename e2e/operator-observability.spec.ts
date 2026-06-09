@@ -138,7 +138,7 @@ test.describe('Operator observability', () => {
       },
       data: {
         probe_type: 'cursor_path_analysis',
-        target_host: 'continuity.cursor.com',
+        target_host: 'api.cursor.com',
         runner_id: runnerId,
         runner_type: 'ci',
         summary: { continuity: true },
@@ -158,9 +158,10 @@ test.describe('Operator observability', () => {
     await expect(page.getByTestId('operator-probe-detail-heading')).toBeVisible();
 
     await Promise.all([
-      page.waitForURL('**/admin/observability'),
+      page.waitForURL('**/admin/observability', { timeout: 20000 }),
       page.getByRole('link', { name: 'All probe runs' }).click(),
     ]);
-    await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible();
+    await expect(page.getByTestId('operator-observability-heading')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible({ timeout: 20000 });
   });
 });

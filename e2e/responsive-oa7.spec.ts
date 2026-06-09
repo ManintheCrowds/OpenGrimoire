@@ -33,7 +33,7 @@ test.describe('OA-7 responsive (narrow viewports)', () => {
       });
     });
     await page.goto('/context-atlas');
-    await expect(page.getByRole('heading', { name: /context graph/ })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /Brain Map/i })).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('brain-map-graph')).toBeVisible();
     await expect(
       page.getByRole('button', { name: /Reload context graph from server/ })
@@ -52,7 +52,7 @@ test.describe('OA-7 responsive (narrow viewports)', () => {
       });
     });
     await page.goto('/context-atlas');
-    await expect(page.getByRole('heading', { name: /context graph/ })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /Brain Map/i })).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('brain-map-graph')).toBeVisible();
     await assertDocumentFitsViewportWidth(page);
   });

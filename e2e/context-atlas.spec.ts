@@ -88,7 +88,7 @@ test.describe('Context Atlas (Brain Map)', () => {
     });
     await page.goto('/context-atlas');
     await expect(page.getByTestId('brain-map-placeholder-hint')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('brain-map-placeholder-hint')).toContainText('Placeholder graph');
+    await expect(page.getByTestId('brain-map-placeholder-hint')).toContainText('Placeholder map');
   });
 
   test('mocked graph older than 72h shows stale freshness state', async ({ page }) => {

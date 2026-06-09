@@ -628,7 +628,7 @@ export default function BrainMapGraph() {
         )}
         {placeholderFromEmptyApi && (
           <p
-            className="mt-2 text-sm text-slate-700"
+            className="mt-2 text-sm text-slate-700 dark:text-slate-200"
             data-testid="brain-map-placeholder-hint"
             role="status"
           >

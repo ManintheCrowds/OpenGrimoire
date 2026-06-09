@@ -49,17 +49,17 @@ export function SyncSessionForm() {
       <div className="max-w-xl w-full mx-auto px-0 pt-4 pb-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-[var(--brand-navy-blue)] mb-2" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
+          <h1 className="mb-2 text-2xl font-bold text-[var(--brand-navy-blue)] dark:text-gray-100" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
             Sync Session
           </h1>
-          <p className="text-[var(--brand-secondary-text)] text-sm mb-2" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
+          <p className="mb-2 text-sm text-[var(--brand-secondary-text)] dark:text-gray-300" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
             A short alignment pass for turning human context into durable agent memory.
           </p>
         </div>
 
         {/* Progress: bar + step label for sighted users and AT */}
         <div className="mb-2" aria-live="polite" aria-atomic="true">
-          <p className="text-center text-sm text-[var(--brand-secondary-text)] mb-1" id="sync-session-step-status">
+          <p className="mb-1 text-center text-sm text-[var(--brand-secondary-text)] dark:text-gray-300" id="sync-session-step-status">
             Step {currentStep + 1} of {TOTAL_STEPS}
           </p>
         </div>

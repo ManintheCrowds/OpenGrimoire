@@ -5,11 +5,11 @@
   ],
   "requestFailed": [
     {
-      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Regular.woff2",
+      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Bold.woff2",
       "error": "net::ERR_ABORTED"
     },
     {
-      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Bold.woff2",
+      "url": "http://localhost:3001/src/branding/AvenirNextWorld-Regular.woff2",
       "error": "net::ERR_ABORTED"
     }
   ]

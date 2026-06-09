@@ -50,11 +50,11 @@ export function VisualizationContainer({
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="text-center mb-8">
+      <div className="mb-8 rounded-lg bg-gray-50 px-4 py-3 text-center dark:bg-gray-950">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 sm:text-4xl">
           {title}
         </h1>
-        <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+        <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
           {description}
         </p>
       </div>

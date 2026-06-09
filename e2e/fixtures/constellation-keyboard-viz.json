@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "id": "e2e-constellation-a",
+      "tenure_years": 3,
+      "learning_style": "visual",
+      "shaped_by": "mentors",
+      "peak_performance": "morning",
+      "motivation": "impact",
+      "unique_quality": "E2E constellation keyboard node A.",
+      "attendee": { "first_name": "A", "last_name": null, "is_anonymous": true },
+      "moderation": [{ "status": "approved" }]
+    },
+    {
+      "id": "e2e-constellation-b",
+      "tenure_years": 5,
+      "learning_style": "visual",
+      "shaped_by": "experience",
+      "peak_performance": "evening",
+      "motivation": "growth",
+      "unique_quality": "E2E constellation keyboard node B.",
+      "attendee": { "first_name": "B", "last_name": null, "is_anonymous": true },
+      "moderation": [{ "status": "approved" }]
+    }
+  ]
+}

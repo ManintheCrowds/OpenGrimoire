@@ -1,6 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import {
+  THEME_STORAGE_KEY,
+  type ThemePreference,
+  parseThemePreference,
+  resolveIsDark,
+  getSystemPrefersDark,
+  applyDarkClass,
+} from '@/lib/theme/resolveTheme';
 
 // Define the structure for category colors with theme support
 export interface CategoryColors {
@@ -21,6 +29,7 @@ export interface VisualizationSettings {
   categoryColors: ThemeAwareColors;
   
   // Theme settings
+  themePreference: ThemePreference;
   isDarkMode: boolean;
   
   // Data settings
@@ -117,6 +126,7 @@ const defaultSettings: VisualizationSettings = {
     light: defaultLightColors,
     dark: defaultDarkColors
   },
+  themePreference: 'system',
   isDarkMode: true,
   useTestData: true,
   autoPlaySpeed: 5000, // 5 seconds
@@ -127,6 +137,7 @@ const defaultSettings: VisualizationSettings = {
 interface AppContextType {
   settings: VisualizationSettings;
   updateCategoryColor: (category: string, answer: string, color: string, theme?: 'light' | 'dark') => void;
+  setTheme: (mode: ThemePreference) => void;
   toggleDarkMode: () => void;
   toggleTestData: () => void;
   updateAutoPlaySpeed: (speed: number) => void;
@@ -138,19 +149,45 @@ interface AppContextType {
 // Create the context
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Provider component
-const THEME_STORAGE_KEY = 'opengrimoire.theme';
+function readAndApplyTheme(): { preference: ThemePreference; isDark: boolean } {
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  const preference = parseThemePreference(stored);
+  const isDark = resolveIsDark(stored, getSystemPrefersDark());
+  applyDarkClass(isDark);
+  return { preference, isDark };
+}
 
+// Provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<VisualizationSettings>(defaultSettings);
 
+  const setTheme = useCallback((mode: ThemePreference) => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    const isDark = mode === 'system'
+      ? resolveIsDark('system', getSystemPrefersDark())
+      : mode === 'dark';
+    applyDarkClass(isDark);
+    setSettings((prev) => ({ ...prev, themePreference: mode, isDarkMode: isDark }));
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    const dark = stored === 'light' ? false : true;
-    setSettings((prev) => ({ ...prev, isDarkMode: dark }));
-    document.documentElement.classList.toggle('dark', dark);
+    const { preference, isDark } = readAndApplyTheme();
+    setSettings((prev) => ({ ...prev, themePreference: preference, isDarkMode: isDark }));
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || settings.themePreference !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      const isDark = resolveIsDark('system', mq.matches);
+      applyDarkClass(isDark);
+      setSettings((prev) => ({ ...prev, isDarkMode: isDark }));
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [settings.themePreference]);
 
   const updateCategoryColor = (category: string, answer: string, color: string, theme?: 'light' | 'dark') => {
     const targetTheme = theme || (settings.isDarkMode ? 'dark' : 'light');
@@ -171,14 +208,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const toggleDarkMode = () => {
-    setSettings((prev) => {
-      const nextDark = !prev.isDarkMode;
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(THEME_STORAGE_KEY, nextDark ? 'dark' : 'light');
-        document.documentElement.classList.toggle('dark', nextDark);
-      }
-      return { ...prev, isDarkMode: nextDark };
-    });
+    setTheme(settings.isDarkMode ? 'light' : 'dark');
   };
 
   const toggleTestData = () => {
@@ -203,6 +233,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const resetToDefaults = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_STORAGE_KEY, defaultSettings.themePreference);
+      const isDark = resolveIsDark('system', getSystemPrefersDark());
+      applyDarkClass(isDark);
+      setSettings({ ...defaultSettings, isDarkMode: isDark });
+      return;
+    }
     setSettings(defaultSettings);
   };
 
@@ -213,6 +250,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const value: AppContextType = {
     settings,
     updateCategoryColor,
+    setTheme,
     toggleDarkMode,
     toggleTestData,
     updateAutoPlaySpeed,
@@ -235,4 +273,4 @@ export const useAppContext = () => {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
-}; 
+};

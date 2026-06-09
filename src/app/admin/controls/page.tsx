@@ -114,8 +114,15 @@ const Slider: React.FC<{
   </div>
 );
 
+const THEME_OPTIONS = ['light', 'dark', 'system'] as const;
+
+function themePreviewLabel(preference: (typeof THEME_OPTIONS)[number], isDark: boolean): string {
+  if (preference === 'system') return isDark ? 'System (Dark)' : 'System (Light)';
+  return preference === 'dark' ? 'Dark' : 'Light';
+}
+
 export default function GlobalControlsPage() {
-  const { settings, updateCategoryColor, toggleDarkMode, toggleTestData, updateAutoPlaySpeed, toggleAutoPlay, resetToDefaults } = useAppContext();
+  const { settings, updateCategoryColor, setTheme, toggleTestData, updateAutoPlaySpeed, toggleAutoPlay, resetToDefaults } = useAppContext();
   const [colorEditMode, setColorEditMode] = useState<'light' | 'dark'>('light');
   const [lifecycleMsg, setLifecycleMsg] = useState<string>('');
 
@@ -218,13 +225,35 @@ export default function GlobalControlsPage() {
               </h2>
               
               <div className="space-y-6">
-                {/* Dark Mode Toggle */}
-                <ToggleSwitch
-                  enabled={settings.isDarkMode}
-                  onChange={toggleDarkMode}
-                  label="Dark Mode"
-                  description="Switch between light and dark themes for all visualizations"
-                />
+                {/* Theme: explicit light/dark locks preference; system follows prefers-color-scheme */}
+                <div>
+                  <label className="text-sm font-medium text-gray-900 dark:text-white">Theme</label>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    Light and Dark override OS preference until System is selected again.
+                  </p>
+                  <div
+                    role="radiogroup"
+                    aria-label="Theme"
+                    className="flex rounded-md border border-gray-200 dark:border-gray-600 overflow-hidden"
+                  >
+                    {THEME_OPTIONS.map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        role="radio"
+                        aria-checked={settings.themePreference === mode}
+                        onClick={() => setTheme(mode)}
+                        className={`flex-1 px-3 py-2 text-sm font-medium transition-colors capitalize ${
+                          settings.themePreference === mode
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Test Data Toggle */}
                 <ToggleSwitch
@@ -340,7 +369,7 @@ export default function GlobalControlsPage() {
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {settings.isDarkMode ? 'Dark' : 'Light'}
+                {themePreviewLabel(settings.themePreference, settings.isDarkMode)}
               </div>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">

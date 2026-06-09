@@ -4,6 +4,7 @@ import './globals.css';
 import ClientProviders from './providers';
 import SharedNavBar from '@/components/SharedNavBar';
 import SiteFooter from '@/components/SiteFooter';
+import { getThemeInitScript } from '@/lib/theme/resolveTheme';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,7 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.className} dark`} suppressHydrationWarning>
+    <html lang="en" className={inter.className} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getThemeInitScript() }} />
+      </head>
       <body className="flex min-h-dvh flex-col">
         <ClientProviders>
           <SharedNavBar />

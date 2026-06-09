@@ -58,9 +58,16 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
   const [nodePositions, setNodePositions] = useState<{ [id: string]: [number, number, number] }>({});
   const [currentAttribute, setCurrentAttribute] = useState('learning_style');
   const [transition, setTransition] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const announcedLoadRef = useRef(false);
+  const prevAttributeRef = useRef(currentAttribute);
+  const prevAutoPlayRef = useRef(isAutoPlay);
 
   // Available attributes for cycling
   const availableAttributes = ['learning_style', 'shaped_by', 'peak_performance', 'motivation'];
+
+  const formatAttributeLabel = (attr: string) =>
+    attr.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
   // Calculate 16:9 aspect ratio dimensions
   const containerAspectRatio = 16 / 9;
@@ -144,6 +151,30 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
       }
     };
   }, [isAutoPlay, currentAttribute, availableAttributes]);
+
+  useEffect(() => {
+    if (validNodes.length === 0) return;
+    if (!announcedLoadRef.current) {
+      announcedLoadRef.current = true;
+      setAnnouncement(`Constellation loaded. ${validNodes.length} nodes.`);
+    }
+  }, [validNodes.length]);
+
+  useEffect(() => {
+    if (validNodes.length === 0) return;
+    if (prevAttributeRef.current !== currentAttribute) {
+      prevAttributeRef.current = currentAttribute;
+      setAnnouncement(`Clustering by ${formatAttributeLabel(currentAttribute)}.`);
+    }
+  }, [currentAttribute, validNodes.length]);
+
+  useEffect(() => {
+    if (validNodes.length === 0) return;
+    if (prevAutoPlayRef.current !== isAutoPlay) {
+      prevAutoPlayRef.current = isAutoPlay;
+      setAnnouncement(isAutoPlay ? 'Auto-play started.' : 'Auto-play stopped.');
+    }
+  }, [isAutoPlay, validNodes.length]);
 
   // Calculate positions once when data loads - never recalculate
   useEffect(() => {
@@ -408,6 +439,14 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
       data-testid="opengrimoire-viz-constellation-root"
       data-region="opengrimoire-viz-constellation-root"
     >
+      <div
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="opengrimoire-viz-constellation-announcer"
+      >
+        {announcement}
+      </div>
       {/* Full-screen Canvas */}
       <div className="absolute inset-0">
         <Canvas
@@ -526,6 +565,7 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
                 key={attr}
                 type="button"
                 data-testid={`opengrimoire-viz-constellation-cluster-${attr}`}
+                aria-pressed={currentAttribute === attr}
                 onClick={() => setCurrentAttribute(attr)}
                 className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   currentAttribute === attr

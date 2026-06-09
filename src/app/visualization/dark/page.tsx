@@ -6,14 +6,14 @@ import Layout from '@/components/Layout';
 import { useAppContext } from '@/lib/context/AppContext';
 
 export default function DarkModeVisualizationPage() {
-  const { settings, toggleDarkMode } = useAppContext();
+  const { settings, setTheme } = useAppContext();
 
   // Force dark mode when this page loads
   useEffect(() => {
     if (!settings.isDarkMode) {
-      toggleDarkMode();
+      setTheme('dark');
     }
-  }, [settings.isDarkMode, toggleDarkMode]);
+  }, [settings.isDarkMode, setTheme]);
 
   // Ensure the page is always dark themed
   useEffect(() => {

@@ -114,6 +114,12 @@ describe('computeMutableAssetDiff', () => {
 });
 
 describe('evaluatePolicyPredicates', () => {
+  const evalPassRow = JSON.stringify({
+    suite: 'foam-pkm-autoresearch-tier-b',
+    pass: true,
+    ts: '2026-06-06T20:30:45Z',
+  });
+
   it('marks tier_b and critic pass from jsonl', () => {
     const result = evaluatePolicyPredicates(foamEvents, {
       env: { AUTORESEARCH_AUTO_MERGE: '1' },
@@ -154,10 +160,54 @@ describe('evaluatePolicyPredicates', () => {
     const result = evaluatePolicyPredicates(foamEvents, {
       env: { AUTORESEARCH_AUTO_MERGE: '0' },
       eventsLogPath: 'C:/repo/.cursor/state/autoresearch_events.jsonl',
-      existsSync: () => false,
+      existsSync: (p) => String(p).endsWith('eval_runs.jsonl'),
+      readFileSync: () => evalPassRow,
       execGit: () => '',
     });
     expect(result.kill_switch_blocked).toBe(true);
+  });
+
+  it('does not set kill_switch_blocked when other required predicates also fail', () => {
+    const result = evaluatePolicyPredicates(foamEvents, {
+      env: { AUTORESEARCH_AUTO_MERGE: '0' },
+      eventsLogPath: 'C:/repo/.cursor/state/autoresearch_events.jsonl',
+      existsSync: () => false,
+      execGit: () => '',
+    });
+
+    expect(result.kill_switch_blocked).toBe(false);
+  });
+
+  it('does not pass readiness when required git predicates are unavailable', () => {
+    const result = evaluatePolicyPredicates(foamEvents, {
+      env: { AUTORESEARCH_AUTO_MERGE: '1' },
+      eventsLogPath: 'C:/events/autoresearch_events.jsonl',
+      existsSync: (p) => String(p).endsWith('eval_runs.jsonl'),
+      readFileSync: () => evalPassRow,
+      execGit: () => '',
+    });
+
+    expect(result.predicates.find((p) => p.id === 'diff_bounded')?.pass).toBeNull();
+    expect(result.predicates.find((p) => p.id === 'no_harness_edit')?.pass).toBeNull();
+    expect(result.all_predicates_pass).toBe(false);
+  });
+
+  it('does not reuse stale eval pass rows from before the experiment started', () => {
+    const result = evaluatePolicyPredicates(foamEvents, {
+      env: { AUTORESEARCH_AUTO_MERGE: '1' },
+      eventsLogPath: 'C:/repo/.cursor/state/autoresearch_events.jsonl',
+      existsSync: (p) => String(p).endsWith('eval_runs.jsonl'),
+      readFileSync: () =>
+        JSON.stringify({
+          suite: 'foam-pkm-autoresearch-tier-b',
+          pass: true,
+          ts: '2026-06-06T12:00:00Z',
+        }),
+      execGit: () => '',
+    });
+
+    expect(result.predicates.find((p) => p.id === 'eval_recorded')?.pass).toBe(false);
+    expect(result.all_predicates_pass).toBe(false);
   });
 });
 
@@ -180,6 +230,18 @@ describe('isKillSwitchBlocked', () => {
         { event: 'merge_blocked', ts: 't', pass: false, detail: 'Failed: tier_b_pass' },
         false,
         ['tier_b_pass']
+      )
+    ).toBe(false);
+    expect(
+      isKillSwitchBlocked(
+        {
+          event: 'merge_blocked',
+          ts: 't',
+          pass: false,
+          detail: 'Failed: auto_merge_enabled, eval_recorded',
+        },
+        false,
+        ['auto_merge_enabled', 'eval_recorded']
       )
     ).toBe(false);
   });

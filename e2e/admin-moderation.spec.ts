@@ -69,6 +69,44 @@ test.describe('Admin moderation API', () => {
     expect(patchAlignmentOnly.status()).toBe(401);
   });
 
+  test('empty moderation queue still shows cockpit tabs', async ({ page }) => {
+    await page.route('**/api/admin/moderation-queue', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [] }),
+      });
+    });
+    await page.route('**/api/admin/cockpit/autoresearch', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          panel: 'autoresearch-experiments',
+          mode: 'jsonl_adapter',
+          panel_enabled: true,
+          logPath: 'data/autoresearch_events.jsonl',
+          focusPath: 'data/autoresearch_focus.json',
+          summary: 'Read 0 autoresearch events across 0 experiments.',
+          active_experiment_id: null,
+          skippedMalformedLines: 0,
+          experiments: [],
+          events: [],
+          policy_trace: null,
+        }),
+      });
+    });
+
+    await loginAsAdmin(page);
+
+    await expect(page.getByTestId('admin-moderation-shell')).toBeVisible();
+    await expect(page.getByTestId('moderation-queue-empty')).toBeVisible();
+    await expect(page.getByTestId('admin-moderation-column-detail')).toBeVisible();
+    await expect(page.getByTestId('admin-right-tabs')).toBeVisible();
+    await expect(page.getByTestId('admin-right-tab-autoresearch')).toBeVisible();
+    await expect(page.getByTestId('moderation-detail-empty')).toBeVisible();
+  });
+
   test('seed → loginAsAdmin → /admin shows moderation row for seeded response (UI)', async ({
     page,
     request,

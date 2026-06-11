@@ -529,15 +529,18 @@ export function AdminPanel() {
         <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">{error}</div>
       )}
 
-      {queue.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No responses waiting for moderation.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <section
-            className="space-y-4 lg:col-span-3"
-            data-testid="admin-moderation-column-queue"
-            aria-label="Moderation queue"
-          >
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <section
+          className="space-y-4 lg:col-span-3"
+          data-testid="admin-moderation-column-queue"
+          aria-label="Moderation queue"
+        >
+          {queue.length === 0 ? (
+            <p className="text-center text-gray-500 py-8" data-testid="moderation-queue-empty">
+              No responses waiting for moderation.
+            </p>
+          ) : (
+            <>
             <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 sm:grid-cols-2">
               <label className="text-sm text-gray-700" htmlFor="moderation-status-filter">
                 Status
@@ -621,7 +624,9 @@ export function AdminPanel() {
               </button>
               ))
             )}
-          </section>
+            </>
+          )}
+        </section>
           <aside
             className="bg-white shadow rounded-lg p-6 space-y-4 lg:col-span-2"
             data-testid="admin-moderation-column-detail"
@@ -1448,7 +1453,6 @@ export function AdminPanel() {
             )}
           </aside>
         </div>
-      )}
     </div>
   );
 }

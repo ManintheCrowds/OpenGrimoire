@@ -1,22 +1,35 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DataVisualization } from '@/components/DataVisualization';
 import Layout from '@/components/Layout';
+import { useAppContext } from '@/lib/context/AppContext';
 
 export default function DarkModeVisualizationPage() {
+  const { settings } = useAppContext();
+  const previousThemeClasses = useRef<{ html: boolean; body: boolean } | null>(null);
+
   // Keep this route dark without rewriting the user's saved theme preference.
   useEffect(() => {
-    const hadHtmlDark = document.documentElement.classList.contains('dark');
-    const hadBodyDark = document.body.classList.contains('dark');
+    previousThemeClasses.current = {
+      html: document.documentElement.classList.contains('dark'),
+      body: document.body.classList.contains('dark'),
+    };
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark');
 
     return () => {
-      document.documentElement.classList.toggle('dark', hadHtmlDark);
-      document.body.classList.toggle('dark', hadBodyDark);
+      const previous = previousThemeClasses.current;
+      if (!previous) return;
+      document.documentElement.classList.toggle('dark', previous.html);
+      document.body.classList.toggle('dark', previous.body);
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  }, [settings.isDarkMode]);
 
   return (
     <div className="dark">

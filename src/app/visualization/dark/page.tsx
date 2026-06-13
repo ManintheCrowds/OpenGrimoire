@@ -3,9 +3,12 @@
 import React, { useEffect } from 'react';
 import { DataVisualization } from '@/components/DataVisualization';
 import Layout from '@/components/Layout';
+import { useAppContext } from '@/lib/context/AppContext';
 import { applyDarkClass, getSystemPrefersDark, resolveIsDark, THEME_STORAGE_KEY } from '@/lib/theme/resolveTheme';
 
 export default function DarkModeVisualizationPage() {
+  const { settings } = useAppContext();
+
   // Force the route presentation without changing the user's saved theme.
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -16,7 +19,7 @@ export default function DarkModeVisualizationPage() {
       applyDarkClass(resolveIsDark(stored, getSystemPrefersDark()));
       document.body.classList.remove('dark');
     };
-  }, []);
+  }, [settings.isDarkMode, settings.themePreference]);
 
   return (
     <div className="dark">

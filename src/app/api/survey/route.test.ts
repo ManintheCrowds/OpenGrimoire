@@ -2,7 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
 
 import { getSqlite } from '@/db/client';
 import { createHarnessProfile } from '@/lib/storage/repositories/harness-profiles';

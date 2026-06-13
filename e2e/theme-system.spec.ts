@@ -37,7 +37,8 @@ test.describe('System theme (prefers-color-scheme)', () => {
 
   test('forced dark visualization does not persist over explicit light theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await setAppTheme(page, 'light');
+    await page.goto('/');
+    await page.evaluate(() => window.localStorage.setItem('opengrimoire.theme', 'light'));
 
     await page.goto('/visualization/dark');
     await expect(page.locator('html')).toHaveClass(/dark/);

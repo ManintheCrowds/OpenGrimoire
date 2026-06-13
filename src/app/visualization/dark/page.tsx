@@ -3,25 +3,18 @@
 import React, { useEffect } from 'react';
 import { DataVisualization } from '@/components/DataVisualization';
 import Layout from '@/components/Layout';
-import { useAppContext } from '@/lib/context/AppContext';
+import { applyDarkClass, getSystemPrefersDark, resolveIsDark, THEME_STORAGE_KEY } from '@/lib/theme/resolveTheme';
 
 export default function DarkModeVisualizationPage() {
-  const { settings, setTheme } = useAppContext();
-
-  // Force dark mode when this page loads
-  useEffect(() => {
-    if (!settings.isDarkMode) {
-      setTheme('dark');
-    }
-  }, [settings.isDarkMode, setTheme]);
-
-  // Ensure the page is always dark themed
+  // Force the route presentation without changing the user's saved theme.
   useEffect(() => {
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark');
-    
+
     return () => {
-      // Don't remove dark class on cleanup to avoid flashing
+      const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+      applyDarkClass(resolveIsDark(stored, getSystemPrefersDark()));
+      document.body.classList.remove('dark');
     };
   }, []);
 

@@ -43,6 +43,10 @@ test.describe('System theme (prefers-color-scheme)', () => {
     await page.goto('/visualization/dark');
     await expect(page.locator('html')).toHaveClass(/dark/);
     await expect(page.locator('body')).toHaveClass(/dark/);
+    await expect(page.locator('main div.absolute.top-0.left-0.w-screen.h-screen.flex.flex-col').first()).toHaveCSS(
+      'background-color',
+      'rgb(10, 10, 15)'
+    );
 
     await page.getByRole('link', { name: 'Light Mode' }).click();
     await expect(page).toHaveURL(/\/visualization$/);

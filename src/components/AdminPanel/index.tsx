@@ -535,97 +535,100 @@ export function AdminPanel() {
         <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">{error}</div>
       )}
 
-      {queue.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No responses waiting for moderation.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           <section
             className="space-y-4 lg:col-span-3"
             data-testid="admin-moderation-column-queue"
             aria-label="Moderation queue"
           >
-            <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 sm:grid-cols-2">
-              <label className="text-sm text-gray-700" htmlFor="moderation-status-filter">
-                Status
-                <select
-                  id="moderation-status-filter"
-                  data-testid="moderation-queue-status-filter"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as QueueStatusFilter)}
-                  className="mt-1 block w-full rounded-md border-gray-300 text-sm"
-                >
-                  <option value="all">All</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </label>
-              <label className="text-sm text-gray-700" htmlFor="moderation-age-sort">
-                Age
-                <select
-                  id="moderation-age-sort"
-                  data-testid="moderation-queue-age-sort"
-                  value={ageSort}
-                  onChange={(e) => setAgeSort(e.target.value as QueueAgeSort)}
-                  className="mt-1 block w-full rounded-md border-gray-300 text-sm"
-                >
-                  <option value="newest_first">Newest first</option>
-                  <option value="oldest_first">Oldest first</option>
-                </select>
-              </label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                data-testid="moderation-queue-preset-pending-newest"
-                onClick={() => applyPreset('pending_newest')}
-                className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
-              >
-                Pending + Newest
-              </button>
-              <button
-                type="button"
-                data-testid="moderation-queue-preset-rejected-oldest"
-                onClick={() => applyPreset('rejected_oldest')}
-                className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-800 hover:bg-rose-100"
-              >
-                Rejected + Oldest
-              </button>
-            </div>
-            {queueFilteredAndSorted.length === 0 ? (
-              <p className="text-sm text-gray-500" data-testid="moderation-queue-empty-filtered">
-                No queue items match the selected filters.
-              </p>
+            {queue.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">No responses waiting for moderation.</p>
             ) : (
-              queueFilteredAndSorted.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                data-testid={`moderation-queue-item-${item.id}`}
-                onClick={() => setSelectedResponseId(item.id)}
-                className={`w-full text-left bg-white shadow rounded-lg p-6 space-y-3 border ${
-                  selectedItem?.id === item.id ? 'border-blue-500 ring-1 ring-blue-500' : 'border-transparent'
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500">
-                      From:{' '}
-                      {item.attendee && item.attendee.first_name
-                        ? `${item.attendee.first_name}${item.attendee.last_name ? ' ' + item.attendee.last_name : ''}`
-                        : 'Unknown'}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Submitted: {new Date(item.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700">
-                    {item.moderation?.status ?? 'pending'}
-                  </span>
+              <>
+                <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 sm:grid-cols-2">
+                  <label className="text-sm text-gray-700" htmlFor="moderation-status-filter">
+                    Status
+                    <select
+                      id="moderation-status-filter"
+                      data-testid="moderation-queue-status-filter"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as QueueStatusFilter)}
+                      className="mt-1 block w-full rounded-md border-gray-300 text-sm"
+                    >
+                      <option value="all">All</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </label>
+                  <label className="text-sm text-gray-700" htmlFor="moderation-age-sort">
+                    Age
+                    <select
+                      id="moderation-age-sort"
+                      data-testid="moderation-queue-age-sort"
+                      value={ageSort}
+                      onChange={(e) => setAgeSort(e.target.value as QueueAgeSort)}
+                      className="mt-1 block w-full rounded-md border-gray-300 text-sm"
+                    >
+                      <option value="newest_first">Newest first</option>
+                      <option value="oldest_first">Oldest first</option>
+                    </select>
+                  </label>
                 </div>
-                <p className="text-gray-800 line-clamp-3">{item.unique_quality}</p>
-              </button>
-              ))
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-testid="moderation-queue-preset-pending-newest"
+                    onClick={() => applyPreset('pending_newest')}
+                    className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
+                  >
+                    Pending + Newest
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="moderation-queue-preset-rejected-oldest"
+                    onClick={() => applyPreset('rejected_oldest')}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-800 hover:bg-rose-100"
+                  >
+                    Rejected + Oldest
+                  </button>
+                </div>
+                {queueFilteredAndSorted.length === 0 ? (
+                  <p className="text-sm text-gray-500" data-testid="moderation-queue-empty-filtered">
+                    No queue items match the selected filters.
+                  </p>
+                ) : (
+                  queueFilteredAndSorted.map((item) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    data-testid={`moderation-queue-item-${item.id}`}
+                    onClick={() => setSelectedResponseId(item.id)}
+                    className={`w-full text-left bg-white shadow rounded-lg p-6 space-y-3 border ${
+                      selectedItem?.id === item.id ? 'border-blue-500 ring-1 ring-blue-500' : 'border-transparent'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          From:{' '}
+                          {item.attendee && item.attendee.first_name
+                            ? `${item.attendee.first_name}${item.attendee.last_name ? ' ' + item.attendee.last_name : ''}`
+                            : 'Unknown'}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Submitted: {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                        {item.moderation?.status ?? 'pending'}
+                      </span>
+                    </div>
+                    <p className="text-gray-800 line-clamp-3">{item.unique_quality}</p>
+                  </button>
+                  ))
+                )}
+              </>
             )}
           </section>
           <aside
@@ -1459,8 +1462,7 @@ export function AdminPanel() {
               </>
             )}
           </aside>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

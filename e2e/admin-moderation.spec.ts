@@ -420,6 +420,8 @@ test.describe('Admin moderation API', () => {
     await expect(page.getByTestId('admin-moderation-shell')).toBeVisible();
     await expect(page.getByText('No responses waiting for moderation.')).toBeVisible();
     await expect(page.getByTestId('admin-moderation-column-detail')).toBeVisible();
+    await expect(page.getByTestId('admin-right-tabpanel-context')).toBeVisible();
+    await expect(page.getByTestId('moderation-detail-empty')).toBeVisible();
     await expect(page.getByTestId('admin-right-tab-autoresearch')).toBeVisible();
 
     await page.getByTestId('admin-right-tab-autoresearch').click();

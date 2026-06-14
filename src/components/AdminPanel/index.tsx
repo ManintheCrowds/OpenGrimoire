@@ -916,9 +916,17 @@ export function AdminPanel() {
                 ))}
             </div>
             {!selectedItem && activeRightTab === 'context' ? (
-              <p className="text-sm text-gray-500" data-testid="moderation-detail-empty">
-                Select a queue item to view details.
-              </p>
+              <section
+                role="tabpanel"
+                id="admin-right-tabpanel-context"
+                aria-labelledby="admin-right-tab-context"
+                data-testid="admin-right-tabpanel-context"
+                className="space-y-4"
+              >
+                <p className="text-sm text-gray-500" data-testid="moderation-detail-empty">
+                  Select a queue item to view details.
+                </p>
+              </section>
             ) : (
               <>
                 {activeRightTab === 'context' && selectedItem && (

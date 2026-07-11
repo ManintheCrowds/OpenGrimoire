@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const config = readFileSync(resolve(process.cwd(), '.gitleaks.toml'), 'utf8');
+const ignore = readFileSync(resolve(process.cwd(), '.gitleaksignore'), 'utf8');
 
 describe('gitleaks configuration', () => {
   it('extends the built-in detector rules', () => {
@@ -22,6 +23,18 @@ describe('gitleaks configuration', () => {
 
     for (const pathAllowlist of disallowedPathAllowlists) {
       expect(config).not.toContain(`'''${pathAllowlist}'''`);
+    }
+  });
+
+  it('keeps historical ignores scoped to exact fingerprints', () => {
+    const entries = ignore
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'));
+
+    expect(entries).not.toHaveLength(0);
+    for (const entry of entries) {
+      expect(entry).toMatch(/^[0-9a-f]{40}:.+:[a-z0-9-]+:\d+$/);
     }
   });
 });

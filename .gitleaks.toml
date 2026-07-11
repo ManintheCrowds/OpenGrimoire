@@ -1,21 +1,17 @@
 title = "Gitleaks configuration"
 
-[allowlist]
-description = "Docs, binaries, local dev env, and build artifacts."
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Binary artifacts and generated output that should not carry source secrets."
 paths = [
-  '''.*\.md$''',
-  '''.*\.lock$''',
-  '''.*\.svg$''',
   '''.*\.png$''',
   '''.*\.jpg$''',
   '''.*\.jpeg$''',
   '''.*\.gif$''',
   '''.*\.pdf$''',
-  '''.*\.min\.js$''',
-  '''.*\.map$''',
   '''\.next/''',
-  '''\.env\.local$''',
-  '''\.env\..*\.local$''',
   '''out/''',
   '''/data/''',
   '''playwright-report/''',

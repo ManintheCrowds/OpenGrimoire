@@ -102,6 +102,7 @@ export async function POST(request: Request) {
       attendee_id: attendee.id,
       ...mapped.data.surveyResponse,
       categories: mapped.data.categories,
+      harness_profile_id: body.harnessProfileId ?? null,
     });
 
     return NextResponse.json({

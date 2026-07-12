@@ -34,4 +34,19 @@ test.describe('System theme (prefers-color-scheme)', () => {
     await page.goto('/');
     await expect(page.locator('html')).not.toHaveClass(/dark/);
   });
+
+  test('forced dark visualization does not persist over explicit light theme', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await setAppTheme(page, 'light');
+
+    await page.goto('/visualization/dark');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('opengrimoire.theme'))).toBe('light');
+
+    await page.getByRole('link', { name: 'Light Mode' }).click();
+    await expect(page).toHaveURL(/\/visualization$/);
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+    await expect(page.locator('body')).not.toHaveClass(/dark/);
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('opengrimoire.theme'))).toBe('light');
+  });
 });

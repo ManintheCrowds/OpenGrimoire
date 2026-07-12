@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from 'react';
 import {
   THEME_STORAGE_KEY,
   type ThemePreference,
@@ -162,9 +162,11 @@ function readAndApplyTheme(): { preference: ThemePreference; isDark: boolean } {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<VisualizationSettings>(defaultSettings);
   const [darkModeOverride, setDarkModeOverrideState] = useState<boolean | null>(null);
+  const darkModeOverrideRef = useRef<boolean | null>(null);
 
   const setTheme = useCallback((mode: ThemePreference) => {
     if (typeof window === 'undefined') return;
+    darkModeOverrideRef.current = null;
     setDarkModeOverrideState(null);
     window.localStorage.setItem(THEME_STORAGE_KEY, mode);
     const isDark = mode === 'system'
@@ -177,6 +179,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const setDarkModeOverride = useCallback((isDarkMode: boolean | null) => {
     if (typeof window === 'undefined') return;
+    darkModeOverrideRef.current = isDarkMode;
     setDarkModeOverrideState(isDarkMode);
     if (isDarkMode === null) {
       const { preference, isDark } = readAndApplyTheme();
@@ -191,6 +194,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (darkModeOverrideRef.current !== null) return;
     const { preference, isDark } = readAndApplyTheme();
     setSettings((prev) => ({ ...prev, themePreference: preference, isDarkMode: isDark }));
   }, []);
@@ -253,6 +257,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const resetToDefaults = () => {
     if (typeof window !== 'undefined') {
+      darkModeOverrideRef.current = null;
       setDarkModeOverrideState(null);
       window.localStorage.setItem(THEME_STORAGE_KEY, defaultSettings.themePreference);
       const isDark = resolveIsDark('system', getSystemPrefersDark());

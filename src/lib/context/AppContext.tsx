@@ -1,13 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import {
-  THEME_STORAGE_KEY,
   type ThemePreference,
   parseThemePreference,
   resolveIsDark,
   getSystemPrefersDark,
   applyDarkClass,
+  readStoredThemeValue,
+  writeStoredThemePreference,
 } from '@/lib/theme/resolveTheme';
 
 // Define the structure for category colors with theme support
@@ -138,6 +139,7 @@ interface AppContextType {
   settings: VisualizationSettings;
   updateCategoryColor: (category: string, answer: string, color: string, theme?: 'light' | 'dark') => void;
   setTheme: (mode: ThemePreference) => void;
+  setDarkModeOverride: (isDark: boolean | null) => void;
   toggleDarkMode: () => void;
   toggleTestData: () => void;
   updateAutoPlaySpeed: (speed: number) => void;
@@ -150,7 +152,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 function readAndApplyTheme(): { preference: ThemePreference; isDark: boolean } {
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  const stored = readStoredThemeValue();
   const preference = parseThemePreference(stored);
   const isDark = resolveIsDark(stored, getSystemPrefersDark());
   applyDarkClass(isDark);
@@ -160,27 +162,54 @@ function readAndApplyTheme(): { preference: ThemePreference; isDark: boolean } {
 // Provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<VisualizationSettings>(defaultSettings);
+  const darkModeOverrideRef = useRef<boolean | null>(null);
 
   const setTheme = useCallback((mode: ThemePreference) => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    writeStoredThemePreference(mode);
     const isDark = mode === 'system'
       ? resolveIsDark('system', getSystemPrefersDark())
       : mode === 'dark';
-    applyDarkClass(isDark);
-    setSettings((prev) => ({ ...prev, themePreference: mode, isDarkMode: isDark }));
+    const effectiveDark = darkModeOverrideRef.current ?? isDark;
+    applyDarkClass(effectiveDark);
+    setSettings((prev) => ({ ...prev, themePreference: mode, isDarkMode: effectiveDark }));
+  }, []);
+
+  const setDarkModeOverride = useCallback((isDark: boolean | null) => {
+    darkModeOverrideRef.current = isDark;
+    if (isDark !== null) {
+      applyDarkClass(isDark);
+      setSettings((prev) => ({ ...prev, isDarkMode: isDark }));
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    const next = readAndApplyTheme();
+    setSettings((prev) => ({
+      ...prev,
+      themePreference: next.preference,
+      isDarkMode: next.isDark,
+    }));
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const { preference, isDark } = readAndApplyTheme();
-    setSettings((prev) => ({ ...prev, themePreference: preference, isDarkMode: isDark }));
+    const effectiveDark = darkModeOverrideRef.current ?? isDark;
+    if (effectiveDark !== isDark) applyDarkClass(effectiveDark);
+    setSettings((prev) => ({ ...prev, themePreference: preference, isDarkMode: effectiveDark }));
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || settings.themePreference !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (!window.matchMedia) return;
+    let mq: MediaQueryList;
+    try {
+      mq = window.matchMedia('(prefers-color-scheme: dark)');
+    } catch {
+      return;
+    }
     const handler = () => {
+      if (darkModeOverrideRef.current !== null) return;
       const isDark = resolveIsDark('system', mq.matches);
       applyDarkClass(isDark);
       setSettings((prev) => ({ ...prev, isDarkMode: isDark }));
@@ -234,10 +263,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const resetToDefaults = () => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(THEME_STORAGE_KEY, defaultSettings.themePreference);
+      writeStoredThemePreference(defaultSettings.themePreference);
       const isDark = resolveIsDark('system', getSystemPrefersDark());
-      applyDarkClass(isDark);
-      setSettings({ ...defaultSettings, isDarkMode: isDark });
+      const effectiveDark = darkModeOverrideRef.current ?? isDark;
+      applyDarkClass(effectiveDark);
+      setSettings({ ...defaultSettings, isDarkMode: effectiveDark });
       return;
     }
     setSettings(defaultSettings);
@@ -251,6 +281,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     settings,
     updateCategoryColor,
     setTheme,
+    setDarkModeOverride,
     toggleDarkMode,
     toggleTestData,
     updateAutoPlaySpeed,

@@ -19,7 +19,11 @@ export function BrainMapSourcesPanel() {
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch('/api/brain-map/meta');
+        const headers: HeadersInit = {};
+        if (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BRAIN_MAP_SECRET) {
+          headers['x-brain-map-key'] = process.env.NEXT_PUBLIC_BRAIN_MAP_SECRET;
+        }
+        const res = await fetch('/api/brain-map/meta', { headers, credentials: 'include' });
         if (!res.ok) return;
         const data = (await res.json()) as MetaResponse;
         if (!cancelled) setMeta(data);

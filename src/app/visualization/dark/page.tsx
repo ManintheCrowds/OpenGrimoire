@@ -6,24 +6,18 @@ import Layout from '@/components/Layout';
 import { useAppContext } from '@/lib/context/AppContext';
 
 export default function DarkModeVisualizationPage() {
-  const { settings, setTheme } = useAppContext();
+  const { setDarkModeOverride } = useAppContext();
 
-  // Force dark mode when this page loads
+  // Force dark mode only while this route is mounted; do not persist over the user's theme.
   useEffect(() => {
-    if (!settings.isDarkMode) {
-      setTheme('dark');
-    }
-  }, [settings.isDarkMode, setTheme]);
-
-  // Ensure the page is always dark themed
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
+    setDarkModeOverride(true);
     document.body.classList.add('dark');
-    
+
     return () => {
-      // Don't remove dark class on cleanup to avoid flashing
+      document.body.classList.remove('dark');
+      setDarkModeOverride(null);
     };
-  }, []);
+  }, [setDarkModeOverride]);
 
   return (
     <div className="dark">

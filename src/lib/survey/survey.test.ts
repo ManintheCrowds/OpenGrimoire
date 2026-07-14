@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
+
 import { mapAnswersToSurveyResponsePayload } from './mapAnswersToSurveyResponse';
 import { surveyPostBodySchema } from './schemas';
+import { resetDbForTests } from '@/db/client';
+import { createHarnessProfile, updateHarnessProfile } from '@/lib/storage/repositories/harness-profiles';
+import { POST as postSurvey } from '@/app/api/survey/route';
 
 const validAnswers = [
   { questionId: 'tenure_years' as const, answer: '5' },
@@ -11,6 +17,14 @@ const validAnswers = [
   { questionId: 'unique_quality' as const, answer: 'Curious collaborator' },
   { questionId: 'questions' as const, answer: 'How should I prioritize handoffs?' },
 ];
+
+afterEach(() => {
+  resetDbForTests();
+  delete process.env.OPENGRIMOIRE_DB_PATH;
+  delete process.env.SURVEY_POST_REQUIRE_TOKEN;
+  delete process.env.SURVEY_POST_CAPTCHA_REQUIRED;
+  delete process.env.TURNSTILE_SECRET_KEY;
+});
 
 describe('surveyPostBodySchema', () => {
   it('accepts a valid body (happy path)', () => {
@@ -189,5 +203,62 @@ describe('mapAnswersToSurveyResponsePayload', () => {
         ['constraints', 'needs', 'signals'].sort()
       );
     }
+  });
+});
+
+describe('survey persistence', () => {
+  it('persists a selected harness profile submitted to the survey route', async () => {
+    process.env.OPENGRIMOIRE_DB_PATH = ':memory:';
+
+    const profile = createHarnessProfile({
+      name: 'Focused verifier',
+      purpose: 'Preserve the submitted profile association.',
+      question_strategy: 'Ask focused follow-ups.',
+      risk_posture: 'Low risk tolerance.',
+      preferred_clarification_modes: ['checklist'],
+      output_style: 'Structured bullets.',
+      is_default: true,
+    });
+
+    const response = await postSurvey(
+      new Request('http://localhost/api/survey', {
+        method: 'POST',
+        body: JSON.stringify({
+          firstName: 'Jane',
+          lastName: 'Doe',
+          email: 'jane-persistence@example.com',
+          isAnonymous: false,
+          answers: validAnswers,
+          harnessProfileId: profile.id,
+        }),
+      })
+    );
+    const body = (await response.json()) as { harnessProfileId?: string };
+
+    expect(response.status).toBe(200);
+    expect(body.harnessProfileId).toBe(profile.id);
+  });
+});
+
+describe('harness profile persistence', () => {
+  it('does not clear the current default when a default update targets a missing profile', () => {
+    process.env.OPENGRIMOIRE_DB_PATH = ':memory:';
+
+    const profile = createHarnessProfile({
+      name: 'Current default',
+      purpose: 'Stay default if the target profile does not exist.',
+      question_strategy: 'Ask broad questions.',
+      risk_posture: 'Moderate risk acceptance.',
+      preferred_clarification_modes: ['short_free_text'],
+      output_style: 'Structured bullets.',
+      is_default: true,
+    });
+
+    const updated = updateHarnessProfile('00000000-0000-4000-8000-000000000000', {
+      is_default: true,
+    });
+
+    expect(updated).toBeNull();
+    expect(updateHarnessProfile(profile.id, { name: 'Still default' })?.is_default).toBe(true);
   });
 });

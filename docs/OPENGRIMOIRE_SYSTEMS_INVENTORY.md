@@ -240,4 +240,3 @@ Use **one** primary path per task. **MCP:** link only — canonical file in the 
 See **PENDING_OPENGRIMOIRE_HARNESS** in `[MiscRepos/.cursor/state/pending_tasks.md](../../MiscRepos/.cursor/state/pending_tasks.md)`: keep this inventory accurate when routes/APIs change; **OA-4 `npm run verify`** is the unified lint/type-check/test entry (E2E optional via `verify:e2e`).
 
 - **Clarification queue:** [HITL_INTENT_SURVEY_BACKLOG.md](HITL_INTENT_SURVEY_BACKLOG.md) / [CLARIFICATION_QUEUE_API.md](./agent/CLARIFICATION_QUEUE_API.md) (AI-posted human questions; not the intake `POST /api/survey` flow).
-

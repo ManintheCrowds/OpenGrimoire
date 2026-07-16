@@ -302,7 +302,8 @@ const CAPABILITIES = {
     {
       path: '/api/brain-map/meta',
       methods: ['GET'],
-      auth: 'Public read of effective vault/state dirs and active graph file metadata',
+      auth:
+        'When BRAIN_MAP_SECRET set: x-brain-map-key matching secret or OpenGrimoire operator session cookie',
     },
     {
       path: '/api/admin/brain-map/sources',

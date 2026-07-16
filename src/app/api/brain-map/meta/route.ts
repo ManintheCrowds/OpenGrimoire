@@ -1,8 +1,12 @@
 import { stat } from 'fs/promises';
 import { NextResponse } from 'next/server';
+import { authorizeBrainMapRequest } from '@/lib/brain-map/request-auth';
 import { readBrainMapSourcesConfig, resolveActiveGraphPath } from '@/lib/brain-map/sources-config';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await authorizeBrainMapRequest(request);
+  if (!gate.ok) return gate.response;
+
   const sources = await readBrainMapSourcesConfig();
   const graph = resolveActiveGraphPath();
   let graphMtime: string | null = null;

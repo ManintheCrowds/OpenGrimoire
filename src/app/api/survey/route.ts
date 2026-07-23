@@ -101,6 +101,7 @@ export async function POST(request: Request) {
     const surveyResponse = createSurveyResponse({
       attendee_id: attendee.id,
       ...mapped.data.surveyResponse,
+      harness_profile_id: body.harnessProfileId,
       categories: mapped.data.categories,
     });
 

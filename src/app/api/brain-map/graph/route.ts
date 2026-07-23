@@ -1,14 +1,8 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { createHash } from 'crypto';
-import {
-  OPENGRIMOIRE_SESSION_COOKIE,
-  verifyAdminSessionToken,
-} from '@/lib/auth/session';
-import { timingSafeEqualString } from '@/lib/crypto/timing-safe-compare';
-import { logAccessDenied } from '@/lib/observability/access-denial-log';
+import { authorizeBrainMapRequest } from '@/lib/brain-map/request-auth';
 
 /**
  * Serves brain-map graph JSON. Prefers `public/brain-map-graph.local.json` when present
@@ -18,22 +12,8 @@ import { logAccessDenied } from '@/lib/observability/access-denial-log';
  * the header are rejected.
  */
 export async function GET(request: Request) {
-  const secret = process.env.BRAIN_MAP_SECRET;
-  if (secret) {
-    const key = request.headers.get('x-brain-map-key') ?? '';
-    const headerOk = timingSafeEqualString(key, secret);
-    const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
-    const sessionOk = (await verifyAdminSessionToken(token)) !== null;
-    if (!headerOk && !sessionOk) {
-      logAccessDenied({
-        request,
-        gate: 'brain_map',
-        reason: key.trim() ? 'invalid_secret' : 'session_required',
-        status: 401,
-      });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-  }
+  const gate = await authorizeBrainMapRequest(request);
+  if (!gate.ok) return gate.response;
 
   const publicDir = join(process.cwd(), 'public');
   const localPath = join(publicDir, 'brain-map-graph.local.json');

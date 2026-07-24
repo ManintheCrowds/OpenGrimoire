@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   }
 
   if (action === 'backup') {
-    const backupPath = backupDatabaseFile();
+    const backupPath = await backupDatabaseFile();
     return NextResponse.json({ ok: true, backupPath });
   }
 

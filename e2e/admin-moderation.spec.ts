@@ -280,6 +280,13 @@ test.describe('Admin moderation API', () => {
     await expect(page.getByTestId('moderation-detail-reject')).toBeVisible();
     await expect(page.getByTestId('moderation-detail-notes')).toBeVisible();
 
+    await page.getByTestId('moderation-detail-notes').fill('draft note without decision');
+    await page.getByTestId('moderation-detail-approve').focus();
+    const queueAfterNotesBlurRes = await page.request.get('/api/admin/moderation-queue');
+    expect(queueAfterNotesBlurRes.ok(), await queueAfterNotesBlurRes.text()).toBeTruthy();
+    const queueAfterNotesBlur = (await queueAfterNotesBlurRes.json()) as { items: { id: string }[] };
+    expect(queueAfterNotesBlur.items.map((i) => i.id)).toContain(surveyResponseId);
+
     await page.getByTestId('admin-right-tab-backlog').click();
     await expect(page.getByTestId('admin-right-tab-backlog')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('admin-right-tabpanel-backlog')).toBeVisible();

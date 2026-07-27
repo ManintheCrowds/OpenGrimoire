@@ -1,6 +1,8 @@
 export const THEME_STORAGE_KEY = 'opengrimoire.theme';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
+type ThemeStorageReader = Pick<Storage, 'getItem'>;
+type ThemeStorageWriter = Pick<Storage, 'setItem'>;
 
 /**
  * Parse stored localStorage value into a theme preference.
@@ -26,12 +28,51 @@ export function resolveIsDark(stored: string | null, prefersDark: boolean): bool
 export function getSystemPrefersDark(): boolean {
   if (typeof window === 'undefined') return true;
   if (!window.matchMedia) return true;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch {
+    return true;
+  }
 }
 
 export function applyDarkClass(isDark: boolean): void {
   if (typeof document === 'undefined') return;
   document.documentElement.classList.toggle('dark', isDark);
+}
+
+function getBrowserStorage(): Storage | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Read theme preference; never throw when storage is blocked or unavailable. */
+export function readStoredThemeValue(
+  storage: ThemeStorageReader | undefined = getBrowserStorage()
+): string | null {
+  if (!storage) return null;
+  try {
+    return storage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Persist theme preference; returns false when storage write fails. */
+export function writeStoredThemePreference(
+  preference: ThemePreference,
+  storage: ThemeStorageWriter | undefined = getBrowserStorage()
+): boolean {
+  if (!storage) return false;
+  try {
+    storage.setItem(THEME_STORAGE_KEY, preference);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
+  THEME_STORAGE_KEY,
+  getSystemPrefersDark,
   getThemeInitScript,
   parseThemePreference,
+  readStoredThemeValue,
   resolveIsDark,
+  writeStoredThemePreference,
 } from './resolveTheme';
 
 describe('parseThemePreference', () => {
@@ -42,5 +46,41 @@ describe('getThemeInitScript', () => {
     const script = getThemeInitScript();
     expect(script).toContain("s==='system'");
     expect(script).toContain('else{d=true;}');
+  });
+});
+
+describe('theme storage helpers', () => {
+  it('falls back to unset when theme storage cannot be read', () => {
+    const storage = {
+      getItem: vi.fn(() => {
+        throw new Error('storage denied');
+      }),
+    };
+
+    expect(readStoredThemeValue(storage)).toBeNull();
+  });
+
+  it('reports failed writes without throwing', () => {
+    const storage = {
+      setItem: vi.fn(() => {
+        throw new Error('storage denied');
+      }),
+    };
+
+    expect(writeStoredThemePreference('dark', storage)).toBe(false);
+    expect(storage.setItem).toHaveBeenCalledWith(THEME_STORAGE_KEY, 'dark');
+  });
+
+  it('returns a dark fallback when matchMedia throws', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn(() => {
+      throw new Error('matchMedia denied');
+    }) as unknown as typeof window.matchMedia;
+
+    try {
+      expect(getSystemPrefersDark()).toBe(true);
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });

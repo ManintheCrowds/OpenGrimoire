@@ -2,12 +2,13 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import {
-  THEME_STORAGE_KEY,
   type ThemePreference,
   parseThemePreference,
   resolveIsDark,
   getSystemPrefersDark,
   applyDarkClass,
+  readStoredThemeValue,
+  writeStoredThemePreference,
 } from '@/lib/theme/resolveTheme';
 
 // Define the structure for category colors with theme support
@@ -150,7 +151,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 function readAndApplyTheme(): { preference: ThemePreference; isDark: boolean } {
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  const stored = readStoredThemeValue();
   const preference = parseThemePreference(stored);
   const isDark = resolveIsDark(stored, getSystemPrefersDark());
   applyDarkClass(isDark);
@@ -163,7 +164,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const setTheme = useCallback((mode: ThemePreference) => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    writeStoredThemePreference(mode);
     const isDark = mode === 'system'
       ? resolveIsDark('system', getSystemPrefersDark())
       : mode === 'dark';
@@ -179,7 +180,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     if (typeof window === 'undefined' || settings.themePreference !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (!window.matchMedia) return;
+    let mq: MediaQueryList;
+    try {
+      mq = window.matchMedia('(prefers-color-scheme: dark)');
+    } catch {
+      return;
+    }
     const handler = () => {
       const isDark = resolveIsDark('system', mq.matches);
       applyDarkClass(isDark);
@@ -234,7 +241,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const resetToDefaults = () => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(THEME_STORAGE_KEY, defaultSettings.themePreference);
+      writeStoredThemePreference(defaultSettings.themePreference);
       const isDark = resolveIsDark(defaultSettings.themePreference, getSystemPrefersDark());
       applyDarkClass(isDark);
       setSettings({ ...defaultSettings, isDarkMode: isDark });

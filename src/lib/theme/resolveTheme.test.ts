@@ -72,15 +72,22 @@ describe('theme storage helpers', () => {
   });
 
   it('returns a dark fallback when matchMedia throws', () => {
-    const originalMatchMedia = window.matchMedia;
-    window.matchMedia = vi.fn(() => {
-      throw new Error('matchMedia denied');
-    }) as unknown as typeof window.matchMedia;
+    const globalWithWindow = globalThis as { window?: { matchMedia?: unknown } };
+    const previous = globalWithWindow.window;
+    globalWithWindow.window = {
+      matchMedia: () => {
+        throw new Error('matchMedia denied');
+      },
+    };
 
     try {
       expect(getSystemPrefersDark()).toBe(true);
     } finally {
-      window.matchMedia = originalMatchMedia;
+      if (previous === undefined) {
+        delete globalWithWindow.window;
+      } else {
+        globalWithWindow.window = previous;
+      }
     }
   });
 });

@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, eq, ne, sql } from 'drizzle-orm';
 import { harnessProfiles } from '@/db/schema';
-import { getDb } from '@/db/client';
+import { getDb, getSqlite } from '@/db/client';
 import type { HarnessProfileRow } from '@/lib/types/database';
 
 const LOCAL_PROFILE_DIR = path.join(process.cwd(), 'data', 'harness-profiles');
@@ -87,49 +87,71 @@ export function getHarnessProfileById(id: string): HarnessProfileRow | null {
 
 export function createHarnessProfile(input: Omit<HarnessProfileRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }): HarnessProfileRow {
   const db = getDb();
+  const sqlite = getSqlite();
   const id = input.id ?? randomUUID();
   const ts = nowIso();
-  if (input.is_default) {
-    db.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
-  }
-  db.insert(harnessProfiles).values({
-    id,
-    name: input.name,
-    purpose: input.purpose,
-    questionStrategy: input.question_strategy,
-    riskPosture: input.risk_posture,
-    preferredClarificationModes: JSON.stringify(input.preferred_clarification_modes ?? []),
-    outputStyle: input.output_style,
-    isDefault: input.is_default,
-    createdAt: ts,
-    updatedAt: ts,
-  }).run();
-  const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
-  if (!row) throw new Error('Harness profile insert failed');
-  return rowToProfile(row);
+
+  // Clear other defaults only inside the same transaction as the insert so a failed
+  // create cannot leave the table with zero defaults.
+  return sqlite.transaction(() => {
+    if (input.is_default) {
+      db.update(harnessProfiles)
+        .set({ isDefault: false, updatedAt: ts })
+        .where(ne(harnessProfiles.id, id))
+        .run();
+    }
+    db.insert(harnessProfiles)
+      .values({
+        id,
+        name: input.name,
+        purpose: input.purpose,
+        questionStrategy: input.question_strategy,
+        riskPosture: input.risk_posture,
+        preferredClarificationModes: JSON.stringify(input.preferred_clarification_modes ?? []),
+        outputStyle: input.output_style,
+        isDefault: input.is_default,
+        createdAt: ts,
+        updatedAt: ts,
+      })
+      .run();
+    const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    if (!row) throw new Error('Harness profile insert failed');
+    return rowToProfile(row);
+  })();
 }
 
 export function updateHarnessProfile(id: string, patch: Partial<Omit<HarnessProfileRow, 'id' | 'created_at' | 'updated_at'>>): HarnessProfileRow | null {
   const db = getDb();
+  const sqlite = getSqlite();
   const ts = nowIso();
-  if (patch.is_default === true) {
-    db.update(harnessProfiles).set({ isDefault: false, updatedAt: ts }).run();
-  }
-  const set: Partial<typeof harnessProfiles.$inferInsert> = { updatedAt: ts };
-  if (patch.name !== undefined) set.name = patch.name;
-  if (patch.purpose !== undefined) set.purpose = patch.purpose;
-  if (patch.question_strategy !== undefined) set.questionStrategy = patch.question_strategy;
-  if (patch.risk_posture !== undefined) set.riskPosture = patch.risk_posture;
-  if (patch.preferred_clarification_modes !== undefined) {
-    set.preferredClarificationModes = JSON.stringify(patch.preferred_clarification_modes);
-  }
-  if (patch.output_style !== undefined) set.outputStyle = patch.output_style;
-  if (patch.is_default !== undefined) set.isDefault = patch.is_default;
 
-  const result = db.update(harnessProfiles).set(set).where(eq(harnessProfiles.id, id)).run();
-  if (result.changes === 0) return null;
-  const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
-  return row ? rowToProfile(row) : null;
+  // Require the target row to exist before clearing other defaults. Previously a
+  // missing/stale id with is_default:true wiped every default and then returned null.
+  return sqlite.transaction(() => {
+    const existing = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    if (!existing) return null;
+
+    if (patch.is_default === true) {
+      db.update(harnessProfiles)
+        .set({ isDefault: false, updatedAt: ts })
+        .where(ne(harnessProfiles.id, id))
+        .run();
+    }
+    const set: Partial<typeof harnessProfiles.$inferInsert> = { updatedAt: ts };
+    if (patch.name !== undefined) set.name = patch.name;
+    if (patch.purpose !== undefined) set.purpose = patch.purpose;
+    if (patch.question_strategy !== undefined) set.questionStrategy = patch.question_strategy;
+    if (patch.risk_posture !== undefined) set.riskPosture = patch.risk_posture;
+    if (patch.preferred_clarification_modes !== undefined) {
+      set.preferredClarificationModes = JSON.stringify(patch.preferred_clarification_modes);
+    }
+    if (patch.output_style !== undefined) set.outputStyle = patch.output_style;
+    if (patch.is_default !== undefined) set.isDefault = patch.is_default;
+
+    db.update(harnessProfiles).set(set).where(eq(harnessProfiles.id, id)).run();
+    const row = db.select().from(harnessProfiles).where(eq(harnessProfiles.id, id)).get();
+    return row ? rowToProfile(row) : null;
+  })();
 }
 
 export function deleteHarnessProfile(id: string): boolean {

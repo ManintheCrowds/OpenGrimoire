@@ -28,6 +28,7 @@ import { useVisualizationSurveyData } from './shared/VisualizationSurveyDataCont
 import { VisualizationContainer } from './shared/VisualizationContainer';
 import { DataInsightPanel } from './shared/DataInsightPanel';
 import { getYearsColorScale, getYearsCategory, getNodeColor } from './shared/colorUtils';
+import { getFallbackFieldValue } from './shared/fieldPairing';
 // import { QuestionSelector } from './shared/QuestionSelector'; // Temporarily disabled
 import { useAppContext } from '@/lib/context/AppContext';
 import type { VisualizationSurveyRow } from '@/lib/types/database';
@@ -425,6 +426,23 @@ export default function AlluvialDiagram({
   const [hoveredTargetIndex, setHoveredTargetIndex] = useState<number | null>(null);
   const [isInFullOpacityState, setIsInFullOpacityState] = useState(false);
   const [animationPhase, setAnimationPhase] = useState<'full' | 'highlighting' | 'transitioning'>('full');
+
+  const setDistinctSource = useCallback((nextSource: string) => {
+    setCurrentSource(nextSource);
+    if (nextSource === currentTargetRef.current) {
+      const fallbackTarget = getFallbackFieldValue(nextSource, availableFields);
+      if (fallbackTarget) {
+        setCurrentTarget(fallbackTarget);
+        setLastCategoryChange({ source: nextSource, target: fallbackTarget });
+        onQuestionChange?.(nextSource, fallbackTarget);
+      }
+    }
+  }, [onQuestionChange]);
+
+  const setDistinctTarget = useCallback((nextTarget: string) => {
+    if (nextTarget === currentSourceRef.current) return;
+    setCurrentTarget(nextTarget);
+  }, []);
 
   const animationRef = useRef<AnimationState>({
     timer: null,
@@ -1855,7 +1873,7 @@ export default function AlluvialDiagram({
           <select
             aria-label="Alluvial flow source field"
             value={currentSource}
-            onChange={(e) => setCurrentSource(e.target.value)}
+            onChange={(e) => setDistinctSource(e.target.value)}
             style={{
               padding: '8px 12px',
               borderRadius: '6px',
@@ -1867,7 +1885,7 @@ export default function AlluvialDiagram({
             }}
           >
             {availableFields.map((field) => (
-              <option key={field.value} value={field.value}>
+              <option key={field.value} value={field.value} disabled={field.value === currentTarget}>
                 {field.label}
               </option>
             ))}
@@ -1877,7 +1895,7 @@ export default function AlluvialDiagram({
           <select
             aria-label="Alluvial flow target field"
             value={currentTarget}
-            onChange={(e) => setCurrentTarget(e.target.value)}
+            onChange={(e) => setDistinctTarget(e.target.value)}
             style={{
               padding: '8px 12px',
               borderRadius: '6px',
@@ -1889,7 +1907,7 @@ export default function AlluvialDiagram({
             }}
           >
             {availableFields.map((field) => (
-              <option key={field.value} value={field.value}>
+              <option key={field.value} value={field.value} disabled={field.value === currentSource}>
                 {field.label}
               </option>
             ))}

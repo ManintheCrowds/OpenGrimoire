@@ -56,10 +56,44 @@ export function pruneManagedTables(policy: RetentionPolicy = getRetentionPolicy(
   return tx();
 }
 
+export type SurveyResponseExportRow = Record<string, unknown> & {
+  intent_categories: Array<{
+    id: string;
+    response_id: string;
+    category: string;
+    content: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+};
+
+/**
+ * Export a managed table for operator archival.
+ *
+ * `survey_responses` includes nested `intent_categories` so Sync Session v2
+ * answers (session_intent/context/constraints) are not silently dropped —
+ * those live only in `survey_response_intent_categories` and CASCADE-delete
+ * when responses are pruned.
+ */
 export function exportManagedTable(table: ManagedTable) {
   const sqlite = getSqlite();
   if (table === 'study_reviews') {
     return sqlite.prepare(`SELECT * FROM ${table} ORDER BY reviewed_at DESC`).all();
+  }
+  if (table === 'survey_responses') {
+    const rows = sqlite
+      .prepare(`SELECT * FROM survey_responses ORDER BY created_at DESC`)
+      .all() as Record<string, unknown>[];
+    const categoriesForResponse = sqlite.prepare(
+      `SELECT id, response_id, category, content, created_at, updated_at
+       FROM survey_response_intent_categories
+       WHERE response_id = ?
+       ORDER BY category ASC`
+    );
+    return rows.map((row): SurveyResponseExportRow => ({
+      ...row,
+      intent_categories: categoriesForResponse.all(String(row.id)) as SurveyResponseExportRow['intent_categories'],
+    }));
   }
   return sqlite.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all();
 }

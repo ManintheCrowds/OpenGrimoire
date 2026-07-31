@@ -1,16 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isBlockedBrainMapStaticPath } from './src/lib/brain-map/static-path-guard';
 import { getRateLimitClientIp } from './src/lib/rate-limit/get-client-ip';
 import { createRateLimiter } from './src/lib/rate-limit-in-memory';
-
-/**
- * Block direct static access to brain-map JSON under /public — use GET /api/brain-map/graph only
- * (optional BRAIN_MAP_SECRET + x-brain-map-key).
- */
-const BRAIN_MAP_STATIC_PATHS = new Set([
-  '/brain-map-graph.json',
-  '/brain-map-graph.local.json',
-]);
 
 /** POST /api/survey — single Node instance; not for multi-replica. */
 const rateLimitSyncSessionSubmit = createRateLimiter(60_000, 30);
@@ -65,7 +57,7 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  if (BRAIN_MAP_STATIC_PATHS.has(pathname)) {
+  if (isBlockedBrainMapStaticPath(pathname)) {
     return NextResponse.json(
       {
         error: 'Not found',
@@ -128,8 +120,9 @@ export function middleware(request: NextRequest) {
 /** Must cover every `TEST_ROUTE_PREFIXES` entry (OA-4). Drift = middleware never runs for a dev route. */
 export const config = {
   matcher: [
-    '/brain-map-graph.json',
-    '/brain-map-graph.local.json',
+    // Canonical names plus renamed backups (e.g. .bak, .pre_e2e_backup) under /public.
+    '/brain-map-graph.json(.*)',
+    '/brain-map-graph.local.json(.*)',
     '/api/survey',
     '/api/auth/login',
     '/api/operator-probes/ingest',

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { isBlockedBrainMapStaticPath } from './src/lib/brain-map/static-path-guard';
-import { getRateLimitClientIp } from './src/lib/rate-limit/get-client-ip';
-import { createRateLimiter } from './src/lib/rate-limit-in-memory';
+import { isBlockedBrainMapStaticPath } from './lib/brain-map/static-path-guard';
+import { getRateLimitClientIp } from './lib/rate-limit/get-client-ip';
+import { createRateLimiter } from './lib/rate-limit-in-memory';
+
+/**
+ * NOTE: With `src/app`, Next.js loads middleware from `src/middleware.ts` only.
+ * A root-level `middleware.ts` is ignored and never enters the middleware manifest.
+ */
 
 /** POST /api/survey — single Node instance; not for multi-replica. */
 const rateLimitSyncSessionSubmit = createRateLimiter(60_000, 30);
@@ -120,9 +125,14 @@ export function middleware(request: NextRequest) {
 /** Must cover every `TEST_ROUTE_PREFIXES` entry (OA-4). Drift = middleware never runs for a dev route. */
 export const config = {
   matcher: [
-    // Canonical names plus renamed backups (e.g. .bak, .pre_e2e_backup) under /public.
-    '/brain-map-graph.json(.*)',
-    '/brain-map-graph.local.json(.*)',
+    // Canonical graph JSON plus common renamed backups left under /public/.
+    '/brain-map-graph.json',
+    '/brain-map-graph.local.json',
+    '/brain-map-graph.local.json.pre_e2e_backup',
+    '/brain-map-graph.json.bak',
+    '/brain-map-graph.local.json.bak',
+    '/brain-map-graph.json.old',
+    '/brain-map-graph.local.json.old',
     '/api/survey',
     '/api/auth/login',
     '/api/operator-probes/ingest',

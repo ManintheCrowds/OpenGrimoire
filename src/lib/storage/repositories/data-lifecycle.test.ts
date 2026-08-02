@@ -33,6 +33,28 @@ async function loadStorageModules(dbPath: string) {
   return { getSqlite, backupDatabaseFile };
 }
 
+async function loadLifecycleModules(dbPath: string) {
+  vi.resetModules();
+  process.env.OPENGRIMOIRE_DB_PATH = dbPath;
+  const [
+    { getSqlite },
+    { createAttendee, createSurveyResponse, updateModerationStatus },
+    { exportManagedTable, pruneManagedTables },
+  ] = await Promise.all([
+    import('@/db/client'),
+    import('./survey'),
+    import('./data-lifecycle'),
+  ]);
+  return {
+    getSqlite,
+    createAttendee,
+    createSurveyResponse,
+    updateModerationStatus,
+    exportManagedTable,
+    pruneManagedTables,
+  };
+}
+
 describe('backupDatabaseFile', () => {
   it('includes committed writes that still live in the WAL file', async () => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-backup-'));
@@ -89,5 +111,167 @@ describe('backupDatabaseFile', () => {
       sourceAfter.close();
       backup.close();
     }
+  });
+});
+
+describe('exportManagedTable(survey_responses)', () => {
+  it('includes Sync Session v2 intent categories that would be lost on prune', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-export-categories-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const {
+      getSqlite,
+      createAttendee,
+      createSurveyResponse,
+      exportManagedTable,
+      pruneManagedTables,
+    } = await loadLifecycleModules(dbPath);
+
+    const sqlite = getSqlite();
+    const attendee = createAttendee({
+      first_name: 'Ada',
+      last_name: 'Lovelace',
+      is_anonymous: true,
+    });
+
+    const response = createSurveyResponse({
+      attendee_id: attendee.id,
+      session_type: 'profile',
+      questionnaire_version: 'v2',
+      unique_quality: 'Ship carefully',
+      categories: [
+        { category: 'signals', content: 'Ship OG-HV' },
+        { category: 'needs', content: 'Local dev only' },
+        { category: 'constraints', content: 'No prod secrets' },
+      ],
+    });
+
+    sqlite
+      .prepare(`UPDATE survey_responses SET created_at = ?, updated_at = ? WHERE id = ?`)
+      .run('2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', response.id);
+
+    const exported = exportManagedTable('survey_responses') as Array<{
+      id: string;
+      intent_categories: Array<{ category: string; content: string }>;
+    }>;
+
+    expect(exported).toHaveLength(1);
+    expect(exported[0]?.id).toBe(response.id);
+    expect(exported[0]?.intent_categories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ category: 'signals', content: 'Ship OG-HV' }),
+        expect.objectContaining({ category: 'needs', content: 'Local dev only' }),
+        expect.objectContaining({ category: 'constraints', content: 'No prod secrets' }),
+      ])
+    );
+    expect(exported[0]?.intent_categories).toHaveLength(3);
+
+    pruneManagedTables({
+      survey_responses: 30,
+      clarification_requests: 180,
+      study_reviews: 365,
+    });
+    const categoryCount = sqlite
+      .prepare(`SELECT COUNT(*) AS n FROM survey_response_intent_categories`)
+      .get() as { n: number };
+    expect(categoryCount.n).toBe(0);
+
+    sqlite.close();
+  });
+
+  it('includes moderation rows that would be lost on prune', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-export-moderation-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const {
+      getSqlite,
+      createAttendee,
+      createSurveyResponse,
+      updateModerationStatus,
+      exportManagedTable,
+      pruneManagedTables,
+    } = await loadLifecycleModules(dbPath);
+
+    const sqlite = getSqlite();
+    const attendee = createAttendee({
+      first_name: 'Grace',
+      last_name: 'Hopper',
+      is_anonymous: true,
+    });
+    const response = createSurveyResponse({
+      attendee_id: attendee.id,
+      unique_quality: 'Operator notes matter',
+    });
+
+    updateModerationStatus(response.id, {
+      status: 'approved',
+      moderator_id: 'moderator-operator-1',
+      notes: 'Keep for constellation; cite in handoff',
+    });
+
+    sqlite
+      .prepare(`UPDATE survey_responses SET created_at = ?, updated_at = ? WHERE id = ?`)
+      .run('2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', response.id);
+
+    const exported = exportManagedTable('survey_responses') as Array<{
+      id: string;
+      moderation: Array<{
+        status: string;
+        moderator_id: string;
+        notes: string | null;
+        field_name: string;
+      }>;
+    }>;
+
+    expect(exported).toHaveLength(1);
+    expect(exported[0]?.id).toBe(response.id);
+    expect(exported[0]?.moderation).toHaveLength(1);
+    expect(exported[0]?.moderation[0]).toEqual(
+      expect.objectContaining({
+        status: 'approved',
+        moderator_id: 'moderator-operator-1',
+        notes: 'Keep for constellation; cite in handoff',
+        field_name: 'unique_quality',
+      })
+    );
+
+    pruneManagedTables({
+      survey_responses: 30,
+      clarification_requests: 180,
+      study_reviews: 365,
+    });
+    const moderationCount = sqlite.prepare(`SELECT COUNT(*) AS n FROM moderation`).get() as {
+      n: number;
+    };
+    expect(moderationCount.n).toBe(0);
+
+    sqlite.close();
+  });
+
+  it('returns empty nested arrays when a response has no side rows', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-export-empty-side-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, createAttendee, createSurveyResponse, exportManagedTable } =
+      await loadLifecycleModules(dbPath);
+
+    const sqlite = getSqlite();
+    const attendee = createAttendee({
+      first_name: 'Alan',
+      last_name: 'Turing',
+      is_anonymous: true,
+    });
+    const response = createSurveyResponse({
+      attendee_id: attendee.id,
+      unique_quality: 'v1-only',
+    });
+
+    const exported = exportManagedTable('survey_responses') as Array<{
+      id: string;
+      intent_categories: unknown[];
+      moderation: unknown[];
+    }>;
+    const row = exported.find((item) => item.id === response.id);
+    expect(row?.intent_categories).toEqual([]);
+    expect(row?.moderation).toEqual([]);
+
+    sqlite.close();
   });
 });

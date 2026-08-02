@@ -57,10 +57,67 @@ export function pruneManagedTables(policy: RetentionPolicy = getRetentionPolicy(
   return tx();
 }
 
+export type SurveyResponseExportRow = Record<string, unknown> & {
+  intent_categories: Array<{
+    id: string;
+    response_id: string;
+    category: string;
+    content: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+  moderation: Array<{
+    id: string;
+    response_id: string;
+    field_name: string;
+    status: string;
+    moderator_id: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+  }>;
+};
+
+/**
+ * Export a managed table for operator archival.
+ *
+ * `survey_responses` nests side tables that CASCADE-delete on prune:
+ * - `intent_categories` (Sync Session v2 answers)
+ * - `moderation` (decision status, moderator id, notes)
+ * Bare `SELECT * FROM survey_responses` silently drops both from the archive.
+ */
 export function exportManagedTable(table: ManagedTable) {
   const sqlite = getSqlite();
   if (table === 'study_reviews') {
     return sqlite.prepare(`SELECT * FROM ${table} ORDER BY reviewed_at DESC`).all();
+  }
+  if (table === 'survey_responses') {
+    const rows = sqlite
+      .prepare(`SELECT * FROM survey_responses ORDER BY created_at DESC`)
+      .all() as Record<string, unknown>[];
+    const categoriesForResponse = sqlite.prepare(
+      `SELECT id, response_id, category, content, created_at, updated_at
+       FROM survey_response_intent_categories
+       WHERE response_id = ?
+       ORDER BY category ASC`
+    );
+    const moderationForResponse = sqlite.prepare(
+      `SELECT id, response_id, field_name, status, moderator_id, notes, created_at, updated_at
+       FROM moderation
+       WHERE response_id = ?
+       ORDER BY field_name ASC`
+    );
+    return rows.map(
+      (row): SurveyResponseExportRow => ({
+        ...row,
+        intent_categories: categoriesForResponse.all(
+          String(row.id)
+        ) as SurveyResponseExportRow['intent_categories'],
+        moderation: moderationForResponse.all(
+          String(row.id)
+        ) as SurveyResponseExportRow['moderation'],
+      })
+    );
   }
   return sqlite.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all();
 }

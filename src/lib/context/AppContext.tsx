@@ -126,7 +126,7 @@ const defaultSettings: VisualizationSettings = {
     light: defaultLightColors,
     dark: defaultDarkColors
   },
-  themePreference: 'system',
+  themePreference: 'dark',
   isDarkMode: true,
   useTestData: true,
   autoPlaySpeed: 5000, // 5 seconds
@@ -235,7 +235,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const resetToDefaults = () => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(THEME_STORAGE_KEY, defaultSettings.themePreference);
-      const isDark = resolveIsDark('system', getSystemPrefersDark());
+      const isDark = resolveIsDark(defaultSettings.themePreference, getSystemPrefersDark());
       applyDarkClass(isDark);
       setSettings({ ...defaultSettings, isDarkMode: isDark });
       return;

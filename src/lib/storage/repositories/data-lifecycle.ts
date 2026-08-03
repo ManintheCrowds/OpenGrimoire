@@ -40,8 +40,12 @@ export function pruneManagedTables(policy: RetentionPolicy = getRetentionPolicy(
     const surveyDeleted = sqlite
       .prepare(`DELETE FROM survey_responses WHERE created_at < ?`)
       .run(cutoffIso(policy.survey_responses)).changes;
+    // Prefer resolved_at so a long-lived request resolved inside the retention
+    // window is kept; fall back to created_at for still-pending / unresolved rows.
     const clarificationDeleted = sqlite
-      .prepare(`DELETE FROM clarification_requests WHERE created_at < ?`)
+      .prepare(
+        `DELETE FROM clarification_requests WHERE COALESCE(resolved_at, created_at) < ?`
+      )
       .run(cutoffIso(policy.clarification_requests)).changes;
     const studyDeleted = sqlite
       .prepare(`DELETE FROM study_reviews WHERE reviewed_at < ?`)

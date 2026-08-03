@@ -275,3 +275,62 @@ describe('exportManagedTable(survey_responses)', () => {
     sqlite.close();
   });
 });
+
+describe('pruneManagedTables(clarification_requests)', () => {
+  it('keeps recently resolved clarifications even when created_at is outside the retention window', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-prune-clarification-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, pruneManagedTables } = await loadLifecycleModules(dbPath);
+    const sqlite = getSqlite();
+
+    const keepId = 'clarification-keep-recent-resolve';
+    const dropId = 'clarification-drop-old-resolve';
+    const pendingOldId = 'clarification-drop-old-pending';
+
+    const insert = sqlite.prepare(
+      `INSERT INTO clarification_requests
+        (id, question_spec, status, resolution, agent_metadata, linked_node_id, created_at, updated_at, resolved_at)
+       VALUES (?, '{}', ?, ?, '{}', NULL, ?, ?, ?)`
+    );
+
+    insert.run(
+      keepId,
+      'answered',
+      '{"choice":"ship"}',
+      '2020-01-01T00:00:00.000Z',
+      '2026-08-01T12:00:00.000Z',
+      '2026-08-01T12:00:00.000Z'
+    );
+    insert.run(
+      dropId,
+      'answered',
+      '{"choice":"archive"}',
+      '2020-01-01T00:00:00.000Z',
+      '2020-02-01T00:00:00.000Z',
+      '2020-02-01T00:00:00.000Z'
+    );
+    insert.run(
+      pendingOldId,
+      'pending',
+      null,
+      '2020-01-01T00:00:00.000Z',
+      '2020-01-01T00:00:00.000Z',
+      null
+    );
+
+    const deleted = pruneManagedTables({
+      survey_responses: 365,
+      clarification_requests: 180,
+      study_reviews: 365,
+    });
+
+    expect(deleted.clarification_requests).toBe(2);
+
+    const remaining = sqlite
+      .prepare(`SELECT id FROM clarification_requests ORDER BY id`)
+      .all() as Array<{ id: string }>;
+    expect(remaining.map((row) => row.id)).toEqual([keepId]);
+
+    sqlite.close();
+  });
+});

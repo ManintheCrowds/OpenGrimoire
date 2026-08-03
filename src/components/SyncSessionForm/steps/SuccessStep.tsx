@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import type { SyncSessionFormData, SyncSessionSuccessIds } from '@/lib/hooks/useSyncSessionForm';
+import { ParkingLotPanel } from '../ParkingLotPanel';
 
 interface SuccessStepProps {
   formData: SyncSessionFormData;
@@ -109,6 +110,8 @@ export function SuccessStep({ formData, successIds }: SuccessStepProps) {
           ) : null}
         </div>
       ) : null}
+
+      <ParkingLotPanel />
 
       <p className="mt-4 text-sm text-gray-500 dark:text-gray-300">
         Your insights will help us better understand and visualize the diverse

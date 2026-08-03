@@ -7,7 +7,10 @@ export const clarificationOptionSchema = z.object({
 
 export const clarificationAgentMetadataSchema = z
   .object({
+    /** When true, item is a blocking intent gap (full queue only). When false/absent, eligible for Sync Session Success parking lot. */
     blocking: z.boolean().optional(),
+    /** Project / repo label for parking-lot grouping (e.g. MiscRepos, OpenGrimoire). */
+    project: z.string().min(1).max(256).optional(),
     reason: z.string().max(4000).optional(),
     harnessRunId: z.string().max(512).optional(),
     toolCallId: z.string().max(512).optional(),

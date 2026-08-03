@@ -3,18 +3,12 @@
  * Theme is seeded via addInitScript in beforeEach before any goto / loginAsAdmin;
  * login inherits the same localStorage on /login and post-auth routes.
  */
-import { AxeBuilder } from '@axe-core/playwright';
 import { test, expect } from '@playwright/test';
 
 import { loginAsAdmin } from './helpers/admin-login';
+import { expectNoAxeViolations } from './helpers/axe';
 import { E2E_OPERATOR_PROBE_INGEST_SECRET } from './helpers/e2e-secrets';
 import { APP_THEMES, setAppTheme } from './helpers/theme';
-
-function violationSummary(violations: { id: string; nodes: { html: string }[] }[]): string {
-  return violations
-    .map((v) => `${v.id}: ${v.nodes.map((n) => n.html).slice(0, 5).join(' | ')}`)
-    .join('\n');
-}
 
 for (const theme of APP_THEMES) {
   test.describe(`Sync Session + admin axe (OG-GUI-04) — ${theme} theme`, () => {
@@ -34,8 +28,7 @@ for (const theme of APP_THEMES) {
       await bootstrapOk;
       await expect(page.getByTestId('sync-session-form-container')).toBeVisible({ timeout: 15000 });
 
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      expect(violations, violationSummary(violations)).toHaveLength(0);
+      await expectNoAxeViolations(page);
     });
 
     test('/admin has no axe violations after login', async ({ page }) => {
@@ -45,8 +38,7 @@ for (const theme of APP_THEMES) {
         timeout: 20000,
       });
 
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      expect(violations, violationSummary(violations)).toHaveLength(0);
+      await expectNoAxeViolations(page);
     });
 
     test('/admin/observability has no axe violations after login', async ({ page }) => {
@@ -54,8 +46,7 @@ for (const theme of APP_THEMES) {
       await page.goto('/admin/observability');
       await expect(page.getByTestId('operator-observability-heading')).toBeVisible({ timeout: 20000 });
 
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      expect(violations, violationSummary(violations)).toHaveLength(0);
+      await expectNoAxeViolations(page);
     });
 
     test('/admin/observability/[id] has no axe violations when a run exists', async ({ page, request }) => {
@@ -80,8 +71,7 @@ for (const theme of APP_THEMES) {
       await page.goto(`/admin/observability/${encodeURIComponent(id)}`);
       await expect(page.getByTestId('operator-probe-detail-heading')).toBeVisible({ timeout: 20000 });
 
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      expect(violations, violationSummary(violations)).toHaveLength(0);
+      await expectNoAxeViolations(page);
     });
   });
 }

@@ -9,20 +9,10 @@
  * the Three scene remains a **product / AT** follow-up — see
  * `docs/audit/gui-2026-04-16-opengrimoire-data-viz.md` §3.
  */
-import { AxeBuilder } from '@axe-core/playwright';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
+import { expectNoAxeViolations } from './helpers/axe';
 import { APP_THEMES, setAppTheme } from './helpers/theme';
-
-function violationSummary(violations: { id: string; nodes: { html: string }[] }[]): string {
-  return violations
-    .map((v) => `${v.id}: ${v.nodes.map((n) => n.html).slice(0, 5).join(' | ')}`)
-    .join('\n');
-}
-
-function runVizAxe(page: Page) {
-  return new AxeBuilder({ page }).exclude('canvas').analyze();
-}
 
 for (const theme of APP_THEMES) {
   test.describe(`Visualization + constellation axe (OGAN-15) — ${theme} theme`, () => {
@@ -36,15 +26,13 @@ for (const theme of APP_THEMES) {
       await expect(page.locator('[data-region="opengrimoire-viz-controls"]')).toBeVisible({ timeout: 20000 });
       await expect(page.getByTestId('alluvial-diagram')).toBeVisible({ timeout: 20000 });
 
-      let result = await runVizAxe(page);
-      expect(result.violations, violationSummary(result.violations)).toHaveLength(0);
+      await expectNoAxeViolations(page, { exclude: 'canvas' });
 
       await page.getByRole('tab', { name: 'Chord' }).click();
       await expect(page.getByTestId('chord-diagram')).toBeVisible({ timeout: 20000 });
       await expect(page.getByTestId('alluvial-diagram')).toHaveCount(0);
 
-      result = await runVizAxe(page);
-      expect(result.violations, violationSummary(result.violations)).toHaveLength(0);
+      await expectNoAxeViolations(page, { exclude: 'canvas' });
     });
 
     test('/constellation passes axe with canvas excluded', async ({ page }) => {
@@ -56,8 +44,7 @@ for (const theme of APP_THEMES) {
         timeout: 20000,
       });
 
-      const { violations } = await runVizAxe(page);
-      expect(violations, violationSummary(violations)).toHaveLength(0);
+      await expectNoAxeViolations(page, { exclude: 'canvas' });
     });
   });
 }

@@ -11,7 +11,7 @@ import { UniqueQualityStep } from './steps/UniqueQualityStep';
 import { SuccessStep } from './steps/SuccessStep';
 import '@/styles/brand.css';
 
-const steps = [
+const formSteps = [
   AttendeeStep,
   IntentStep,
   ContextStep,
@@ -19,10 +19,9 @@ const steps = [
   WorkingStyleStep,
   ConstraintsStep,
   UniqueQualityStep,
-  SuccessStep,
-];
+] as const;
 
-const TOTAL_STEPS = steps.length;
+const TOTAL_STEPS = formSteps.length + 1; // + Success
 
 export function SyncSessionForm() {
   const {
@@ -37,17 +36,21 @@ export function SyncSessionForm() {
     submitForm,
     fetchBootstrapToken,
     bootstrapTokenStatus,
+    bootstrapRequired,
+    successIds,
     recentRetries,
   } = useSyncSessionForm();
 
-  const CurrentStepComponent = steps[currentStep];
-  const progress = ((currentStep + 1) / steps.length) * 100;
+  const isSuccessStep = currentStep >= formSteps.length;
+  const CurrentStepComponent = isSuccessStep ? null : formSteps[currentStep];
+  const progress = ((currentStep + 1) / TOTAL_STEPS) * 100;
   const showRetry = errorKind === 'network' || errorKind === 'submission_5xx' || errorKind === 'rate_limit';
+  const showEarlyBootstrapWarn =
+    !isSuccessStep && bootstrapRequired && bootstrapTokenStatus === 'failed';
 
   return (
     <div className="min-h-screen bg-[var(--brand-atmospheric-white)] dark:bg-gray-950" data-testid="sync-session-form-container">
       <div className="max-w-xl w-full mx-auto px-0 pt-4 pb-8">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="mb-2 text-2xl font-bold text-[var(--brand-navy-blue)] dark:text-gray-100" style={{ fontFamily: 'Avenir Next World, sans-serif' }}>
             Sync Session
@@ -57,7 +60,6 @@ export function SyncSessionForm() {
           </p>
         </div>
 
-        {/* Progress: bar + step label for sighted users and AT */}
         <div className="mb-2" aria-live="polite" aria-atomic="true">
           <p className="mb-1 text-center text-sm text-[var(--brand-secondary-text)] dark:text-gray-300" id="sync-session-step-status">
             Step {currentStep + 1} of {TOTAL_STEPS}
@@ -70,8 +72,32 @@ export function SyncSessionForm() {
           />
         </div>
 
-        {/* Form Container */}
         <div className="form-container" data-testid="sync-session-form-steps">
+          {showEarlyBootstrapWarn && (
+            <div
+              className="message message-error mb-4"
+              role="status"
+              data-testid="sync-session-bootstrap-banner"
+            >
+              <p>
+                Submission token setup failed. Request a new token or reload before you submit —
+                required bootstrap did not complete.
+              </p>
+              <p className="mt-2 text-xs opacity-90">
+                Failure class: <code>bootstrap_token</code> · Token status:{' '}
+                <code>{bootstrapTokenStatus}</code>
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" className="secondary-button" onClick={() => void fetchBootstrapToken()}>
+                  Request new token
+                </button>
+                <button type="button" className="secondary-button" onClick={() => window.location.reload()}>
+                  Reload session
+                </button>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="message message-error" role="alert">
               <p>{error}</p>
@@ -101,11 +127,12 @@ export function SyncSessionForm() {
                   </button>
                 ) : null}
               </div>
-              <details className="mt-3 rounded border border-red-200 bg-white p-2 text-xs text-red-900">
+              <details className="mt-3 rounded border border-red-200 bg-white p-2 text-xs text-red-900 dark:border-red-900 dark:bg-gray-950 dark:text-red-200">
                 <summary className="cursor-pointer font-medium">Operator diagnostics</summary>
                 <div className="mt-2 space-y-1" data-testid="sync-session-diagnostics-drawer">
                   <p>
                     Token status: <code>{bootstrapTokenStatus}</code>
+                    {bootstrapRequired ? ' (required)' : ' (optional)'}
                   </p>
                   <p>Recent retries (latest first):</p>
                   <ul className="list-disc pl-4">
@@ -125,15 +152,19 @@ export function SyncSessionForm() {
             </div>
           )}
 
-          <CurrentStepComponent
-            formData={formData}
-            updateFormData={updateFormData}
-            nextStep={nextStep}
-            prevStep={prevStep}
-            submitForm={submitForm}
-            isSubmitting={isSubmitting}
-            isLastStep={currentStep === steps.length - 2}
-          />
+          {isSuccessStep ? (
+            <SuccessStep formData={formData} successIds={successIds} />
+          ) : CurrentStepComponent ? (
+            <CurrentStepComponent
+              formData={formData}
+              updateFormData={updateFormData}
+              nextStep={nextStep}
+              prevStep={prevStep}
+              submitForm={submitForm}
+              isSubmitting={isSubmitting}
+              isLastStep={currentStep === formSteps.length - 1}
+            />
+          ) : null}
         </div>
       </div>
     </div>

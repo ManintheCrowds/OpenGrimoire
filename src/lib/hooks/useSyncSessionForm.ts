@@ -10,9 +10,14 @@ import {
 } from '@/lib/survey/sync-session-submit-user-message';
 import { SYNC_SESSION_QUESTIONNAIRE_VERSION } from '@/lib/survey/sync-session-v2-questions';
 import { parseBootstrapTokenResponse } from '@/lib/survey/sync-session-bootstrap';
+import {
+  parseSyncSessionSuccessIds,
+  type SyncSessionSuccessIds,
+} from '@/lib/survey/sync-session-success-ids';
 import type { SyncSessionFormData } from './types';
 
 export type { SyncSessionFormData } from './types';
+export type { SyncSessionSuccessIds } from '@/lib/survey/sync-session-success-ids';
 
 const DRAFT_KEY = 'opengrimoire.syncSession.v2';
 /** Last form step index before Success (0-based). Success step clears draft. */
@@ -70,6 +75,8 @@ export function useSyncSessionForm() {
   });
   const [hydrated, setHydrated] = useState(false);
   const [bootstrapTokenStatus, setBootstrapTokenStatus] = useState<'idle' | 'ok' | 'failed'>('idle');
+  const [bootstrapRequired, setBootstrapRequired] = useState(false);
+  const [successIds, setSuccessIds] = useState<SyncSessionSuccessIds | null>(null);
   const [recentRetries, setRecentRetries] = useState<Array<{ ts: string; status: number | null; requestId?: string }>>([]);
   const postTokenRef = useRef<string | null>(null);
   const bootstrapAttemptedRef = useRef(false);
@@ -91,12 +98,14 @@ export function useSyncSessionForm() {
       const parsed = parseBootstrapTokenResponse(data);
       if (parsed.status === 'ok') {
         bootstrapRequiredRef.current = parsed.required;
+        setBootstrapRequired(parsed.required);
         postTokenRef.current = parsed.token;
         setBootstrapTokenStatus('ok');
       } else {
         const required =
           data.required === true || (data.required !== false && data.expiresIn != null);
         bootstrapRequiredRef.current = required;
+        setBootstrapRequired(required);
         setBootstrapTokenStatus('failed');
       }
     } catch {
@@ -216,6 +225,14 @@ export function useSyncSessionForm() {
         return;
       }
 
+      const ids = parseSyncSessionSuccessIds(payload);
+      if (!ids) {
+        setErrorKind('unknown');
+        setError('Submission succeeded but handoff IDs were missing. Check the response and try again.');
+        return;
+      }
+
+      setSuccessIds(ids);
       dispatchSurveyDataChanged('survey-post');
       nextStep();
     } catch (err) {
@@ -244,6 +261,8 @@ export function useSyncSessionForm() {
     submitForm,
     fetchBootstrapToken,
     bootstrapTokenStatus,
+    bootstrapRequired,
+    successIds,
     recentRetries,
   };
 }

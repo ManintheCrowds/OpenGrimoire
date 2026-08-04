@@ -41,12 +41,27 @@ test.describe('Sync Session flow (v2)', () => {
 
     const postRes = await surveyPost;
     expect(postRes.status(), 'POST /api/survey status').toBe(200);
-    const body = (await postRes.json()) as Record<string, unknown>;
+    const body = (await postRes.json()) as {
+      success?: boolean;
+      attendeeId?: string;
+      surveyResponseId?: string;
+      harnessProfileId?: string | null;
+    };
     expect(body.success).toBe(true);
+    expect(body.attendeeId).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(body.surveyResponseId).toMatch(/^[0-9a-f-]{36}$/i);
 
-    await expect(
-      page.getByTestId('success-step').or(page.locator('.message-error'))
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('success-step')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('success-handoff-ids')).toBeVisible();
+    await expect(page.getByTestId('success-attendee-id')).toHaveText(body.attendeeId as string);
+    await expect(page.getByTestId('success-survey-response-id')).toHaveText(
+      body.surveyResponseId as string
+    );
+    if (body.harnessProfileId) {
+      await expect(page.getByTestId('success-harness-profile-id')).toHaveText(body.harnessProfileId);
+    } else {
+      await expect(page.getByTestId('success-harness-profile-id')).toHaveCount(0);
+    }
   });
 
   test('/survey redirects to /operator-intake (canonical Sync Session URL)', async ({ page }) => {
@@ -64,6 +79,9 @@ test.describe('Sync Session flow (v2)', () => {
     });
 
     await page.goto('/operator-intake');
+    await expect(page.getByTestId('sync-session-bootstrap-banner')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('sync-session-bootstrap-banner')).toContainText('bootstrap_token');
+
     await page.getByTestId('name-input').fill('Bootstrap');
     await page.getByTestId('email-input').fill('bootstrap@example.com');
     await page.getByTestId('next-button').click();

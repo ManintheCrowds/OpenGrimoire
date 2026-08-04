@@ -21,8 +21,8 @@ test.describe('System theme (prefers-color-scheme)', () => {
     await expect(page.locator('html')).toHaveClass(/dark/);
   });
 
-  test('unset localStorage follows emulated dark OS scheme', async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
+  test('unset localStorage defaults to dark even when OS is light', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
     await clearAppTheme(page);
     await page.goto('/');
     await expect(page.locator('html')).toHaveClass(/dark/);

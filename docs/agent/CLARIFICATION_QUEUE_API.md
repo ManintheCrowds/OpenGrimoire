@@ -29,6 +29,36 @@ Same gate as [`/api/alignment-context`](./ALIGNMENT_CONTEXT_API.md): when `ALIGN
 - `question_spec` is a discriminated union: `kind` ∈ `single_choice` | `multi_choice` | `text` | `likert` (see Zod: `src/lib/clarification/schemas.ts`).
 - **PATCH body:** `{ resolution?, status? }` — for `status: "answered"`, `resolution` is required. For `status: "superseded"`, omit `resolution`.
 
+### Parking lot metadata (Sync Session Success)
+
+When an agent parks a question that was **not blocking in the moment** (e.g. MiscRepos open/pending intent context for later), set:
+
+| Field | Value | Meaning |
+|-------|--------|---------|
+| `agent_metadata.blocking` | `false` | Eligible for the operator **parking lot** on Sync Session Success (after handoff IDs). |
+| `agent_metadata.project` | string (e.g. `MiscRepos`, `OpenGrimoire`) | Grouping label on Success; required for useful cross-project demos. |
+
+**Blocking gaps** use `blocking: true` (or omit parking fields and treat as blocking in the full inbox). They stay on `/admin/clarification-queue` and are **excluded** from the Success parking lot (`blocking !== true` filter).
+
+Example park POST body:
+
+```json
+{
+  "question_spec": {
+    "kind": "text",
+    "prompt": "After Sync: confirm OR-VERIFY-1 is still Next focus?",
+    "multiline": true
+  },
+  "agent_metadata": {
+    "blocking": false,
+    "project": "MiscRepos",
+    "reason": "Deferred from pending_tasks; not needed mid-session"
+  }
+}
+```
+
+Harness helper (MiscRepos): `docs/agent/OG_CLARIFICATION_PARK.md` + `scripts/park_clarification_to_og.py`.
+
 ## DELETE policy
 
 There is **no `DELETE`** on clarification queue routes **by design**:

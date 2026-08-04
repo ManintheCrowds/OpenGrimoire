@@ -364,4 +364,69 @@ test.describe('Admin moderation API', () => {
     await expect(page.getByTestId('moderation-queue-status-filter')).toHaveValue('pending');
     await expect(page.getByTestId('moderation-queue-age-sort')).toHaveValue('newest_first');
   });
+
+  test('empty moderation queue still shows cockpit tabs', async ({ page }) => {
+    await page.route('**/api/admin/moderation-queue**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [] }),
+      });
+    });
+    await page.route('**/api/admin/cockpit/autoresearch', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          panel: 'autoresearch-experiments',
+          mode: 'jsonl_adapter',
+          panel_enabled: true,
+          logPath: 'C:/Users/Dell/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_events.jsonl',
+          focusPath: 'C:/Users/Dell/Documents/GitHub/MiscRepos/.cursor/state/autoresearch_focus.json',
+          summary: 'Read 1 autoresearch event across 1 experiment.',
+          active_experiment_id: '2026-06-06-foam-pkm',
+          skippedMalformedLines: 0,
+          experiments: [
+            {
+              experiment_id: '2026-06-06-foam-pkm',
+              asset: 'foam-pkm',
+              branch: 'autoresearch/2026-06-06-foam-pkm',
+              status: 'merged',
+              iteration_count: 1,
+              latest_metric: '5/5',
+              latest_pass: true,
+              started_at: '2026-06-06T12:30:00Z',
+              updated_at: '2026-06-07T00:00:00Z',
+            },
+          ],
+          events: [
+            {
+              event: 'tier_b_complete',
+              ts: '2026-06-06T20:30:00Z',
+              experiment_id: '2026-06-06-foam-pkm',
+              asset: 'foam-pkm',
+              branch: 'autoresearch/2026-06-06-foam-pkm',
+              metric: '5/5',
+              pass: true,
+            },
+          ],
+          policy_trace: null,
+        }),
+      });
+    });
+
+    await loginAsAdmin(page);
+
+    await expect(page.getByTestId('admin-moderation-shell')).toBeVisible();
+    await expect(page.getByText('No responses waiting for moderation.')).toBeVisible();
+    await expect(page.getByTestId('admin-moderation-column-detail')).toBeVisible();
+    await expect(page.getByTestId('admin-right-tabpanel-context')).toBeVisible();
+    await expect(page.getByTestId('moderation-detail-empty')).toBeVisible();
+    await expect(page.getByTestId('admin-right-tab-autoresearch')).toBeVisible();
+
+    await page.getByTestId('admin-right-tab-autoresearch').click();
+    await expect(page.getByTestId('admin-right-tab-autoresearch')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('admin-right-tabpanel-autoresearch')).toBeVisible();
+    await expect(page.getByTestId('admin-autoresearch-panel')).toBeVisible();
+  });
 });

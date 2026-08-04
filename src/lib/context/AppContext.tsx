@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import {
   type ThemePreference,
   parseThemePreference,
@@ -271,6 +271,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       {children}
     </AppContext.Provider>
   );
+};
+
+export const AppThemeOverrideProvider: React.FC<{ children: ReactNode; isDarkMode: boolean }> = ({
+  children,
+  isDarkMode,
+}) => {
+  const parent = useAppContext();
+
+  const value = useMemo<AppContextType>(() => {
+    const settings = { ...parent.settings, isDarkMode };
+    return {
+      ...parent,
+      settings,
+      getCurrentThemeColors: () =>
+        isDarkMode ? parent.settings.categoryColors.dark : parent.settings.categoryColors.light,
+    };
+  }, [isDarkMode, parent]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 // Custom hook to use the context

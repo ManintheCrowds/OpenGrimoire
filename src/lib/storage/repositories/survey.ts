@@ -131,51 +131,60 @@ export function createSurveyResponse(data: {
   categories?: { category: IntentCategory; content: string }[];
 }): SurveyResponseRow {
   const db = getDb();
+  const sqlite = getSqlite();
   const id = randomUUID();
   const ts = nowIso();
-  db.insert(surveyResponses)
-    .values({
-      id,
-      attendeeId: data.attendee_id,
-      sessionType: data.session_type ?? 'profile',
-      questionnaireVersion: data.questionnaire_version ?? 'v1',
-      tenureYears: data.tenure_years ?? null,
-      learningStyle: data.learning_style ?? null,
-      shapedBy: data.shaped_by ?? null,
-      peakPerformance: data.peak_performance ?? null,
-      motivation: data.motivation ?? null,
-      uniqueQuality: data.unique_quality ?? null,
-      harnessProfileId: data.harness_profile_id ?? null,
-      status: 'pending',
-      moderatedAt: null,
-      testData: data.test_data ?? false,
-      createdAt: ts,
-      updatedAt: ts,
-    })
-    .run();
 
-  if (data.categories && data.categories.length > 0) {
-    for (const category of data.categories) {
-      db.insert(surveyResponseIntentCategories)
-        .values({
-          id: randomUUID(),
-          responseId: id,
-          category: category.category,
-          content: category.content,
-          createdAt: ts,
-          updatedAt: ts,
-        })
-        .onConflictDoUpdate({
-          target: [surveyResponseIntentCategories.responseId, surveyResponseIntentCategories.category],
-          set: { content: category.content, updatedAt: ts },
-        })
-        .run();
+  // Keep the parent response and intent categories atomic. Sync Session v2 stores
+  // session_intent/context/constraints in categories; a mid-loop failure must not
+  // leave an orphan survey_responses row that looks "saved" while omitting payload.
+  const insertResponse = sqlite.transaction(() => {
+    db.insert(surveyResponses)
+      .values({
+        id,
+        attendeeId: data.attendee_id,
+        sessionType: data.session_type ?? 'profile',
+        questionnaireVersion: data.questionnaire_version ?? 'v1',
+        tenureYears: data.tenure_years ?? null,
+        learningStyle: data.learning_style ?? null,
+        shapedBy: data.shaped_by ?? null,
+        peakPerformance: data.peak_performance ?? null,
+        motivation: data.motivation ?? null,
+        uniqueQuality: data.unique_quality ?? null,
+        harnessProfileId: data.harness_profile_id ?? null,
+        status: 'pending',
+        moderatedAt: null,
+        testData: data.test_data ?? false,
+        createdAt: ts,
+        updatedAt: ts,
+      })
+      .run();
+
+    if (data.categories && data.categories.length > 0) {
+      for (const category of data.categories) {
+        db.insert(surveyResponseIntentCategories)
+          .values({
+            id: randomUUID(),
+            responseId: id,
+            category: category.category,
+            content: category.content,
+            createdAt: ts,
+            updatedAt: ts,
+          })
+          .onConflictDoUpdate({
+            target: [surveyResponseIntentCategories.responseId, surveyResponseIntentCategories.category],
+            set: { content: category.content, updatedAt: ts },
+          })
+          .run();
+      }
     }
-  }
 
-  const row = db.select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
-  if (!row) throw new Error('Survey response insert failed');
-  return rowToSurvey(row);
+    const row = db.select().from(surveyResponses).where(eq(surveyResponses.id, id)).get();
+    if (!row) throw new Error('Survey response insert failed');
+    return rowToSurvey(row);
+  });
+
+  return insertResponse();
 }
 
 export function getPeakPerformanceDefinitions(): PeakPerformanceDefinitionRow[] {

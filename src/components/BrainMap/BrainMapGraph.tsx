@@ -519,11 +519,17 @@ export default function BrainMapGraph() {
       labels.attr('x', (d) => d.x ?? 0).attr('y', (d) => d.y ?? 0);
     });
 
-    return () => tooltip.remove();
+    // Stop the force simulation and remove the body tooltip on re-render/unmount.
+    // Previously the cleanup was discarded, so layout/filter changes stacked live
+    // simulations and could freeze the tab.
+    return () => {
+      simulation.stop();
+      tooltip.remove();
+    };
   }, [filteredData, affectOverlayMode, maxUnresolvedQuestions, layoutPositions]);
 
   useEffect(() => {
-    renderGraph();
+    return renderGraph();
   }, [renderGraph]);
 
   const sortedNodes = useMemo(

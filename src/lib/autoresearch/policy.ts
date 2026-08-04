@@ -26,6 +26,8 @@ export interface EvalRunRow {
   suite?: string;
   pass?: boolean;
   ts?: string;
+  experiment_id?: string;
+  branch?: string;
   detail?: string;
 }
 
@@ -193,6 +195,25 @@ function latestEventOfType(events: AutoresearchEvent[], type: string): Autoresea
   );
 }
 
+function isEvalRunForExperiment(
+  row: EvalRunRow,
+  suiteName: string,
+  experiment: AutoresearchEvent | undefined,
+  policyTrace: AutoresearchEvent | undefined
+): boolean {
+  if (row.suite !== suiteName || row.pass !== true) return false;
+  if (!experiment) return false;
+  if (row.experiment_id && row.experiment_id !== experiment.experiment_id) return false;
+  if (row.branch && row.branch !== experiment.branch) return false;
+  if (!row.ts) return false;
+  if (row.ts < experiment.ts) return false;
+  return !policyTrace?.ts || row.ts <= policyTrace.ts;
+}
+
+function requiredPredicateFailures(predicates: PolicyPredicateRow[]): PolicyPredicateRow[] {
+  return predicates.filter((predicate) => predicate.source !== 'external' && predicate.pass !== true);
+}
+
 export function buildGithubCompareUrl(branch: string, github?: AutoresearchGithubMeta): string | null {
   if (github?.compare_url) return github.compare_url;
   const slug = branch.replace(/^autoresearch\//, '');
@@ -220,7 +241,6 @@ export function evaluatePolicyPredicates(
   const critic = latestEventOfType(events, 'critic_scored');
   const evalRuns = readEvalRunsJsonl({ ...deps, eventsLogPath });
   const suiteName = `${asset}-autoresearch-tier-b`;
-  const evalRecorded = evalRuns.some((row) => row.suite === suiteName && row.pass === true);
 
   const harnessRoot = eventsLogPath ? resolveHarnessRoot(env, eventsLogPath) : null;
   const mutable_asset_diff = computeMutableAssetDiff(harnessRoot, branch, asset, MAX_DIFF_LINES, execGit);
@@ -231,6 +251,8 @@ export function evaluatePolicyPredicates(
   const policyTrace = [...events]
     .sort((a, b) => b.ts.localeCompare(a.ts))
     .find((e) => ['merge_eligible', 'merge_applied', 'merge_blocked', 'policy_violation'].includes(e.event));
+
+  const evalRecorded = evalRuns.some((row) => isEvalRunForExperiment(row, suiteName, started, policyTrace));
 
   const ciDetail = policyTrace?.github?.pr
     ? `Check GitHub PR #${policyTrace.github.pr} checks`
@@ -281,14 +303,16 @@ export function evaluatePolicyPredicates(
     },
   ];
 
-  const evaluable = predicates.filter((p) => p.pass !== null);
+  const nonExternal = predicates.filter((p) => p.source !== 'external');
+  const failedPredicateIds = requiredPredicateFailures(predicates).map((p) => p.id);
   const all_predicates_pass =
-    evaluable.length === 0 ? null : evaluable.every((p) => p.pass === true);
+    nonExternal.length === 0 ? null : failedPredicateIds.length === 0;
 
   const kill_switch_blocked =
     policyTrace?.event === 'merge_blocked' &&
     !autoMergeEnabled &&
-    (policyTrace.detail?.includes('auto_merge_enabled') ?? false);
+    failedPredicateIds.length === 1 &&
+    failedPredicateIds[0] === 'auto_merge_enabled';
 
   return {
     predicates,
@@ -305,8 +329,5 @@ export function isKillSwitchBlocked(
 ): boolean {
   if (!policyTrace || policyTrace.event !== 'merge_blocked') return false;
   if (autoMergeEnabled) return false;
-  return (
-    failedPredicateIds.includes('auto_merge_enabled') ||
-    (policyTrace.detail?.includes('auto_merge_enabled') ?? false)
-  );
+  return failedPredicateIds.length === 1 && failedPredicateIds[0] === 'auto_merge_enabled';
 }

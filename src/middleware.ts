@@ -125,14 +125,10 @@ export function middleware(request: NextRequest) {
 /** Must cover every `TEST_ROUTE_PREFIXES` entry (OA-4). Drift = middleware never runs for a dev route. */
 export const config = {
   matcher: [
-    // Canonical graph JSON plus common renamed backups left under /public/.
-    '/brain-map-graph.json',
-    '/brain-map-graph.local.json',
-    '/brain-map-graph.local.json.pre_e2e_backup',
-    '/brain-map-graph.json.bak',
-    '/brain-map-graph.local.json.bak',
-    '/brain-map-graph.json.old',
-    '/brain-map-graph.local.json.old',
+    // Same coverage as isBlockedBrainMapStaticPath — any suffix after .json
+    // (enumeration here would miss backups that .gitignore + the guard already cover).
+    '/brain-map-graph.local.json(.*)',
+    '/brain-map-graph.json(.*)',
     '/api/survey',
     '/api/auth/login',
     '/api/operator-probes/ingest',

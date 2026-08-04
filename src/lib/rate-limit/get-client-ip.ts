@@ -13,7 +13,7 @@ export function shouldTrustForwardedIpForRateLimit(): boolean {
 }
 
 /**
- * Client identity for in-memory per-IP rate limiters in root middleware.
+ * Client identity for in-memory per-IP rate limiters in `src/middleware.ts`.
  * When {@link shouldTrustForwardedIpForRateLimit} is false, returns `unknown`
  * so client-supplied X-Forwarded-For cannot bypass limits.
  */

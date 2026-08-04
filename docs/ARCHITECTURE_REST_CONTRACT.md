@@ -78,11 +78,11 @@ Maintenance: update this table when adding or changing routes under `src/app/api
 
 ### Client IP for middleware rate limits
 
-Survey POST, login POST, operator-probes ingest, and discovery GET rate limits in **root `middleware.ts`** key clients by IP via [`getRateLimitClientIp`](../src/lib/rate-limit/get-client-ip.ts). Forwarded headers are honored only when **`OPENGRIMOIRE_TRUST_FORWARDED_IP`** is `1` or `true`, or when **`VERCEL=1`**; otherwise the key is **`unknown`** (shared bucket). Deployers must align reverse-proxy headers with that contract — see [`DEPLOYMENT.md`](../DEPLOYMENT.md) and [OPERATIONAL_TRADEOFFS.md](./engineering/OPERATIONAL_TRADEOFFS.md).
+Survey POST, login POST, operator-probes ingest, and discovery GET rate limits in [`src/middleware.ts`](../src/middleware.ts) key clients by IP via [`getRateLimitClientIp`](../src/lib/rate-limit/get-client-ip.ts). Forwarded headers are honored only when **`OPENGRIMOIRE_TRUST_FORWARDED_IP`** is `1` or `true`, or when **`VERCEL=1`**; otherwise the key is **`unknown`** (shared bucket). Deployers must align reverse-proxy headers with that contract — see [`DEPLOYMENT.md`](../DEPLOYMENT.md) and [OPERATIONAL_TRADEOFFS.md](./engineering/OPERATIONAL_TRADEOFFS.md).
 
 ### Survey POST rate limiting
 
-`POST /api/survey` is limited in **root `middleware.ts`**: in-memory counter per client IP (see [Client IP for middleware rate limits](#client-ip-for-middleware-rate-limits)), **30 requests per 60s** sliding window, response **429** with `Retry-After`. This applies **per Node process** only (not shared across serverless replicas or multiple instances); for production scale-out, replace with a shared store (e.g. Redis / edge KV) and keep this contract’s **429** semantics.
+`POST /api/survey` is limited in [`src/middleware.ts`](../src/middleware.ts): in-memory counter per client IP (see [Client IP for middleware rate limits](#client-ip-for-middleware-rate-limits)), **30 requests per 60s** sliding window, response **429** with `Retry-After`. This applies **per Node process** only (not shared across serverless replicas or multiple instances); for production scale-out, replace with a shared store (e.g. Redis / edge KV) and keep this contract’s **429** semantics.
 
 ### Survey read endpoints (visualization + approved qualities)
 

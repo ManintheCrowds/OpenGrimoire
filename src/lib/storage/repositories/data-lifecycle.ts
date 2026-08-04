@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import Database from 'better-sqlite3';
 import { getSqlite } from '@/db/client';
 
 type ManagedTable = 'survey_responses' | 'clarification_requests' | 'study_reviews';
@@ -64,12 +65,23 @@ export function exportManagedTable(table: ManagedTable) {
   return sqlite.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all();
 }
 
-export function backupDatabaseFile(): string {
+/**
+ * Snapshot the live SQLite database, including committed pages that may still
+ * live only in the WAL. A raw copy of the main `*.sqlite` file can omit those
+ * writes under WAL mode (`journal_mode = WAL` in src/db/client.ts).
+ */
+export async function backupDatabaseFile(): Promise<string> {
   const dbPath = process.env.OPENGRIMOIRE_DB_PATH ?? path.join(process.cwd(), 'data', 'opengrimoire.sqlite');
   const backupDir = path.join(path.dirname(dbPath), 'backups');
   if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const outPath = path.join(backupDir, `opengrimoire-${stamp}.sqlite`);
-  fs.copyFileSync(dbPath, outPath);
+  // Open a dedicated connection so backup does not bootstrap/migrate via getSqlite().
+  const sqlite = new Database(dbPath, { readonly: true, fileMustExist: true });
+  try {
+    await sqlite.backup(outPath);
+  } finally {
+    sqlite.close();
+  }
   return outPath;
 }

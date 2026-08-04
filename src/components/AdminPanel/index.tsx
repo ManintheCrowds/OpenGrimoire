@@ -427,6 +427,12 @@ export function AdminPanel() {
     moderationMutation.mutate({ responseId, status, notes });
   };
 
+  /** Notes attach only to an explicit Approve/Reject click — never on blur. */
+  const moderationNotesForDecision = () => {
+    const notes = detailNotesDraft.trim();
+    return notes.length > 0 ? notes : undefined;
+  };
+
   const signOut = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
@@ -940,7 +946,13 @@ export function AdminPanel() {
                         type="button"
                         data-testid="moderation-detail-approve"
                         disabled={moderationMutation.isPending}
-                        onClick={() => void handleModeration(selectedItem.id, 'approved')}
+                        onClick={() =>
+                          void handleModeration(
+                            selectedItem.id,
+                            'approved',
+                            moderationNotesForDecision()
+                          )
+                        }
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-800 hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 w-1/2 disabled:opacity-50"
                       >
                         Approve
@@ -949,7 +961,13 @@ export function AdminPanel() {
                         type="button"
                         data-testid="moderation-detail-reject"
                         disabled={moderationMutation.isPending}
-                        onClick={() => void handleModeration(selectedItem.id, 'rejected')}
+                        onClick={() =>
+                          void handleModeration(
+                            selectedItem.id,
+                            'rejected',
+                            moderationNotesForDecision()
+                          )
+                        }
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 w-1/2 disabled:opacity-50"
                       >
                         Reject
@@ -967,12 +985,6 @@ export function AdminPanel() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Add notes about your moderation decision..."
                         onChange={(e) => setDetailNotesDraft(e.target.value)}
-                        onBlur={(e) => {
-                          const value = e.target.value.trim();
-                          if (value && selectedItem) {
-                            void handleModeration(selectedItem.id, 'approved', value);
-                          }
-                        }}
                       />
                     </div>
                   </section>

@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import * as d3Force from 'd3-force';
 import { select, zoom, drag } from 'd3';
 import { BrainMapSourcesPanel } from '@/components/BrainMap/BrainMapSourcesPanel';
+import { mergeBrainMapChunks, type BrainMapChunkPayload } from './brainMapChunks';
 
 const GROUP_COLORS: Record<string, string> = {
   core: '#c8a84b',
@@ -78,6 +79,8 @@ export interface BrainMapData {
   /** Present when build merged multiple state dirs (see build_brain_map.py). */
   sourceRoots?: BrainMapSourceRoot[];
 }
+
+type BrainMapChunk = BrainMapChunkPayload<BrainMapNode, BrainMapEdge, BrainMapSourceRoot[]>;
 
 type GraphNode = BrainMapNode & d3Force.SimulationNodeDatum;
 type LayoutPosition = { id: string; x: number; y: number };
@@ -250,7 +253,9 @@ export default function BrainMapGraph() {
     setLoading(true);
     setError(null);
     const chunkSize = 500;
-    const fetchChunk = async (chunkIndex: number): Promise<BrainMapData & { hasMoreNodes?: boolean; hasMoreEdges?: boolean }> => {
+    const fetchChunk = async (
+      chunkIndex: number
+    ): Promise<BrainMapChunk & { hasMoreNodes?: boolean; hasMoreEdges?: boolean }> => {
       const url = `/api/brain-map/graph?chunkSize=${chunkSize}&chunkIndex=${chunkIndex}`;
       const res = await fetch(url, { headers, credentials: 'include', cache: 'default' });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -258,7 +263,7 @@ export default function BrainMapGraph() {
     };
 
     (async () => {
-      const chunks: BrainMapData[] = [];
+      const chunks: BrainMapChunk[] = [];
       let chunkIndex = 0;
       while (!cancelled) {
         const chunk = await fetchChunk(chunkIndex);
@@ -268,17 +273,7 @@ export default function BrainMapGraph() {
         chunkIndex += 1;
       }
       if (cancelled) return;
-      const graph = chunks.reduce<BrainMapData>(
-        (acc, chunk) => ({
-          ...acc,
-          generated: chunk.generated,
-          sessionCount: chunk.sessionCount,
-          sourceRoots: chunk.sourceRoots,
-          nodes: acc.nodes.concat(chunk.nodes ?? []),
-          edges: acc.edges.concat(chunk.edges ?? []),
-        }),
-        { nodes: [], edges: [], generated: '', sessionCount: 0 }
-      );
+      const graph = mergeBrainMapChunks(chunks);
 
       if (graph.nodes?.length > 0) {
         setPlaceholderFromEmptyApi(false);

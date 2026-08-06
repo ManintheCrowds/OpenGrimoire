@@ -5,6 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { dispatchSurveyDataChanged } from '@/lib/survey/survey-data-change-event';
 
+interface ModerationInfo {
+  status: 'pending' | 'approved' | 'rejected' | null;
+  notes: string | null;
+}
+
 interface QueueItem {
   id: string;
   unique_quality: string;
@@ -13,11 +18,15 @@ interface QueueItem {
     last_name: string | null;
     is_anonymous: boolean;
   };
-  moderation: {
-    status: 'pending' | 'approved' | 'rejected' | null;
-    notes: string | null;
-  } | null;
+  /** API returns an array; tolerate a legacy single-object shape. */
+  moderation: ModerationInfo | ModerationInfo[] | null;
   created_at: string;
+}
+
+function primaryModeration(moderation: QueueItem['moderation']): ModerationInfo | null {
+  if (!moderation) return null;
+  if (Array.isArray(moderation)) return moderation[0] ?? null;
+  return moderation;
 }
 
 interface ClarificationBacklogItem {
@@ -427,11 +436,8 @@ export function AdminPanel() {
     moderationMutation.mutate({ responseId, status, notes });
   };
 
-  /** Notes attach only to an explicit Approve/Reject click — never on blur. */
-  const moderationNotesForDecision = () => {
-    const notes = detailNotesDraft.trim();
-    return notes.length > 0 ? notes : undefined;
-  };
+  /** Notes attach only to an explicit Approve/Reject click — never on blur. Always send the draft so cleared text can clear stored notes. */
+  const moderationNotesForDecision = () => detailNotesDraft.trim();
 
   const signOut = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -459,7 +465,7 @@ export function AdminPanel() {
       if (statusFilter === 'all') {
         return true;
       }
-      return (item.moderation?.status ?? 'pending') === statusFilter;
+      return (primaryModeration(item.moderation)?.status ?? 'pending') === statusFilter;
     })
     .sort((a, b) => {
       const timeA = new Date(a.created_at).getTime();
@@ -485,8 +491,8 @@ export function AdminPanel() {
   }, [queueFilteredAndSorted, selectedResponseId]);
 
   React.useEffect(() => {
-    setDetailNotesDraft(selectedItem?.moderation?.notes ?? '');
-  }, [selectedItem?.id, selectedItem?.moderation?.notes]);
+    setDetailNotesDraft(primaryModeration(selectedItem?.moderation ?? null)?.notes ?? '');
+  }, [selectedItem?.id, selectedItem?.moderation]);
 
   if (loading) {
     return (
@@ -621,7 +627,7 @@ export function AdminPanel() {
                         </p>
                       </div>
                       <span className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700">
-                        {item.moderation?.status ?? 'pending'}
+                        {primaryModeration(item.moderation)?.status ?? 'pending'}
                       </span>
                     </div>
                     <p className="text-gray-800 line-clamp-3">{item.unique_quality}</p>
@@ -946,7 +952,7 @@ export function AdminPanel() {
                         Submitted: {new Date(selectedItem.created_at).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        Current status: {selectedItem.moderation?.status ?? 'pending'}
+                        Current status: {primaryModeration(selectedItem.moderation)?.status ?? 'pending'}
                       </p>
                     </div>
                     <div className="bg-gray-50 rounded p-4">

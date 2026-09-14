@@ -14,6 +14,17 @@ describe('isBlockedBrainMapStaticPath', () => {
     expect(isBlockedBrainMapStaticPath('/brain-map-graph.json.old')).toBe(true);
   });
 
+  it('blocks non-dot backup suffixes that still match the middleware matcher', () => {
+    // Matcher `/brain-map-graph.local.json(.*)` runs for these; a `$|.` suffix
+    // check would fall through to NextResponse.next() and serve the file.
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json-copy')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json-copy')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json~')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json~')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json_backup')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json_old')).toBe(true);
+  });
+
   it('does not block the authenticated API route or unrelated paths', () => {
     expect(isBlockedBrainMapStaticPath('/api/brain-map/graph')).toBe(false);
     expect(isBlockedBrainMapStaticPath('/api/brain-map/meta')).toBe(false);

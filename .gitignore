@@ -17,9 +17,16 @@ npm-debug.log
 
 # Local / personal brain map (vault merges; not committed by default)
 public/brain-map-graph.local.json
-# Operator/e2e backups of graph JSON under public/ (must not be world-readable static files)
+# Operator/e2e backups of graph JSON under public/ (must not be world-readable static files).
+# Cover dot suffixes (.bak) and non-dot copies (json-copy, json~, json_backup).
 public/brain-map-graph.json.*
+public/brain-map-graph.json-*
+public/brain-map-graph.json~
+public/brain-map-graph.json_*
 public/brain-map-graph.local.json.*
+public/brain-map-graph.local.json-*
+public/brain-map-graph.local.json~
+public/brain-map-graph.local.json_*
 
 # LLM-Wiki read-only mirror (operator sync; not SSOT — keep .gitkeep only)
 public/wiki/**

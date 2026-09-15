@@ -16,6 +16,7 @@ describe('middleware location', () => {
 
   it('uses suffix-covering brain-map matcher patterns (not a fixed backup allowlist)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/middleware.ts'), 'utf8');
+    expect(src).toContain("'/brain-map-graph(.*).json'");
     expect(src).toContain("'/brain-map-graph.json(.*)'");
     expect(src).toContain("'/brain-map-graph.local.json(.*)'");
     expect(src).not.toContain("'/brain-map-graph.local.json.pre_e2e_backup'");

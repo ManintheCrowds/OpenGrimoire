@@ -14,6 +14,17 @@ describe('isBlockedBrainMapStaticPath', () => {
     expect(isBlockedBrainMapStaticPath('/brain-map-graph.json.old')).toBe(true);
   });
 
+  it('blocks Finder/VS Code duplicates that insert characters before .json', () => {
+    // Duplicate File inserts before the extension, so middleware's
+    // `/brain-map-graph.json(.*)` matcher never runs and the old
+    // `(\.local)?\.json(?:$|\.)` guard also missed these names.
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local-copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph (1).json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph-copy.json')).toBe(true);
+  });
+
   it('does not block the authenticated API route or unrelated paths', () => {
     expect(isBlockedBrainMapStaticPath('/api/brain-map/graph')).toBe(false);
     expect(isBlockedBrainMapStaticPath('/api/brain-map/meta')).toBe(false);

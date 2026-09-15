@@ -20,6 +20,13 @@ public/brain-map-graph.local.json
 # Operator/e2e backups of graph JSON under public/ (must not be world-readable static files)
 public/brain-map-graph.json.*
 public/brain-map-graph.local.json.*
+# Finder/VS Code duplicates insert before .json (not after), so the .* suffix
+# patterns above miss them. Keep the committed public/brain-map-graph.json.
+public/brain-map-graph.local *.json
+public/brain-map-graph.local-*.json
+public/brain-map-graph *.json
+public/brain-map-graph-*.json
+public/brain-map-graph (*).json
 
 # LLM-Wiki read-only mirror (operator sync; not SSOT — keep .gitkeep only)
 public/wiki/**

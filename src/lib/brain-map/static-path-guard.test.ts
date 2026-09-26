@@ -42,6 +42,12 @@ describe('isBlockedBrainMapStaticPath', () => {
     expect(isBlockedBrainMapStaticPath('/brain-map-graph-copy.json')).toBe(true);
   });
 
+  it('blocks locale-prefixed copies Next serves from the original public file', () => {
+    expect(isBlockedBrainMapStaticPath('/xx/brain-map-graph.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/a/b/brain-map-graph.local.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/foo/bar/baz/brain-map-graph.json.bak')).toBe(true);
+  });
+
   it('does not treat fail-closed encodings as suffix hits', () => {
     expect(isBlockedBrainMapStaticPath('/brain-map-graph%.json')).toBe(false);
   });

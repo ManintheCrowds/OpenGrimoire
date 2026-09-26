@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { isBlockedBrainMapStaticPath } from './lib/brain-map/static-path-guard';
+import { pathnameTargetsAnyExact, pathnameTargetsExact, pathnameTargetsPrefix } from './lib/http/match-request-path';
 import { normalizeRequestPathname } from './lib/http/normalize-request-pathname';
 import { getRateLimitClientIp } from './lib/rate-limit/get-client-ip';
 import { createRateLimiter } from './lib/rate-limit-in-memory';
@@ -40,14 +41,14 @@ const BRAIN_MAP_STATIC_404 = {
  * Dev/demo App Router pages only (OA-4). Blocked in production unless explicitly allowed
  * (e.g. staging). See .env.example OPENGRIMOIRE_ALLOW_TEST_ROUTES.
  *
- * Prefix list is handler-only SSOT. Catch-all matcher (minus Next static/image/favicon)
- * runs this function for encoded `/test*` as well. `isTestDevRoute` treats
- * `pathname === prefix` or `pathname.startsWith(prefix + '/')`.
+ * Prefix list is handler-only SSOT. The matcher is a full catch-all, so encoded
+ * `/test*` and locale-prefixed forms (`/xx/test`) reach this function.
+ * `pathnameTargetsPrefix` treats an exact prefix, a nested path, and extra leading segments as the same route.
  */
 const TEST_ROUTE_PREFIXES = ['/test', '/test-chord', '/test-context', '/test-sqlite'] as const;
 
 function isTestDevRoute(pathname: string): boolean {
-  return TEST_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return TEST_ROUTE_PREFIXES.some((prefix) => pathnameTargetsPrefix(pathname, prefix));
 }
 
 function testRoutesAllowedInThisDeployment(): boolean {
@@ -80,7 +81,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.json(BRAIN_MAP_STATIC_404, { status: 404 });
   }
 
-  if (pathname === '/api/survey' && request.method === 'POST') {
+  if (pathnameTargetsExact(pathname, '/api/survey') && request.method === 'POST') {
     const ip = getRateLimitClientIp(request);
     if (!rateLimitSyncSessionSubmit(ip)) {
       return NextResponse.json(
@@ -90,7 +91,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname === '/api/auth/login' && request.method === 'POST') {
+  if (pathnameTargetsExact(pathname, '/api/auth/login') && request.method === 'POST') {
     const ip = getRateLimitClientIp(request);
     if (!rateLimitLogin(ip)) {
       return NextResponse.json(
@@ -100,7 +101,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname === '/api/operator-probes/ingest' && request.method === 'POST') {
+  if (pathnameTargetsExact(pathname, '/api/operator-probes/ingest') && request.method === 'POST') {
     const ip = getRateLimitClientIp(request);
     if (!rateLimitOperatorProbeIngest(ip)) {
       return NextResponse.json(
@@ -113,7 +114,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (request.method === 'GET' && DISCOVERY_GET_PATHS.has(pathname)) {
+  if (request.method === 'GET' && pathnameTargetsAnyExact(pathname, DISCOVERY_GET_PATHS)) {
     const ip = getRateLimitClientIp(request);
     if (!rateLimitDiscoveryGet(ip)) {
       return NextResponse.json(
@@ -129,7 +130,12 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-/** Catch-all so encoded public/ paths still enter this function. Next internals stay excluded. */
+/**
+ * Full catch-all. Excluding `/_next/static`, `/_next/image`, or `favicon.ico` is a prefix
+ * check on the raw path. `/_next/static/../../brain-map-graph.json` and
+ * `/favicon.ico/../brain-map-graph.json` then skip this function, and `next dev` serves
+ * the public file. Real static assets fall through `next()` after the string checks.
+ */
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/(.*)'],
 };

@@ -14,6 +14,38 @@ describe('isBlockedBrainMapStaticPath', () => {
     expect(isBlockedBrainMapStaticPath('/brain-map-graph.json.old')).toBe(true);
   });
 
+  it('blocks AE1-class encodings of the canonical basename', () => {
+    expect(isBlockedBrainMapStaticPath('/%62rain-map-graph.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph%2Ejson')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/%2Fbrain-map-graph.json')).toBe(true);
+  });
+
+  it('blocks encoded .local.json and encoded backup suffixes', () => {
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local%2Ejson')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json%2Ebak')).toBe(true);
+  });
+
+  it('blocks non-dot backup suffixes after .json (hyphen / tilde / underscore)', () => {
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json-copy')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json-copy')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json~')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json~')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local.json_backup')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.json_old')).toBe(true);
+  });
+
+  it('blocks Finder/VS Code duplicates that insert characters before .json', () => {
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local-copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph.local copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph copy.json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph (1).json')).toBe(true);
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph-copy.json')).toBe(true);
+  });
+
+  it('does not treat fail-closed encodings as suffix hits', () => {
+    expect(isBlockedBrainMapStaticPath('/brain-map-graph%.json')).toBe(false);
+  });
+
   it('does not block the authenticated API route or unrelated paths', () => {
     expect(isBlockedBrainMapStaticPath('/api/brain-map/graph')).toBe(false);
     expect(isBlockedBrainMapStaticPath('/api/brain-map/meta')).toBe(false);

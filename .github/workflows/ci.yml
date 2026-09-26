@@ -33,3 +33,12 @@ jobs:
         env:
           CI: true
         run: npm run test:e2e
+
+  # Branch protection requires a check context literally named "CI"
+  # (job id), while the real work lives in verify-and-e2e.
+  CI:
+    needs: verify-and-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Protection check alias
+        run: echo "verify-and-e2e succeeded"

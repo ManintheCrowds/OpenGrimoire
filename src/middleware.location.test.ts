@@ -14,9 +14,10 @@ describe('middleware location', () => {
     expect(fs.existsSync(path.join(root, 'middleware.ts'))).toBe(false);
   });
 
-  it('uses a catch-all matcher that still excludes Next static assets', () => {
+  it('uses a full catch-all matcher so prefix exclusions cannot skip dot-dot paths', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/middleware.ts'), 'utf8');
-    expect(src).toContain("'/((?!_next/static|_next/image|favicon.ico).*)'");
+    expect(src).toContain("matcher: ['/(.*)']");
+    expect(src).not.toContain("'/((?!_next/static|_next/image|favicon.ico).*)'");
     expect(src).not.toContain("'/brain-map-graph.json(.*)'");
     expect(src).not.toContain("'/brain-map-graph.local.json(.*)'");
   });

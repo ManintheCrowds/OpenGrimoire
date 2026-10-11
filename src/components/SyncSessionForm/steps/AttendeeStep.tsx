@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { harnessProfileIdFromSelection } from '@/lib/harness-profiles/initial-selection';
 import type { SyncSessionFormData } from '@/lib/hooks/useSyncSessionForm';
 
 interface AttendeeStepProps {
@@ -13,6 +13,8 @@ interface AttendeeStepProps {
 export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [profiles, setProfiles] = useState<{ id: string; name: string; purpose: string }[]>([]);
+  const harnessProfileIdRef = useRef(formData.harness_profile_id);
+  harnessProfileIdRef.current = formData.harness_profile_id;
 
   useEffect(() => {
     let cancelled = false;
@@ -26,8 +28,14 @@ export function AttendeeStep({ formData, updateFormData, nextStep }: AttendeeSte
         };
         if (cancelled) return;
         setProfiles(payload.items ?? []);
-        if (!formData.harness_profile_id && payload.selected?.id) {
-          updateFormData({ harness_profile_id: payload.selected.id });
+        // Read the id after await. The mount render's formData is still empty when a
+        // draft restore or an operator change lands while this request is in flight.
+        const nextId = harnessProfileIdFromSelection(
+          harnessProfileIdRef.current,
+          payload.selected?.id
+        );
+        if (nextId) {
+          updateFormData({ harness_profile_id: nextId });
         }
       } catch {
         /* ignore */

@@ -1,5 +1,8 @@
-import type { ClarificationQuestionSpec } from '@/lib/clarification/schemas';
-import type { ClarificationResolution } from '@/lib/clarification/schemas';
+import {
+  likertScaleValues,
+  type ClarificationQuestionSpec,
+  type ClarificationResolution,
+} from '@/lib/clarification/schemas';
 
 function optionIdSet(spec: ClarificationQuestionSpec): Set<string> {
   if (spec.kind === 'single_choice' || spec.kind === 'multi_choice') {
@@ -62,17 +65,23 @@ export function validateResolutionAgainstSpec(
       return null;
     }
     case 'likert': {
+      const min = spec.min ?? 1;
+      const max = spec.max ?? 5;
+      if (!likertScaleValues(min, max)) {
+        return 'Likert scale is invalid.';
+      }
       if (likertValue === undefined || Number.isNaN(likertValue)) {
         return 'Provide a likert value.';
       }
-      const min = spec.min ?? 1;
-      const max = spec.max ?? 5;
       if (likertValue < min || likertValue > max) {
         return `Likert value must be between ${min} and ${max}.`;
       }
       return null;
     }
-    default:
+    default: {
+      const _exhaustive: never = spec;
+      void _exhaustive;
       return 'Unknown question kind.';
+    }
   }
 }

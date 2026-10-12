@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import type {
-  ClarificationQuestionSpec,
-  ClarificationResolution,
+import {
+  likertScaleValues,
+  type ClarificationQuestionSpec,
+  type ClarificationResolution,
 } from '@/lib/clarification/schemas';
 
 export type DynamicQuestionPanelProps = {
@@ -12,6 +13,61 @@ export type DynamicQuestionPanelProps = {
   onChange: (next: ClarificationResolution) => void;
   disabled?: boolean;
 };
+
+function LikertScale({
+  spec,
+  value,
+  onChange,
+  disabled,
+}: {
+  spec: Extract<ClarificationQuestionSpec, { kind: 'likert' }>;
+  value: ClarificationResolution;
+  onChange: (next: ClarificationResolution) => void;
+  disabled: boolean;
+}) {
+  const min = spec.min ?? 1;
+  const max = spec.max ?? 5;
+  const points = likertScaleValues(min, max);
+  if (!points) {
+    return (
+      <p className="text-sm text-red-600" role="alert" data-testid="likert-invalid-scale">
+        This likert scale is invalid (min {min}, max {max}). Supersede the question instead of answering it.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2 items-center">
+        {spec.minLabel && (
+          <span className="text-xs text-gray-500 w-full sm:w-auto">{spec.minLabel}</span>
+        )}
+        {points.map((n) => {
+          const selected = value.likertValue === n;
+          return (
+            <button
+              key={n}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange({ ...value, likertValue: n })}
+              className={`min-w-[2.5rem] px-3 py-2 rounded border-2 text-sm font-medium ${
+                selected
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-blue-200'
+              }`}
+              data-testid={`likert-${n}`}
+            >
+              {n}
+            </button>
+          );
+        })}
+        {spec.maxLabel && (
+          <span className="text-xs text-gray-500 w-full sm:w-auto">{spec.maxLabel}</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function DynamicQuestionPanel({
   spec,
@@ -111,36 +167,7 @@ export function DynamicQuestionPanel({
       )}
 
       {spec.kind === 'likert' && (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-2 items-center">
-            {spec.minLabel && (
-              <span className="text-xs text-gray-500 w-full sm:w-auto">{spec.minLabel}</span>
-            )}
-            {Array.from({ length: (spec.max ?? 5) - (spec.min ?? 1) + 1 }, (_, i) => {
-              const n = (spec.min ?? 1) + i;
-              const selected = value.likertValue === n;
-              return (
-                <button
-                  key={n}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onChange({ ...value, likertValue: n })}
-                  className={`min-w-[2.5rem] px-3 py-2 rounded border-2 text-sm font-medium ${
-                    selected
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-200'
-                  }`}
-                  data-testid={`likert-${n}`}
-                >
-                  {n}
-                </button>
-              );
-            })}
-            {spec.maxLabel && (
-              <span className="text-xs text-gray-500 w-full sm:w-auto">{spec.maxLabel}</span>
-            )}
-          </div>
-        </div>
+        <LikertScale spec={spec} value={value} onChange={onChange} disabled={disabled} />
       )}
     </div>
   );

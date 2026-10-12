@@ -34,6 +34,19 @@ describe('validateResolutionAgainstSpec', () => {
     expect(err).toBeNull();
   });
 
+  it('rejects an inverted likert scale before checking the value', () => {
+    const err = validateResolutionAgainstSpec(
+      {
+        kind: 'likert',
+        prompt: 'Rate',
+        min: 10,
+        max: 1,
+      },
+      { likertValue: 1 }
+    );
+    expect(err).toBe('Likert scale is invalid.');
+  });
+
   it('accepts likert in range', () => {
     const err = validateResolutionAgainstSpec(
       {

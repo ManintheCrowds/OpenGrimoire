@@ -18,6 +18,20 @@ export const clarificationAgentMetadataSchema = z
   })
   .passthrough();
 
+/**
+ * Inclusive integer points for a likert scale.
+ * Returns null when the bounds cannot be rendered (inverted or non-integers).
+ * Callers must not pass a null result to `Array.from({ length })` — a negative
+ * length throws RangeError and unmounts the clarification queue.
+ */
+export function likertScaleValues(min: number, max: number): number[] | null {
+  if (!Number.isInteger(min) || !Number.isInteger(max) || min > max) return null;
+  const count = max - min + 1;
+  // Bounds are 0..10 and 1..11, so a valid pair is at most 12 points.
+  if (count > 12) return null;
+  return Array.from({ length: count }, (_, i) => min + i);
+}
+
 export const clarificationQuestionSpecSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('single_choice'),
@@ -43,7 +57,15 @@ export const clarificationQuestionSpecSchema = z.discriminatedUnion('kind', [
     minLabel: z.string().max(500).optional(),
     maxLabel: z.string().max(500).optional(),
   }),
-]);
+]).superRefine((spec, ctx) => {
+  if (spec.kind !== 'likert') return;
+  if (likertScaleValues(spec.min, spec.max)) return;
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: 'Likert min must be less than or equal to max',
+    path: ['max'],
+  });
+});
 
 export const clarificationResolutionSchema = z.object({
   selectedOptionIds: z.array(z.string()).optional(),

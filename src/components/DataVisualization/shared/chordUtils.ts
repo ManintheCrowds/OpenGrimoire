@@ -176,6 +176,25 @@ export function normalizeCategory(category: string, question: string) {
   return category;
 }
 
+/**
+ * Chord categories must be non-empty strings. Sync Session v2 leaves
+ * `peak_performance` and `motivation` null; inserting those into the category
+ * set makes the color lookup call `null.toLowerCase()` and aborts the diagram
+ * after the SVG has already been cleared.
+ */
+function readChordCategory(row: any, field: string): string | null {
+  if (field === 'tenure_years') {
+    return getYearsCategory(row?.tenure_years || 0);
+  }
+  const value = row?.[field];
+  if (typeof value !== 'string' || value.trim() === '') return null;
+  return value;
+}
+
+function emptyChordMatrix(): ChordMatrix {
+  return { matrix: [], names: [], groups: [], chords: [] };
+}
+
 // Process data for chord diagram
 // NOTE: All color assignments must use the admin-driven color map (categoryColors) as the source of truth.
 export function processChordData(
@@ -189,20 +208,16 @@ export function processChordData(
   const targetCategories = new Set<string>();
   
   data.forEach(d => {
-    if (sourceField === 'tenure_years') {
-      sourceCategories.add(getYearsCategory(d.tenure_years || 0));
-    } else {
-      sourceCategories.add(d[sourceField]);
-    }
-    
-    if (targetField === 'tenure_years') {
-      targetCategories.add(getYearsCategory(d.tenure_years || 0));
-    } else {
-      targetCategories.add(d[targetField]);
-    }
+    const source = readChordCategory(d, sourceField);
+    if (source) sourceCategories.add(source);
+    const target = readChordCategory(d, targetField);
+    if (target) targetCategories.add(target);
   });
 
   const allCategories = Array.from(new Set([...Array.from(sourceCategories), ...Array.from(targetCategories)]));
+  if (allCategories.length === 0) {
+    return emptyChordMatrix();
+  }
   
   // Create matrix
   const matrix = Array(allCategories.length).fill(0).map(() => 
@@ -211,12 +226,9 @@ export function processChordData(
   
   // Fill matrix with relationships
   data.forEach(d => {
-    const source = sourceField === 'tenure_years' 
-      ? getYearsCategory(d.tenure_years || 0)
-      : d[sourceField];
-    const target = targetField === 'tenure_years'
-      ? getYearsCategory(d.tenure_years || 0)
-      : d[targetField];
+    const source = readChordCategory(d, sourceField);
+    const target = readChordCategory(d, targetField);
+    if (!source || !target) return;
     
     const sourceIndex = allCategories.indexOf(source);
     const targetIndex = allCategories.indexOf(target);
@@ -237,11 +249,12 @@ export function processChordData(
   const groups = chordData.groups.map((group, i) => {
     const category = allCategories[i];
     const question = i < sourceCategories.size ? sourceField : targetField;
+    const categoryKey = typeof category === 'string' ? category : '';
     // Use only the admin-driven color map for color assignment
     const color =
-      categoryColors[question]?.[category] ||
-      categoryColors[question]?.[category.toLowerCase()] ||
-      categoryColors[question]?.[category.toUpperCase()] ||
+      categoryColors[question]?.[categoryKey] ||
+      categoryColors[question]?.[categoryKey.toLowerCase()] ||
+      categoryColors[question]?.[categoryKey.toUpperCase()] ||
       '#888888'; // fallback color
     return {
       index: i,

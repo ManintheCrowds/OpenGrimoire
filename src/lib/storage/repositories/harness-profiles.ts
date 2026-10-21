@@ -160,9 +160,17 @@ export function deleteHarnessProfile(id: string): boolean {
 }
 
 function resolveImportExportPath(file?: string): string {
-  const relative = (file?.trim() || DEFAULT_IMPORT_FILE).replace(/\\/g, '/');
-  const resolved = path.resolve(LOCAL_PROFILE_DIR, relative);
-  if (!resolved.startsWith(LOCAL_PROFILE_DIR)) {
+  // Reject `..` segments and prefix-match escapes such as `../harness-profiles.sqlite`,
+  // which pass a naive `resolved.startsWith(LOCAL_PROFILE_DIR)` check because the sibling
+  // path shares the directory string as a prefix (missing path separator boundary).
+  const normalized = (file?.trim() || DEFAULT_IMPORT_FILE).replace(/\\/g, '/').replace(/^\/+/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length === 0 || segments.some((segment) => segment === '..')) {
+    throw new Error('Invalid file path');
+  }
+  const resolved = path.resolve(LOCAL_PROFILE_DIR, ...segments);
+  const relativeToRoot = path.relative(LOCAL_PROFILE_DIR, resolved);
+  if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
     throw new Error('Invalid file path');
   }
   return resolved;

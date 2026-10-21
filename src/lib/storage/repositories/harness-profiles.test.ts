@@ -75,3 +75,48 @@ describe('updateHarnessProfile', () => {
     sqlite.close();
   });
 });
+
+describe('harness profile import/export path sandbox', () => {
+  it('rejects sibling-prefix escapes that bypass startsWith(dir) checks', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-harness-path-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, exportHarnessProfilesToFile, importHarnessProfilesFromFile } =
+      await loadHarnessModules(dbPath);
+    const sqlite = getSqlite();
+
+    const dataDir = path.join(process.cwd(), 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+    const siblingPath = path.join(dataDir, 'harness-profiles.sqlite');
+    const sentinel = `do-not-overwrite-${Date.now()}`;
+    fs.writeFileSync(siblingPath, sentinel, 'utf8');
+
+    try {
+      expect(() => exportHarnessProfilesToFile('../harness-profiles.sqlite')).toThrow(/Invalid file path/);
+      expect(() => importHarnessProfilesFromFile('../harness-profiles.sqlite')).toThrow(/Invalid file path/);
+      expect(() => exportHarnessProfilesToFile('..\\harness-profiles.sqlite')).toThrow(/Invalid file path/);
+      expect(() => exportHarnessProfilesToFile('../opengrimoire.sqlite')).toThrow(/Invalid file path/);
+      expect(fs.readFileSync(siblingPath, 'utf8')).toBe(sentinel);
+    } finally {
+      fs.rmSync(siblingPath, { force: true });
+      sqlite.close();
+    }
+  });
+
+  it('allows in-directory relative export paths', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-harness-path-ok-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, exportHarnessProfilesToFile } = await loadHarnessModules(dbPath);
+    const sqlite = getSqlite();
+
+    const result = exportHarnessProfilesToFile('ok-profiles.json');
+    const abs = path.resolve(process.cwd(), result.file);
+    const root = path.join(process.cwd(), 'data', 'harness-profiles');
+    const rel = path.relative(root, abs);
+    expect(rel.startsWith('..') || path.isAbsolute(rel)).toBe(false);
+    expect(fs.existsSync(abs)).toBe(true);
+    expect(result.count).toBeGreaterThan(0);
+
+    fs.rmSync(abs, { force: true });
+    sqlite.close();
+  });
+});

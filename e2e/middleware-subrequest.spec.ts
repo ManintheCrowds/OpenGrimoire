@@ -14,9 +14,7 @@ const FORGED_HEADER_VALUES = [
 
 test.describe('forged x-middleware-subrequest', () => {
   for (const value of FORGED_HEADER_VALUES) {
-    test(`does not bypass the brain-map static gate (${value.split(':').length} segment(s))`, async ({
-      request,
-    }) => {
+    test(`does not bypass the brain-map static gate for ${value}`, async ({ request }) => {
       const response = await request.get('/brain-map-graph.json', {
         headers: { 'x-middleware-subrequest': value },
       });

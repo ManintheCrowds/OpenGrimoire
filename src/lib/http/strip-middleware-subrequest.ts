@@ -38,12 +38,11 @@ export function installMiddlewareSubrequestStrip(): void {
     return;
   }
   const originalEmit = proto.emit;
-  const patchedEmit: PatchedServer['emit'] = function patchedEmit(event, ...args) {
+  proto.emit = function patchedEmit(this: http.Server, event: string | symbol, ...args: unknown[]): boolean {
     if ((event === 'request' || event === 'upgrade') && isIncomingMessage(args[0])) {
       stripMiddlewareSubrequestHeader(args[0]);
     }
     return originalEmit.apply(this, [event, ...args] as Parameters<typeof originalEmit>);
-  };
-  proto.emit = patchedEmit;
+  } as PatchedServer['emit'];
   proto[PATCHED] = true;
 }

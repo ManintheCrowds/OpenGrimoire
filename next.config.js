@@ -11,6 +11,8 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: undefined,
     serverComponentsExternalPackages: ['better-sqlite3', 'bcryptjs'],
+    // Loads src/instrumentation.ts, which strips x-middleware-subrequest before Next reads it.
+    instrumentationHook: true,
   },
   async rewrites() {
     return [{ source: '/api/openapi.json', destination: '/api/openapi' }];

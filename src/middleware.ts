@@ -8,6 +8,11 @@ import { createRateLimiter } from './lib/rate-limit-in-memory';
 /**
  * NOTE: With `src/app`, Next.js loads middleware from `src/middleware.ts` only.
  * A root-level `middleware.ts` is ignored and never enters the middleware manifest.
+ *
+ * CVE-2025-29927 skipped this function when a client sent `x-middleware-subrequest`.
+ * Next.js 14.2.25+ does not honor that header. `src/instrumentation.ts` also strips it
+ * on the Node server. Static brain-map JSON, production `/test*` gates, and the rate
+ * limits below are enforced only here. Admin and brain-map API handlers check auth themselves.
  */
 
 /** POST /api/survey — single Node instance; not for multi-replica. */

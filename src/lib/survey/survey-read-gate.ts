@@ -29,7 +29,7 @@ export async function checkSurveyReadGate(request: Request): Promise<SurveyReadG
     return { ok: true };
   }
 
-  const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(token);
 
   const decision = decideSurveyReadAccess({

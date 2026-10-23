@@ -15,7 +15,7 @@ export type RequireAdminResult =
  * Require a valid OpenGrimoire operator session (HTTP-only cookie, signed JWT).
  */
 export async function requireOpenGrimoireAdminRoute(): Promise<RequireAdminResult> {
-  const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(token);
 
   if (!session) {

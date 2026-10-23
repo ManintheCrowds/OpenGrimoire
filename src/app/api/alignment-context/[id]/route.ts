@@ -6,7 +6,7 @@ import {
   updateAlignmentContextItem,
 } from '@/lib/storage/repositories/alignment';
 
-type RouteContext = { params: { id: string } };
+type RouteContext = { params: Promise<{ id: string }> };
 
 /**
  * PATCH /api/alignment-context/:id — partial update (no `source`; use admin PATCH for provenance).
@@ -18,7 +18,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
@@ -83,7 +83,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }

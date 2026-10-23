@@ -16,10 +16,11 @@ function escapeHtml(text: string): string {
 }
 
 type PageProps = {
-  params: { slug?: string[] };
+  params: Promise<{ slug?: string[] }>;
 };
 
-export default async function WikiMirrorPage({ params }: PageProps) {
+export default async function WikiMirrorPage(props: PageProps) {
+  const params = await props.params;
   const wikiRoot = getWikiMirrorRoot();
   const slug = params.slug ?? [];
 

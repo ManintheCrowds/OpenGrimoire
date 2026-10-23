@@ -19,7 +19,7 @@ export async function authorizeBrainMapRequest(
 
   const key = request.headers.get('x-brain-map-key') ?? '';
   const headerOk = timingSafeEqualString(key, secret);
-  const token = cookies().get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(OPENGRIMOIRE_SESSION_COOKIE)?.value;
   const sessionOk = (await verifyAdminSessionToken(token)) !== null;
   if (headerOk || sessionOk) return { ok: true };
 

@@ -55,7 +55,6 @@ const Node: React.FC<NodeProps> = ({ data, isSelected, isHovered, onClick, onHov
       onPointerOut={() => onHover(false)}
     >
       <sphereGeometry args={[0.5, 32, 32]} />
-      {/* @ts-expect-error TS2589: @react-spring/three animated.meshStandardMaterial generic depth */}
       <animated.meshStandardMaterial
         color={getNodeColor(data.yearsCategory)}
         transparent

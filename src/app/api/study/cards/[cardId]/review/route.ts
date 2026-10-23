@@ -3,7 +3,7 @@ import { checkAlignmentOrAdminSession } from '@/lib/alignment-context/api-auth';
 import { reviewStudyCard } from '@/lib/storage/repositories/study';
 import type { ReviewRating } from '@/lib/study/sm2';
 
-type RouteParams = { params: { cardId: string } };
+type RouteParams = { params: Promise<{ cardId: string }> };
 
 const RATINGS: ReviewRating[] = ['again', 'hard', 'good', 'easy'];
 
@@ -12,7 +12,7 @@ export async function POST(request: Request, context: RouteParams) {
   if (!gate.ok) {
     return gate.response;
   }
-  const { cardId } = context.params;
+  const { cardId } = (await context.params);
   let json: unknown;
   try {
     json = await request.json();

@@ -7,12 +7,12 @@ import {
   updateHarnessProfile,
 } from '@/lib/storage/repositories/harness-profiles';
 
-type RouteContext = { params: { id: string } };
+type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
   const gate = await checkAlignmentOrAdminSession(_request);
   if (!gate.ok) return gate.response;
-  const item = getHarnessProfileById(context.params.id);
+  const item = getHarnessProfileById((await context.params).id);
   if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ item });
 }
@@ -35,7 +35,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: 'At least one field is required for PATCH' }, { status: 400 });
   }
 
-  const item = updateHarnessProfile(context.params.id, parsed.data);
+  const item = updateHarnessProfile((await context.params).id, parsed.data);
   if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ item });
 }
@@ -43,7 +43,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(request: Request, context: RouteContext) {
   const gate = await checkAlignmentOrAdminSession(request);
   if (!gate.ok) return gate.response;
-  const deleted = deleteHarnessProfile(context.params.id);
+  const deleted = deleteHarnessProfile((await context.params).id);
   if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ ok: true, id: context.params.id });
+  return NextResponse.json({ ok: true, id: (await context.params).id });
 }

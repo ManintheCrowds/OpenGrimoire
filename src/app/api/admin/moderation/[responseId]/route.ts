@@ -3,7 +3,7 @@ import { moderationPatchBodySchema } from '@/lib/admin/moderation-patch-body';
 import { requireOpenGrimoireAdminRoute } from '@/lib/alignment-context/admin-auth';
 import { updateModerationStatus } from '@/lib/storage/repositories/survey';
 
-type RouteContext = { params: { responseId: string } };
+type RouteContext = { params: Promise<{ responseId: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
   const auth = await requireOpenGrimoireAdminRoute();
@@ -11,7 +11,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return auth.response;
   }
 
-  const { responseId } = context.params;
+  const { responseId } = (await context.params);
   if (!responseId) {
     return NextResponse.json({ error: 'Missing response id' }, { status: 400 });
   }

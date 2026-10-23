@@ -1,5 +1,6 @@
 /**
  * Runs once in the Node server, before it accepts traffic (Next `prepare`).
+ * Next 15 loads this file without `experimental.instrumentationHook`.
  * Middleware still executes in Next's edge sandbox, but the HTTP request enters
  * through Node first. Stripping the header here covers dev, `next start`, and
  * the standalone server.

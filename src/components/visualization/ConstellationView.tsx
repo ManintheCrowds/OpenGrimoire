@@ -54,7 +54,7 @@ const ConstellationView: React.FC<ConstellationViewProps> = ({
     showTestData,
     toggleShowTestData,
   } = useVisualizationStore();
-  const autoPlayInterval = useRef<NodeJS.Timeout>();
+  const autoPlayInterval = useRef<NodeJS.Timeout | undefined>(undefined);
   const [nodePositions, setNodePositions] = useState<{ [id: string]: [number, number, number] }>({});
   const [currentAttribute, setCurrentAttribute] = useState('learning_style');
   const [transition, setTransition] = useState(false);

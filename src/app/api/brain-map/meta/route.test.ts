@@ -35,7 +35,7 @@ vi.mock('@/lib/brain-map/sources-config', () => ({
 describe('GET /api/brain-map/meta', () => {
   beforeEach(() => {
     vi.stubEnv('BRAIN_MAP_SECRET', 'brain-map-secret');
-    dependencyMocks.cookies.mockReturnValue({ get: () => undefined });
+    dependencyMocks.cookies.mockResolvedValue({ get: () => undefined });
     dependencyMocks.verifyAdminSessionToken.mockResolvedValue(null);
     dependencyMocks.readBrainMapSourcesConfig.mockResolvedValue({
       vaultRoots: ['/private/operator/vault'],

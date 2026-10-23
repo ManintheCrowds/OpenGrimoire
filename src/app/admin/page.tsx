@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AdminPanel } from '@/components/AdminPanel/index';
@@ -78,9 +79,9 @@ export default function AdminPage() {
                 — async agent questions inbox
               </li>
               <li>
-                <a className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/observability">
+                <Link className="text-blue-600 underline hover:text-blue-800 font-medium" href="/admin/observability">
                   Observability
-                </a>{' '}
+                </Link>{' '}
                 — operator probe runs (SQLite-backed)
               </li>
               <li>

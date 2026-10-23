@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { checkAlignmentOrAdminSession } from '@/lib/alignment-context/api-auth';
 import { getIntentLedgerByAttendee } from '@/lib/storage/repositories/intent-ledger';
 
-type RouteContext = { params: { attendeeId: string } };
+type RouteContext = { params: Promise<{ attendeeId: string }> };
 
 export async function GET(request: Request, context: RouteContext) {
   const gate = await checkAlignmentOrAdminSession(request);
@@ -10,7 +10,7 @@ export async function GET(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const { attendeeId } = context.params;
+  const { attendeeId } = (await context.params);
   if (!attendeeId || !/^[0-9a-f-]{36}$/i.test(attendeeId)) {
     return NextResponse.json({ error: 'Invalid attendeeId' }, { status: 400 });
   }

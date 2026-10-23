@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { checkAlignmentOrAdminSession } from '@/lib/alignment-context/api-auth';
 import { createStudyCard, listStudyCards } from '@/lib/storage/repositories/study';
 
-type RouteParams = { params: { deckId: string } };
+type RouteParams = { params: Promise<{ deckId: string }> };
 
 export async function GET(request: Request, context: RouteParams) {
   const gate = await checkAlignmentOrAdminSession(request);
   if (!gate.ok) {
     return gate.response;
   }
-  const { deckId } = context.params;
+  const { deckId } = (await context.params);
   const { searchParams } = new URL(request.url);
   const dueOnly = searchParams.get('due') === '1' || searchParams.get('due') === 'true';
   const result = listStudyCards(deckId, { dueOnly });
@@ -24,7 +24,7 @@ export async function POST(request: Request, context: RouteParams) {
   if (!gate.ok) {
     return gate.response;
   }
-  const { deckId } = context.params;
+  const { deckId } = (await context.params);
   let json: unknown;
   try {
     json = await request.json();

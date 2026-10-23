@@ -3,7 +3,7 @@ import { checkClarificationApiGate } from '@/lib/clarification/clarification-api
 import { clarificationResolveBodySchema } from '@/lib/clarification/schemas';
 import { getClarificationRequestById, resolveClarificationRequest } from '@/lib/storage/repositories/clarification';
 
-type RouteContext = { params: { id: string } };
+type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, context: RouteContext) {
   const gate = checkClarificationApiGate(request);
@@ -11,7 +11,7 @@ export async function GET(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
@@ -45,7 +45,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return gate.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }

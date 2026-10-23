@@ -5,7 +5,7 @@ import {
   getOperatorProbeRunById,
 } from '@/lib/storage/repositories/operator-probes';
 
-type RouteContext = { params: { id: string } };
+type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, context: RouteContext) {
   const auth = await requireOperatorProbeAdminRoute(request);
@@ -13,7 +13,7 @@ export async function GET(request: Request, context: RouteContext) {
     return auth.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   const row = getOperatorProbeRunById(id);
   if (!row) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -57,7 +57,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     return auth.response;
   }
 
-  const { id } = context.params;
+  const { id } = (await context.params);
   const row = getOperatorProbeRunById(id);
   if (!row) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

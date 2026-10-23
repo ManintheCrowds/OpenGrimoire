@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { dataset: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ dataset: string }> }) {
+  const params = await props.params;
   try {
     // Basic API route for test data
     return NextResponse.json({ 

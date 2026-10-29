@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine for minimal footprint
-FROM node:18-alpine AS base
+# Keep this tag aligned with .nvmrc. 22.23.4 includes the CVE-2026-111497 fix.
+FROM node:22.23.4-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps

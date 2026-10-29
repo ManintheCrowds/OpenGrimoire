@@ -16,12 +16,12 @@ This is the **merge-quality** bar for application and API contract changes ([CON
 
 This repository includes:
 
-- **[Dockerfile](../../Dockerfile)** — multi-stage build, `next build`, **`output: 'standalone'`** (`next.config.js`), production image runs `node server.js` as user `nextjs`, listens on **3000**.
+- **[Dockerfile](../../Dockerfile)** — multi-stage build from **`node:22.23.4-alpine`** (same version as [`.nvmrc`](../../.nvmrc)), `next build`, **`output: 'standalone'`** (`next.config.js`), production image runs `node server.js` as user `nextjs`, listens on **3000**.
 - **[docker-compose.yml](../../docker-compose.yml)** — builds the image, maps **`3000:3000`**, sets `NODE_ENV=production`, passes SQLite + operator + alignment secrets (see compose file). Service name **`opengrimoire`**; network **`opengrimoire-network`**. **This is the only first-party container definition in-repo**; treat it as the reference for “we use Docker” for self-hosted runs.
 
-**Certainty statement:** There is **no** `vercel.json` in this repo; **Vercel or other PaaS** are not defined here. If you deploy elsewhere, document the host’s build command (typically `npm run build` or `next build`) in your ops runbook.
+**Certainty statement:** There is **no** `vercel.json` in this repo; **Vercel or other PaaS** are not defined here. If you deploy elsewhere, document the host’s build command (typically `npm run build` or `next build`) in your ops runbook. The Node.js version for that host lives in the platform project settings. This repository pins Node.js only for local installs (`.nvmrc`, `package.json` `engines`), GitHub Actions, and the Docker image.
 
-**CI:** `.github/workflows/ci.yml` runs **`npm run verify`** and **`npm run test:e2e`** on push/PR to the default branch. Docker image build on every PR remains optional.
+**CI:** `.github/workflows/ci.yml` and `.github/workflows/survey-visualization-prod-smoke.yml` install Node.js from **`.nvmrc`** (`22.23.4`) and run **`npm run verify`** / **`npm run test:e2e`** (CI) or the production survey-read smoke. Docker image build on every PR remains optional. CI checks that the `Dockerfile` base tag matches `.nvmrc`.
 
 ## Hosted deploy (general)
 

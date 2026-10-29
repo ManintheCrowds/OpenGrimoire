@@ -25,6 +25,7 @@ See [docs/admin/OPENGRIMOIRE_ADMIN_ROLE.md](docs/admin/OPENGRIMOIRE_ADMIN_ROLE.m
 ### Prerequisites
 
 - Docker and Docker Compose
+- Node.js **22.23.4** inside the image (`Dockerfile` tag `node:22.23.4-alpine`, same version as `.nvmrc`). A host process that runs the app directly must satisfy `package.json` `engines`: `>=22.23.4 <23`, `>=24.22.1 <25`, or `>=26.12.1 <27`.
 - Domain name (optional)
 
 ### Clone and env

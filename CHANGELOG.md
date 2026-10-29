@@ -15,6 +15,7 @@ All notable changes to OpenGrimoire are documented in this file. **Release caden
 
 ### Changed
 
+- **Runtime:** Pin Node.js to **22.23.4** (`.nvmrc`, GitHub Actions `node-version-file`, `Dockerfile` `node:22.23.4-alpine`) for CVE-2026-111497. `package.json` `engines` accepts `>=22.23.4 <23`, `>=24.22.1 <25`, and `>=26.12.1 <27`. `engine-strict=true`.
 - **OG-OH-11:** All `/admin/*` pages show an **Operations** header subnav (moderation home, alignment, clarification, observability, controls); `/admin` adds an **Operations hub** callout linking the same destinations ([`Layout.tsx`](src/components/Layout.tsx), [`admin/page.tsx`](src/app/admin/page.tsx)).
 - **OG-OH-07:** Observability list table chips use shared class tokens in [`probeListChips.ts`](src/app/admin/observability/probeListChips.ts) (same visuals; `data-testid` unchanged).
 - **OG-OH-01:** [`/admin/observability`](src/app/admin/observability/page.tsx) empty state links to **AGENT_INTEGRATION** ingest anchor, in-app **`/capabilities`**, and **`GET /api/capabilities`** (workflow **`operator_observability_probes`**).

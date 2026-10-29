@@ -103,7 +103,7 @@ The graph path is **static JSON + optional secret**—you can run the viewer wit
 
 ## Quick start
 
-**Prerequisites:** Node 18+, npm.
+**Prerequisites:** Node.js 22.23.4 (see `.nvmrc`). `package.json` `engines` also accepts Node.js 24.22.1+ and 26.12.1+ on those major lines. npm.
 
 ```bash
 cd OpenGrimoire   # e.g. Documents/GitHub/OpenGrimoire (sibling of MiscRepos, OpenHarness)

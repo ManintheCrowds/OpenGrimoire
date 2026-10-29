@@ -14,10 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Confirm Docker base image matches .nvmrc
+        run: |
+          version="$(tr -d '[:space:]' < .nvmrc)"
+          grep -Fqx "FROM node:${version}-alpine AS base" Dockerfile
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Install dependencies

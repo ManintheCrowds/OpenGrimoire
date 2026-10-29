@@ -19,7 +19,7 @@
 
 1. **Prerequisites**
    ```bash
-   # Check Node.js version (required: 18.x or later)
+   # Check Node.js version (required: 22.23.4, see .nvmrc)
    node --version
    
    # Check npm version
@@ -913,7 +913,7 @@ Operator **`/admin/*`** routes use a **signed HTTP-only cookie** after `POST /ap
 
 ```dockerfile
 # Dockerfile
-FROM node:18-alpine AS base
+FROM node:22.23.4-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -976,7 +976,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version-file: '.nvmrc'
           cache: 'npm'
       
       - run: npm ci

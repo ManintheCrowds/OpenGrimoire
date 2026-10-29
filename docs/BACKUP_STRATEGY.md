@@ -128,7 +128,7 @@ npm run dev
 - **Clone URL**: https://github.com/ManintheCrowds/Med-Vis.git
 
 ### Critical Dependencies
-- Node.js (v18+)
+- Node.js 22.23.4 (see `.nvmrc`)
 - Next.js 14
 - React 18
 - D3.js for visualizations

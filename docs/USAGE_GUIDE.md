@@ -182,9 +182,9 @@
 
 #### Prerequisites Installation
 ```bash
-# Install Node.js (18.x or later)
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# Install the Node.js release pinned in .nvmrc (22.23.4).
+# With nvm: nvm install && nvm use
+node --version
 
 # Install dependencies
 npm install

@@ -320,12 +320,12 @@ GROUP BY learning_style;
 ### Docker Configuration
 ```dockerfile
 # Multi-stage build for optimization
-FROM node:18-alpine AS builder
+FROM node:22.23.4-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-FROM node:18-alpine AS runner
+FROM node:22.23.4-alpine AS runner
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
@@ -341,6 +341,7 @@ RAM: 8GB
 Storage: 100GB SSD
 Network: VLAN segmented
 OS: Debian 11 (Bullseye)
+Node.js: 22.23.4 (see repository .nvmrc) when the app process runs on the host
 ```
 
 ### Load Balancing & High Availability

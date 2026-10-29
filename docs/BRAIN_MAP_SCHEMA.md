@@ -28,7 +28,9 @@ This document describes the payload returned by `GET /api/brain-map/graph`. The 
 | `trust_score` | number | no | Optional trust confidence score (0..1 recommended) for TrustGraph/OpenGrimoire overlays |
 | `compass_axis` | string | no | Optional orientation axis label from OpenCompass-style context models |
 | `grimoire_tags` | string[] | no | Optional OpenGrimoire tags for operator wisdom grouping |
-| `insight_level` | string | no | Optional qualitative insight level (`raw`, `curated`, `validated`) |
+| `insight_level` | string | no | Optional qualitative insight level (`raw`, `curated`, `validated`, **`claim`** for claim hubs) |
+| `claim_text` | string | no | Claim hub body when `insight_level` is `claim` |
+| `claim_cites` | array | no | Supporting cites: `{ path, quote?, source_file? }[]` — exact claim→evidence links for the evidence overlay |
 | `affect_overlay` | object | no | Optional affect signals for intent-aware overlays: `concern_level` (0..1), `need_urgency` (0..1), `accomplishment_momentum` (0..1), `unresolved_question_count` (integer), `confidence_drift` (-1..1; UI generally renders magnitude). |
 | `intent_artifacts` | object | no | Optional links to intent context sources: `survey_refs`, `clarification_refs`, `alignment_context_refs`, `session_refs` (all string arrays). |
 
@@ -41,7 +43,7 @@ The builder emits `id`, `group`, `accessCount`, `path`, **`layer`**, **`provenan
 | `source` | string | yes | Source node id |
 | `target` | string | yes | Target node id |
 | `weight` | number | yes | Co-access count |
-| `sessionType` | string | yes | Edge coloring: `strategy`, `memory`, `publishing`, `infrastructure`, `research`, `general` |
+| `sessionType` | string | yes | Edge coloring: `strategy`, `memory`, `publishing`, `infrastructure`, `research`, `general`, **`evidence`** (claim→cite; hidden when Evidence overlay is off) |
 | `sessions` | string[] | yes | Session ids that contributed. With **multi-root** ingest, ids are `label:session` (e.g. `portfolio-harness:2026-03-19`, `openharness:handoff_latest`). Single-root legacy builds use unprefixed ids such as `handoff_latest`. Vault sessions use `vault_label:session_id`. |
 | `constraint` | string | no | Optional; same semantics as node |
 | `provenance` | string | no | Optional provenance (`handoff` \| `vault` \| `git`) |

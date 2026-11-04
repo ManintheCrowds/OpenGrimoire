@@ -17,7 +17,7 @@
 | REQ-3 | Brain map | Routes + API + docs aligned | **Partial** — fixture/API test (engineering plan Wave 1/4) |
 | REQ-4 | Alignment parity | Thin MCP pattern documented | **No** — golden REST vs MCP tests (Wave 2) |
 | REQ-5 | Menagerie | Roadmap | **No** |
-| REQ-6 | Links | Roadmap | **No** |
+| REQ-6 | Links | **Partial** — claim↔cite graph fields + Evidence overlay on `/context-atlas` (2026-10-29); full alignment/wiki/agent join table still open | **Partial** |
 | REQ-7 | Audit | Roadmap | **No** |
 | REQ-8 | Onboarding | MiscRepos PKM docs + `/wiki` live | **Partial** — optional Playwright (Wave 5) |
 | REQ-9 | Harness seam | Docs good | **Optional** grep gate |
@@ -76,7 +76,7 @@
 
 | ID | Requirement | Acceptance criteria |
 |----|-------------|---------------------|
-| REQ-6.1 | Support **references** between alignment rows, wiki paths (vault or mirror URI), and (when present) agent ids — as data the UI can render, not hard-coded stories. | Export or API returns link graph or join table suitable for Brain Map / future graph types. |
+| REQ-6.1 | Support **references** between alignment rows, wiki paths (vault or mirror URI), and (when present) agent ids — as data the UI can render, not hard-coded stories. | **Partial (2026-10-29):** Brain Map JSON may include claim hubs (`insight_level: claim`, `claim_cites`) and `sessionType: evidence` edges; `/context-atlas` Evidence overlay renders claim→path+quote. Alignment rows with `linked_node_id` merge as claim hubs when the overlay is on (soft-fail if API gated). Full wiki/agent join table and REQ-7 audit remain open. |
 
 ---
 

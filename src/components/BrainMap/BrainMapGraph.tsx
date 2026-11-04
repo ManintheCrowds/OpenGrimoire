@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import * as d3Force from 'd3-force';
 import { select, zoom, drag } from 'd3';
 import { BrainMapSourcesPanel } from '@/components/BrainMap/BrainMapSourcesPanel';
+import { applyEvidenceOverlay, mergeAlignmentClaimHubs } from './brainMapEvidence';
 import { mergeBrainMapChunks, type BrainMapChunkPayload } from './brainMapChunks';
 
 const GROUP_COLORS: Record<string, string> = {
@@ -21,6 +22,7 @@ const SESSION_COLORS: Record<string, string> = {
   publishing: '#22c55e',
   infrastructure: '#60a5fa',
   research: '#f97316',
+  evidence: '#0d9488',
   general: '#6b7280',
 };
 
@@ -47,6 +49,10 @@ export interface BrainMapNode {
   compass_axis?: string;
   grimoire_tags?: string[];
   insight_level?: string;
+  /** Claim hub text when insight_level is claim */
+  claim_text?: string;
+  /** Supporting cites for claim hubs (evidence overlay) */
+  claim_cites?: Array<{ path: string; quote?: string; source_file?: string }>;
   affect_overlay?: BrainMapAffectOverlay;
   intent_artifacts?: BrainMapIntentArtifacts;
 }
@@ -238,6 +244,8 @@ export default function BrainMapGraph() {
   const [reloadToken, setReloadToken] = useState(0);
   const [affectOverlayMode, setAffectOverlayMode] = useState<AffectOverlayMode>('off');
   const [affectFilterOnly, setAffectFilterOnly] = useState(false);
+  const [evidenceOverlayOn, setEvidenceOverlayOn] = useState(false);
+  const [alignmentBoost, setAlignmentBoost] = useState<BrainMapData | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   /** True when API returned 200 but no nodes (empty build); UI shows placeholder graph — use All/State layer, or rebuild JSON. */
   const [placeholderFromEmptyApi, setPlaceholderFromEmptyApi] = useState(false);
@@ -298,9 +306,38 @@ export default function BrainMapGraph() {
     };
   }, [reloadToken]);
 
+  useEffect(() => {
+    if (!evidenceOverlayOn || !data) {
+      setAlignmentBoost(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/alignment-context?limit=100', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as {
+          items?: Array<{ id: string; title?: string | null; body?: string | null; linked_node_id?: string | null }>;
+        };
+        if (cancelled || !json.items?.length) return;
+        setAlignmentBoost(mergeAlignmentClaimHubs(data, json.items));
+      } catch {
+        /* soft-fail: builder claims still work without alignment API */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [evidenceOverlayOn, data, reloadToken]);
+
   const filteredData = useMemo(() => {
     if (!data) return null;
-    const byLayer = filterGraphByLayer(data, layerFilter);
+    const withAlignment = evidenceOverlayOn && alignmentBoost ? alignmentBoost : data;
+    const byEvidence = applyEvidenceOverlay(withAlignment, evidenceOverlayOn);
+    const byLayer = filterGraphByLayer(byEvidence, layerFilter);
     if (!affectFilterOnly) return byLayer;
     const ids = new Set(byLayer.nodes.filter(hasAffectSignals).map((n) => n.id));
     return {
@@ -308,7 +345,7 @@ export default function BrainMapGraph() {
       nodes: byLayer.nodes.filter((n) => ids.has(n.id)),
       edges: byLayer.edges.filter((e) => ids.has(e.source) && ids.has(e.target)),
     };
-  }, [data, layerFilter, affectFilterOnly]);
+  }, [data, layerFilter, affectFilterOnly, evidenceOverlayOn, alignmentBoost]);
 
   const maxUnresolvedQuestions = useMemo(
     () =>
@@ -732,6 +769,15 @@ export default function BrainMapGraph() {
             <span className="hidden text-gray-300 sm:inline" aria-hidden>
               |
             </span>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={evidenceOverlayOn}
+                onChange={(event) => setEvidenceOverlayOn(event.target.checked)}
+                data-testid="evidence-overlay-checkbox"
+              />
+              Evidence overlay
+            </label>
             <span className="w-full text-xs font-medium uppercase tracking-wide text-gray-500 sm:w-auto">Affect overlay</span>
             <select
               aria-label="Affect overlay metric"
@@ -924,6 +970,32 @@ export default function BrainMapGraph() {
             <p className="mt-1 text-xs text-gray-600">
               Node: <code className="rounded bg-gray-100 px-1">{selectedNode.path}</code>
             </p>
+            {(selectedNode.insight_level === 'claim' || selectedNode.claim_cites?.length) && (
+              <div className="mt-3 text-sm" data-testid="claim-evidence-panel">
+                <p className="font-medium text-gray-900">Claim evidence</p>
+                {selectedNode.claim_text && (
+                  <p className="mt-1 text-gray-800">{selectedNode.claim_text}</p>
+                )}
+                {selectedNode.claim_cites && selectedNode.claim_cites.length > 0 ? (
+                  <ul className="ml-4 mt-2 list-disc text-gray-700">
+                    {selectedNode.claim_cites.map((cite, idx) => (
+                      <li key={`${cite.path}-${idx}`}>
+                        <code className="rounded bg-gray-100 px-1 text-xs">{cite.path}</code>
+                        {cite.quote ? (
+                          <span className="block text-xs text-gray-600">&ldquo;{cite.quote}&rdquo;</span>
+                        ) : (
+                          <span className="block text-xs text-gray-500">No quote on cite</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500" data-testid="claim-no-evidence">
+                    No matching local evidence exists. Nothing cited.
+                  </p>
+                )}
+              </div>
+            )}
             {selectedNode.affect_overlay && (
               <div className="mt-2 text-xs text-gray-700">
                 {(['concern_level', 'need_urgency', 'accomplishment_momentum', 'unresolved_question_count', 'confidence_drift'] as AffectMetricKey[]).map((key) => (

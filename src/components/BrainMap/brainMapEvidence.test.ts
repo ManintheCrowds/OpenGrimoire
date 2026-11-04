@@ -45,5 +45,9 @@ describe('mergeAlignmentClaimHubs', () => {
     ]);
     expect(out.nodes.some((n) => n.id === 'claim:alignment:row1')).toBe(true);
     expect(out.nodes.some((n) => n.id === 'claim:alignment:row2')).toBe(false);
+    const hub = out.nodes.find((n) => n.id === 'claim:alignment:row1');
+    expect(hub?.claim_cites?.[0]).toEqual({ path: 'a.md', source_file: 'alignment:row1' });
+    expect(hub?.claim_cites?.[0]?.quote).toBeUndefined();
+    expect(hub?.claim_text).toBe('Align');
   });
 });

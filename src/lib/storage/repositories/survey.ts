@@ -284,6 +284,7 @@ export function updateModerationStatus(
   data: {
     status: ModerationStatus;
     moderator_id: string;
+    /** When omitted, existing notes are preserved. Pass "" to clear. */
     notes?: string;
   }
 ): ModerationRow {
@@ -291,38 +292,57 @@ export function updateModerationStatus(
   const ts = nowIso();
   const modId = randomUUID();
 
-  sqlite
-    .prepare(
-      `INSERT INTO moderation (id, response_id, field_name, status, moderator_id, notes, created_at, updated_at)
-       VALUES (?, ?, 'unique_quality', ?, ?, ?, ?, ?)
-       ON CONFLICT(response_id, field_name) DO UPDATE SET
-         status = excluded.status,
-         moderator_id = excluded.moderator_id,
-         notes = excluded.notes,
-         updated_at = excluded.updated_at`
-    )
-    .run(modId, responseId, data.status, data.moderator_id, data.notes ?? null, ts, ts);
+  // Keep moderation upsert + parent status update atomic. Also: omitted `notes`
+  // must not NULL out prior operator notes (PATCH partial-update semantics).
+  const apply = sqlite.transaction(() => {
+    if (data.notes !== undefined) {
+      sqlite
+        .prepare(
+          `INSERT INTO moderation (id, response_id, field_name, status, moderator_id, notes, created_at, updated_at)
+           VALUES (?, ?, 'unique_quality', ?, ?, ?, ?, ?)
+           ON CONFLICT(response_id, field_name) DO UPDATE SET
+             status = excluded.status,
+             moderator_id = excluded.moderator_id,
+             notes = excluded.notes,
+             updated_at = excluded.updated_at`
+        )
+        .run(modId, responseId, data.status, data.moderator_id, data.notes, ts, ts);
+    } else {
+      sqlite
+        .prepare(
+          `INSERT INTO moderation (id, response_id, field_name, status, moderator_id, notes, created_at, updated_at)
+           VALUES (?, ?, 'unique_quality', ?, ?, NULL, ?, ?)
+           ON CONFLICT(response_id, field_name) DO UPDATE SET
+             status = excluded.status,
+             moderator_id = excluded.moderator_id,
+             updated_at = excluded.updated_at`
+        )
+        .run(modId, responseId, data.status, data.moderator_id, ts, ts);
+    }
 
-  sqlite
-    .prepare(
-      `UPDATE survey_responses SET status = ?, moderated_at = ?, updated_at = ? WHERE id = ?`
-    )
-    .run(data.status, ts, ts, responseId);
+    sqlite
+      .prepare(
+        `UPDATE survey_responses SET status = ?, moderated_at = ?, updated_at = ? WHERE id = ?`
+      )
+      .run(data.status, ts, ts, responseId);
 
-  const row = sqlite
-    .prepare(`SELECT * FROM moderation WHERE response_id = ? AND field_name = 'unique_quality'`)
-    .get(responseId) as Record<string, unknown>;
+    const row = sqlite
+      .prepare(`SELECT * FROM moderation WHERE response_id = ? AND field_name = 'unique_quality'`)
+      .get(responseId) as Record<string, unknown>;
 
-  return {
-    id: String(row.id),
-    response_id: String(row.response_id),
-    field_name: 'unique_quality',
-    status: row.status as ModerationStatus,
-    moderator_id: String(row.moderator_id),
-    notes: row.notes == null ? null : String(row.notes),
-    created_at: String(row.created_at),
-    updated_at: String(row.updated_at),
-  };
+    return {
+      id: String(row.id),
+      response_id: String(row.response_id),
+      field_name: 'unique_quality' as const,
+      status: row.status as ModerationStatus,
+      moderator_id: String(row.moderator_id),
+      notes: row.notes == null ? null : String(row.notes),
+      created_at: String(row.created_at),
+      updated_at: String(row.updated_at),
+    };
+  });
+
+  return apply();
 }
 
 /**

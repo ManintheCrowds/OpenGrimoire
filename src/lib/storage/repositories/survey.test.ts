@@ -25,11 +25,11 @@ afterEach(() => {
 async function loadSurveyModules(dbPath: string) {
   vi.resetModules();
   process.env.OPENGRIMOIRE_DB_PATH = dbPath;
-  const [{ getSqlite }, { createAttendee, createSurveyResponse }] = await Promise.all([
+  const [{ getSqlite }, survey] = await Promise.all([
     import('@/db/client'),
     import('./survey'),
   ]);
-  return { getSqlite, createAttendee, createSurveyResponse };
+  return { getSqlite, ...survey };
 }
 
 describe('createSurveyResponse', () => {
@@ -119,6 +119,98 @@ describe('createSurveyResponse', () => {
       { category: 'needs', content: 'Local SQLite' },
       { category: 'signals', content: 'Clarify agent context' },
     ]);
+
+    sqlite.close();
+  });
+});
+
+describe('updateModerationStatus', () => {
+  it('preserves existing notes when a later status PATCH omits notes', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-moderation-notes-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, createAttendee, createSurveyResponse, updateModerationStatus } =
+      await loadSurveyModules(dbPath);
+
+    const sqlite = getSqlite();
+    const attendee = createAttendee({
+      first_name: 'Mod',
+      last_name: 'Operator',
+      is_anonymous: true,
+    });
+    const response = createSurveyResponse({
+      attendee_id: attendee.id,
+      unique_quality: 'Needs a second look',
+    });
+
+    updateModerationStatus(response.id, {
+      status: 'pending',
+      moderator_id: 'mod-1',
+      notes: 'investigate X',
+    });
+
+    const afterOmit = updateModerationStatus(response.id, {
+      status: 'approved',
+      moderator_id: 'mod-1',
+    });
+    expect(afterOmit.notes).toBe('investigate X');
+
+    const row = sqlite
+      .prepare(`SELECT status, notes FROM moderation WHERE response_id = ?`)
+      .get(response.id) as { status: string; notes: string | null };
+    expect(row.status).toBe('approved');
+    expect(row.notes).toBe('investigate X');
+
+    const cleared = updateModerationStatus(response.id, {
+      status: 'rejected',
+      moderator_id: 'mod-1',
+      notes: '',
+    });
+    expect(cleared.notes).toBe('');
+
+    sqlite.close();
+  });
+
+  it('rolls back moderation upsert when parent status update fails', async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengrimoire-moderation-tx-'));
+    const dbPath = path.join(tempDir, 'opengrimoire.sqlite');
+    const { getSqlite, createAttendee, createSurveyResponse, updateModerationStatus } =
+      await loadSurveyModules(dbPath);
+
+    const sqlite = getSqlite();
+    const attendee = createAttendee({
+      first_name: 'Tx',
+      last_name: 'Guard',
+      is_anonymous: true,
+    });
+    const response = createSurveyResponse({
+      attendee_id: attendee.id,
+      unique_quality: 'Keep pending if parent fails',
+    });
+
+    sqlite.exec(`
+      CREATE TRIGGER fail_parent_status_update
+      BEFORE UPDATE OF status ON survey_responses
+      BEGIN
+        SELECT RAISE(ABORT, 'forced parent status failure');
+      END;
+    `);
+
+    expect(() =>
+      updateModerationStatus(response.id, {
+        status: 'approved',
+        moderator_id: 'mod-1',
+        notes: 'should not stick',
+      })
+    ).toThrow(/forced parent status failure/);
+
+    const modCount = sqlite.prepare('SELECT COUNT(*) AS n FROM moderation').get() as { n: number };
+    const parent = sqlite
+      .prepare(`SELECT status, moderated_at FROM survey_responses WHERE id = ?`)
+      .get(response.id) as { status: string; moderated_at: string | null };
+
+    expect(modCount.n).toBe(0);
+    expect(parent.status).toBe('pending');
+    expect(parent.moderated_at).toBeNull();
 
     sqlite.close();
   });

@@ -74,6 +74,15 @@ describe('middleware brain-map static gate', () => {
     expect(body).toBeNull();
   });
 
+  it('404s locale-prefixed graph paths Next still maps onto the public file', async () => {
+    for (const path of ['/xx/brain-map-graph.json', '/a/b/brain-map-graph.local.json', '/_next/static/../../brain-map-graph.json', '/favicon.ico/../brain-map-graph.local.json']) {
+      const response = middleware(requestFor(path));
+      expect(response.status, path).toBe(404);
+      const body = await jsonBody(response);
+      expect(JSON.stringify(body), path).toContain(GRAPH_DETAIL);
+    }
+  });
+
   it('lets a well-formed non-graph public path next on clean decode', async () => {
     const response = middleware(requestFor('/branding/logo.svg'));
     expect(response.status).toBe(200);
@@ -106,6 +115,28 @@ describe('middleware rate limits on encoded API paths', () => {
     expect(last.status).toBe(429);
   });
 
+  it('applies the survey limiter to a locale-prefixed POST path', () => {
+    let last = middleware(requestFor('/zz/api/survey', 'POST'));
+    for (let i = 0; i < 31; i++) {
+      last = middleware(requestFor('/a/b/api/survey', 'POST'));
+    }
+    expect(last.status).toBe(429);
+  });
+
+  it('applies the login limiter to a locale-prefixed POST path', () => {
+    let last = middleware(requestFor('/zz/api/auth/login', 'POST'));
+    for (let i = 0; i < 11; i++) {
+      last = middleware(requestFor('/zz/api/auth/login', 'POST'));
+    }
+    expect(last.status).toBe(429);
+  });
+
+  it('does not static-404 a locale-prefixed graph API route', () => {
+    const response = middleware(requestFor('/zz/api/brain-map/graph'));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
+
   it('applies the discovery limiter to an encoded GET path', () => {
     let last = middleware(requestFor('/api%2Fcapabilities'));
     for (let i = 0; i < 201; i++) {
@@ -121,6 +152,15 @@ describe('middleware OA-4 encoded test routes', () => {
   });
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it('404s a locale-prefixed /test in production when test routes are disallowed', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('OPENGRIMOIRE_ALLOW_TEST_ROUTES', '');
+    const response = middleware(requestFor('/xx/test-sqlite'));
+    expect(response.status).toBe(404);
+    const text = await response.text();
+    expect(text).toContain('Dev-only routes are disabled');
   });
 
   it('404s encoded /test in production when test routes are disallowed', async () => {

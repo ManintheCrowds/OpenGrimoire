@@ -1,4 +1,5 @@
-version: '3.8'
+wrote 1076
+.8'
 
 services:
   # Canonical product name: OpenGrimoire (legacy service id was opengrimoire-survey).
@@ -15,6 +16,7 @@ services:
       - OPENGRIMOIRE_ADMIN_PASSWORD=${OPENGRIMOIRE_ADMIN_PASSWORD:?set OPENGRIMOIRE_ADMIN_PASSWORD}
       - OPENGRIMOIRE_DB_PATH=${OPENGRIMOIRE_DB_PATH:-/data/opengrimoire.sqlite}
       - ALIGNMENT_CONTEXT_API_SECRET=${ALIGNMENT_CONTEXT_API_SECRET:?set ALIGNMENT_CONTEXT_API_SECRET}
+      - BRAIN_MAP_SECRET=${BRAIN_MAP_SECRET:?set BRAIN_MAP_SECRET}
     restart: unless-stopped
     networks:
       - opengrimoire-network

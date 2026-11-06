@@ -315,11 +315,16 @@ export default function BrainMapGraph() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/alignment-context?limit=100', {
+        // Session-authorized BFF: the public route needs x-alignment-context-key, which browsers never send.
+        const res = await fetch('/api/admin/alignment-context?limit=100', {
           credentials: 'include',
           cache: 'no-store',
         });
-        if (!res.ok || cancelled) return;
+        if (cancelled) return;
+        if (!res.ok) {
+          console.warn(`[brain-map] alignment hubs unavailable: ${res.status}`);
+          return;
+        }
         const json = (await res.json()) as {
           items?: Array<{ id: string; title?: string | null; body?: string | null; linked_node_id?: string | null }>;
         };

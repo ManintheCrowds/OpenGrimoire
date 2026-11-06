@@ -40,7 +40,6 @@ export function mergeAlignmentClaimHubs(
     const claimId = `claim:alignment:${row.id}`;
     if (existing.has(claimId)) continue;
     const claimText = (row.title || row.body || row.id).slice(0, 240);
-    const quote = (row.body || row.title || '').slice(0, 280);
     nodes.push({
       id: claimId,
       group: 'memory',
@@ -51,7 +50,8 @@ export function mergeAlignmentClaimHubs(
       insight_level: 'claim',
       constraint: claimText,
       claim_text: claimText,
-      claim_cites: [{ path: linked, quote, source_file: `alignment:${row.id}` }],
+      // No quote: alignment text is an operator note, not an excerpt read from `linked`.
+      claim_cites: [{ path: linked, source_file: `alignment:${row.id}` }],
       intent_artifacts: { alignment_context_refs: [row.id] },
     } as BrainMapNode);
     existing.add(claimId);

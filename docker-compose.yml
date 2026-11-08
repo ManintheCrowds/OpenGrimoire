@@ -1,5 +1,4 @@
-wrote 1076
-.8'
+version: '3.8'
 
 services:
   # Canonical product name: OpenGrimoire (legacy service id was opengrimoire-survey).

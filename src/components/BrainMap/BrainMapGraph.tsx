@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { brainMapNodeLabel } from './brainMapLabel';
 import * as d3Force from 'd3-force';
 import { select, zoom, drag } from 'd3';
 import { BrainMapSourcesPanel } from '@/components/BrainMap/BrainMapSourcesPanel';
@@ -410,7 +411,16 @@ export default function BrainMapGraph() {
 
     select(svgRef.current).selectAll('*').remove();
 
-    const nodes: GraphNode[] = filteredData.nodes.map((n) => ({ ...n, x: layoutPositions[n.id]?.x ?? 0, y: layoutPositions[n.id]?.y ?? 0 }));
+    // Seed unplaced nodes around the centre (not the 0,0 corner) so the first frame is on screen.
+    const nodes: GraphNode[] = filteredData.nodes.map((n, i) => {
+      const angle = i * 2.399963; // golden angle spiral
+      const radius = 10 * Math.sqrt(i + 1);
+      return {
+        ...n,
+        x: layoutPositions[n.id]?.x ?? width / 2 + radius * Math.cos(angle),
+        y: layoutPositions[n.id]?.y ?? height / 2 + radius * Math.sin(angle),
+      };
+    });
     const links: GraphLink[] = filteredData.edges.map((e) => ({
       ...e,
       source: nodes.find((nn) => nn.id === e.source) ?? e.source,
@@ -424,7 +434,10 @@ export default function BrainMapGraph() {
         d3Force.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(80)
       )
       .force('charge', d3Force.forceManyBody().strength(-200))
-      .force('center', d3Force.forceCenter(width / 2, height / 2));
+      .force('center', d3Force.forceCenter(width / 2, height / 2))
+      // Gentle pull toward the middle keeps disconnected nodes from drifting off-screen.
+      .force('x', d3Force.forceX(width / 2).strength(0.06))
+      .force('y', d3Force.forceY(height / 2).strength(0.06));
 
     const svg = select(svgRef.current);
     const g = svg.append('g');
@@ -450,6 +463,7 @@ export default function BrainMapGraph() {
       .selectAll<SVGCircleElement, GraphNode>('circle')
       .data(nodes)
       .join('circle')
+      .attr('data-node-id', (d) => d.id)
       .attr('r', (d) => {
         const base = 4 + Math.min(d.accessCount, 8);
         if (affectOverlayMode === 'off') return base;
@@ -502,10 +516,15 @@ export default function BrainMapGraph() {
       .selectAll('text')
       .data(nodes)
       .join('text')
-      .attr('font-size', 10)
+      .attr('font-size', 11)
+      // Light text with a dark halo stays readable on the dark canvas and on light themes.
+      .attr('fill', '#e5e7eb')
+      .attr('stroke', '#111827')
+      .attr('stroke-width', 3)
+      .attr('paint-order', 'stroke')
       .attr('dx', 8)
       .attr('dy', 4)
-      .text((d) => d.id.split('/').pop() ?? d.id)
+      .text((d) => brainMapNodeLabel(d))
       .style('pointer-events', 'none')
       .style('opacity', 0.9);
 
@@ -835,8 +854,14 @@ export default function BrainMapGraph() {
       </div>
       <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto" data-testid="brain-map-graph">
         {viewMode === 'graph' && (
-          <div id="brain-map-graph-panel" role="tabpanel" aria-labelledby="tab-graph" className="h-full w-full">
-            <svg ref={svgRef} className="h-full w-full" aria-label="Context graph visualization" />
+          <div id="brain-map-graph-panel" role="tabpanel" aria-labelledby="tab-graph" className="h-full min-h-[480px] w-full">
+            {/* Explicit min height: inside the flex column the svg otherwise collapses to 0px and nothing draws. */}
+            <svg
+              ref={svgRef}
+              className="block h-full min-h-[480px] w-full"
+              data-testid="brain-map-svg"
+              aria-label="Context graph visualization"
+            />
           </div>
         )}
         {viewMode === 'table' && (

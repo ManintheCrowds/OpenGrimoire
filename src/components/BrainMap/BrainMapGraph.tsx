@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { brainMapNodeLabel } from './brainMapLabel';
+import { brainMapTooltipHtml } from './brainMapTooltip';
 import * as d3Force from 'd3-force';
 import { select, zoom, drag } from 'd3';
 import { BrainMapSourcesPanel } from '@/components/BrainMap/BrainMapSourcesPanel';
@@ -532,33 +533,8 @@ export default function BrainMapGraph() {
     const tooltip = select('body').append('div').attr('class', 'brain-map-tooltip').style('position', 'absolute').style('visibility', 'hidden').style('background', 'rgba(0,0,0,0.8)').style('color', '#fff').style('padding', '8px 12px').style('border-radius', '4px').style('font-size', '12px').style('z-index', '9999').style('pointer-events', 'none');
 
     node
-      .on('mouseover', (event, d) => {
-        const extra: string[] = [];
-        if (d.layer) extra.push(`Layer: ${d.layer}`);
-        if (d.constraint) extra.push(`Constraint: ${d.constraint}`);
-        if (d.provenance) extra.push(`Provenance: ${d.provenance}`);
-        if (d.risk_tier) extra.push(`Risk: ${d.risk_tier}`);
-        if (d.review_status) extra.push(`Review: ${d.review_status}`);
-        if (typeof d.trust_score === 'number') extra.push(`Trust: ${d.trust_score}`);
-        if (d.compass_axis) extra.push(`Axis: ${d.compass_axis}`);
-        if (d.grimoire_tags?.length) extra.push(`Tags: ${d.grimoire_tags.join(', ')}`);
-        if (d.insight_level) extra.push(`Insight: ${d.insight_level}`);
-        if (d.affect_overlay) {
-          if (typeof d.affect_overlay.concern_level === 'number') extra.push(`Concern: ${d.affect_overlay.concern_level}`);
-          if (typeof d.affect_overlay.need_urgency === 'number') extra.push(`Urgency: ${d.affect_overlay.need_urgency}`);
-          if (typeof d.affect_overlay.accomplishment_momentum === 'number')
-            extra.push(`Momentum: ${d.affect_overlay.accomplishment_momentum}`);
-          if (typeof d.affect_overlay.unresolved_question_count === 'number')
-            extra.push(`Unresolved Q: ${d.affect_overlay.unresolved_question_count}`);
-          if (typeof d.affect_overlay.confidence_drift === 'number')
-            extra.push(`Confidence drift: ${d.affect_overlay.confidence_drift}`);
-        }
-        const tail = extra.length ? `<br/>${extra.join('<br/>')}` : '';
-        tooltip
-          .style('visibility', 'visible')
-          .html(
-            `<strong>${d.path}</strong><br/>Group: ${d.group}<br/>Access count: ${d.accessCount}${tail}`
-          );
+      .on('mouseover', (_event, d) => {
+        tooltip.style('visibility', 'visible').html(brainMapTooltipHtml(d));
       })
       .on('mousemove', (event) => {
         tooltip.style('top', `${event.pageY + 10}px`).style('left', `${event.pageX + 10}px`);

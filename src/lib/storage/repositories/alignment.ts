@@ -32,6 +32,8 @@ function rowToItem(row: typeof alignmentContextItems.$inferSelect): AlignmentCon
 
 export type ListAlignmentOptions = {
   statusFilter: string | null;
+  /** Exact match on `linked_node_id`, so a caller can find its own item and PATCH it in place. */
+  linkedNodeId?: string | null;
   limit: number;
 };
 
@@ -48,6 +50,9 @@ export function listAlignmentContextItems(options: ListAlignmentOptions): ListAl
       ['draft', 'active', 'archived'].includes(options.statusFilter)
     ) {
       conditions.push(eq(alignmentContextItems.status, options.statusFilter as 'draft' | 'active' | 'archived'));
+    }
+    if (options.linkedNodeId) {
+      conditions.push(eq(alignmentContextItems.linkedNodeId, options.linkedNodeId));
     }
     const base = db.select().from(alignmentContextItems);
     const rows = (

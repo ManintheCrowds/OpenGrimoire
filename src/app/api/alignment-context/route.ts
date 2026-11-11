@@ -6,9 +6,11 @@ import { alignmentContextCreateBodySchema } from '@/lib/alignment-context/schema
 
 const LIMIT_DEFAULT = 100;
 const LIMIT_MAX = 500;
+const LINKED_NODE_ID_MAX = 500;
 
 /**
  * GET /api/alignment-context — list alignment context rows (SQLite on server).
+ *   Optional `?status=` and `?linked_node_id=` (exact match) filters.
  * POST — create row; source forced to `api`.
  */
 export async function GET(request: Request) {
@@ -19,13 +21,20 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get('status');
+  const linkedNodeId = searchParams.get('linked_node_id');
+  if (linkedNodeId !== null && (linkedNodeId.length === 0 || linkedNodeId.length > LINKED_NODE_ID_MAX)) {
+    return NextResponse.json(
+      { error: `linked_node_id must be 1-${LINKED_NODE_ID_MAX} characters` },
+      { status: 400 }
+    );
+  }
   let limit = Number.parseInt(searchParams.get('limit') ?? '', 10);
   if (!Number.isFinite(limit) || limit < 1) {
     limit = LIMIT_DEFAULT;
   }
   limit = Math.min(limit, LIMIT_MAX);
 
-  const result = listAlignmentContextItems({ statusFilter, limit });
+  const result = listAlignmentContextItems({ statusFilter, linkedNodeId, limit });
   const { data, error: queryError } = result;
 
   if (queryError) {

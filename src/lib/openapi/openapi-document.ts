@@ -30,6 +30,11 @@ export const openApiDocument = {
       get: {
         summary: 'List alignment context items',
         security: [{ AlignmentApiKey: [] }],
+        parameters: [
+          { name: 'status', in: 'query', required: false, schema: { type: 'string', enum: ['draft', 'active', 'archived'] } },
+          { name: 'linked_node_id', in: 'query', required: false, schema: { type: 'string', minLength: 1, maxLength: 500 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', minimum: 1, maximum: 500 } },
+        ],
         responses: { '200': { description: 'items[]' } },
       },
       post: {

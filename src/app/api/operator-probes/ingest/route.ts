@@ -2,7 +2,10 @@ import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { isAllowedOperatorProbeTargetHost } from '@/lib/operator-observability/allowlist';
 import { requireOperatorProbeIngestOrAdminSession } from '@/lib/operator-observability/ingest-auth';
-import { operatorProbeIngestBodySchema } from '@/lib/operator-observability/schemas';
+import {
+  operatorProbeIngestBodySchema,
+  ROUTINE_RUN_TARGET_HOST,
+} from '@/lib/operator-observability/schemas';
 import { insertOperatorProbeRun } from '@/lib/storage/repositories/operator-probes';
 
 export async function POST(request: Request) {
@@ -27,12 +30,17 @@ export async function POST(request: Request) {
   }
 
   const body = parsed.data;
-  const host = body.target_host.trim().toLowerCase();
-  if (!isAllowedOperatorProbeTargetHost(host)) {
-    return NextResponse.json(
-      { error: 'Invalid target_host', detail: 'Host is not on the operator probe allowlist.' },
-      { status: 400 }
-    );
+  let host: string;
+  if (body.probe_type === 'routine_run') {
+    host = ROUTINE_RUN_TARGET_HOST;
+  } else {
+    host = body.target_host.trim().toLowerCase();
+    if (!isAllowedOperatorProbeTargetHost(host)) {
+      return NextResponse.json(
+        { error: 'Invalid target_host', detail: 'Host is not on the operator probe allowlist.' },
+        { status: 400 }
+      );
+    }
   }
 
   let summaryJson: string;
@@ -48,7 +56,7 @@ export async function POST(request: Request) {
     runnerId: body.runner_id.trim(),
     runnerType: body.runner_type,
     summaryJson,
-    rawBlob: body.raw_blob?.length ? body.raw_blob : null,
+    rawBlob: body.probe_type === 'cursor_path_analysis' && body.raw_blob?.length ? body.raw_blob : null,
     ingestVia: auth.via === 'session' ? 'session' : 'ingest_secret',
   });
 

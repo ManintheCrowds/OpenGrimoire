@@ -42,3 +42,5 @@ Only **`reason: invalid_secret`** with **`status: 401`** is filtered; other deni
 ## Operator probe ingest success (non-denial)
 
 [`POST /api/operator-probes/ingest`](../../src/app/api/operator-probes/ingest/route.ts) may emit a single JSON line with `event: operator_probe_ingested` (`console.info`). Fields are **metadata only** (`run_id`, `via`, `probe_type`, `target_host`, `request_id`) — **no** `summary`, **no** `raw_blob`, and no request body content. Treat full probe payloads as sensitive unless you have a separate retention policy.
+
+For `probe_type: routine_run` rows the logged `target_host` is the sentinel `routine` (not a network host); the routine record itself (`agent_id`, `routine_id`, `outcome`, `reason`) lives only in the stored `summary` and is **not** logged.

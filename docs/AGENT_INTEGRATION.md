@@ -111,6 +111,17 @@ curl -sS -X POST "$BASE/api/operator-probes/ingest" \
   -d '{"probe_type":"cursor_path_analysis","target_host":"api.cursor.com","runner_id":"my-laptop","runner_type":"laptop_script","summary":{"ok":true,"hops":5}}'
 ```
 
+**Routine run records** (`probe_type: "routine_run"`) use the same endpoint and auth to record that a scheduled bot routine fired, with its outcome. The body is **strict** (unknown keys → **400**) and has **no** `target_host` / `raw_blob`; rows are stored with `target_host` = `routine`. Key bots by their **stable agent id** (display names change). `reason` is a short status line (≤ 500 chars) — **never** message text, transcripts, or secrets.
+
+```bash
+curl -sS -X POST "$BASE/api/operator-probes/ingest" \
+  -H "Content-Type: application/json" \
+  -H "x-operator-probe-ingest-key: $OPERATOR_PROBE_INGEST_SECRET" \
+  -d '{"probe_type":"routine_run","runner_id":"box-collector","runner_type":"og_server","summary":{"agent_id":"<agent-id>","routine_id":"friday-raise","routine_name":"Friday raise","fired_at":"2026-11-14T15:00:00Z","finished_at":"2026-11-14T15:04:30Z","outcome":"done","reason":"Opened draft PR"}}'
+```
+
+`outcome` is one of `done` \| `nothing_to_do` \| `failed`. `/admin/observability` shows the routine label, agent id, outcome, and reason for these rows.
+
 When **`OPERATOR_PROBE_ADMIN_SECRET`** is set, list/detail/delete without a browser session:
 
 ```bash

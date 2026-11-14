@@ -10,6 +10,7 @@ import {
   PROBE_LIST_RUNNER_TYPE_CHIP_CLASS,
   PROBE_LIST_TARGET_HOST_CHIP_CLASS,
 } from './probeListChips';
+import { routineRunListDisplay, routineRunOutcomeChipClass } from './routineRunDisplay';
 
 type ProbeListItem = {
   id: string;
@@ -158,16 +159,34 @@ export default function AdminObservabilityPage() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((row) => (
+                {items.map((row) => {
+                  const routine = routineRunListDisplay(row.probe_type, row.summary);
+                  return (
                   <tr key={row.id} className="border-t border-gray-100" data-testid={`operator-probe-run-${row.id}`}>
                     <td className="p-3 whitespace-nowrap text-gray-700">{row.created_at}</td>
                     <td className="p-3">
-                      <span
-                        className={PROBE_LIST_TARGET_HOST_CHIP_CLASS}
-                        data-testid={`operator-probe-target-host-${row.id}`}
-                      >
-                        {row.target_host}
-                      </span>
+                      {routine ? (
+                        <div className="flex flex-col gap-1" data-testid={`operator-probe-routine-${row.id}`}>
+                          <span className="text-gray-900 font-medium" data-testid={`operator-probe-routine-label-${row.id}`}>
+                            {routine.routineLabel}
+                          </span>
+                          <span
+                            className="text-xs text-gray-600 truncate max-w-[14rem]"
+                            title={routine.agentId}
+                            data-testid={`operator-probe-routine-agent-${row.id}`}
+                          >
+                            agent {routine.agentId}
+                          </span>
+                          <span className="text-xs text-gray-500">fired {routine.firedAt}</span>
+                        </div>
+                      ) : (
+                        <span
+                          className={PROBE_LIST_TARGET_HOST_CHIP_CLASS}
+                          data-testid={`operator-probe-target-host-${row.id}`}
+                        >
+                          {row.target_host}
+                        </span>
+                      )}
                     </td>
                     <td className="p-3">
                       <div className="flex flex-col gap-1">
@@ -188,6 +207,24 @@ export default function AdminObservabilityPage() {
                     </td>
                     <td className="p-3 text-gray-700">
                       <div>{row.probe_type}</div>
+                      {routine ? (
+                        <div className="flex flex-col gap-1 mt-1">
+                          <span
+                            className={routineRunOutcomeChipClass(routine.outcome)}
+                            data-testid={`operator-probe-routine-outcome-${row.id}`}
+                          >
+                            {routine.outcome}
+                          </span>
+                          {routine.reason ? (
+                            <span
+                              className="text-xs text-gray-600 max-w-[18rem] break-words"
+                              data-testid={`operator-probe-routine-reason-${row.id}`}
+                            >
+                              {routine.reason}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                       <div className="text-xs text-gray-500">via {row.ingest_via}</div>
                     </td>
                     <td className="p-3 text-gray-600 text-xs whitespace-nowrap">{row.expires_at}</td>
@@ -201,7 +238,8 @@ export default function AdminObservabilityPage() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

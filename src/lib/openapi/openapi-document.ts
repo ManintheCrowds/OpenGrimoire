@@ -370,9 +370,9 @@ export const openApiDocument = {
     },
     '/api/operator-probes/ingest': {
       post: {
-        summary: 'Ingest operator path/probe run (allowlisted target_host)',
+        summary: 'Ingest operator path/probe run (allowlisted target_host) or routine run record',
         description:
-          'Body: probe_type, target_host, runner_id, runner_type, summary (object), optional raw_blob. Auth: operator session cookie OR x-operator-probe-ingest-key when OPERATOR_PROBE_INGEST_SECRET is set.',
+          'Body is discriminated by probe_type. cursor_path_analysis: probe_type, target_host (allowlisted), runner_id, runner_type, summary (object), optional raw_blob. routine_run (strict, unknown keys rejected; no target_host/raw_blob): probe_type, runner_id, runner_type, summary { agent_id, routine_id, routine_name?, fired_at (ISO 8601), finished_at?, outcome: done | nothing_to_do | failed, reason? (<=500 chars) }. Auth: operator session cookie OR x-operator-probe-ingest-key when OPERATOR_PROBE_INGEST_SECRET is set.',
         security: [{ OperatorProbeIngestKey: [] }, { OperatorSession: [] }],
         responses: {
           '201': { description: 'id + expires_at' },

@@ -165,3 +165,79 @@ test.describe('Operator observability', () => {
     await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible({ timeout: 20000 });
   });
 });
+
+test.describe('Operator observability — routine_run records', () => {
+  test('routine_run ingest rejects unknown fields (strict body)', async ({ request }) => {
+    const res = await request.post('/api/operator-probes/ingest', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-operator-probe-ingest-key': E2E_OPERATOR_PROBE_INGEST_SECRET,
+      },
+      data: {
+        probe_type: 'routine_run',
+        runner_id: 'e2e-routine-strict',
+        runner_type: 'ci',
+        summary: {
+          agent_id: 'e2e-agent-1',
+          routine_id: 'e2e-routine',
+          fired_at: '2026-11-14T15:00:00Z',
+          outcome: 'done',
+          message: 'free-form text must be rejected',
+        },
+      },
+    });
+    expect(res.status()).toBe(400);
+  });
+
+  test('routine_run ingest appears in /admin/observability with label and outcome', async ({ request, page }) => {
+    const stamp = Date.now();
+    const agentId = `e2e-agent-${stamp}`;
+    const res = await request.post('/api/operator-probes/ingest', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-operator-probe-ingest-key': E2E_OPERATOR_PROBE_INGEST_SECRET,
+      },
+      data: {
+        probe_type: 'routine_run',
+        runner_id: `e2e-routine-${stamp}`,
+        runner_type: 'ci',
+        summary: {
+          agent_id: agentId,
+          routine_id: 'e2e-nightly',
+          routine_name: 'E2E nightly',
+          fired_at: '2026-11-14T15:00:00Z',
+          finished_at: '2026-11-14T15:01:00Z',
+          outcome: 'failed',
+          reason: 'E2E: simulated failure',
+        },
+      },
+    });
+    expect(res.status()).toBe(201);
+    const { id: runId } = (await res.json()) as { id: string };
+
+    const list = await request.get('/api/admin/operator-probes', {
+      headers: { 'x-operator-probe-admin-key': E2E_OPERATOR_PROBE_ADMIN_SECRET },
+    });
+    expect(list.status()).toBe(200);
+    const { items } = (await list.json()) as {
+      items: { id: string; probe_type: string; target_host: string; summary: Record<string, unknown> }[];
+    };
+    const item = items.find((i) => i.id === runId);
+    expect(item?.probe_type).toBe('routine_run');
+    expect(item?.target_host).toBe('routine');
+    expect(item?.summary.agent_id).toBe(agentId);
+
+    await loginAsAdmin(page);
+    await page.goto('/admin/observability');
+    await expect(page.getByTestId(`operator-probe-run-${runId}`)).toBeVisible();
+    await expect(page.getByTestId(`operator-probe-routine-label-${runId}`)).toHaveText('E2E nightly (e2e-nightly)');
+    await expect(page.getByTestId(`operator-probe-routine-agent-${runId}`)).toHaveText(`agent ${agentId}`);
+    await expect(page.getByTestId(`operator-probe-routine-outcome-${runId}`)).toHaveText('failed');
+    await expect(page.getByTestId(`operator-probe-routine-reason-${runId}`)).toHaveText('E2E: simulated failure');
+
+    const del = await request.delete(`/api/admin/operator-probes/${encodeURIComponent(runId)}`, {
+      headers: { 'x-operator-probe-admin-key': E2E_OPERATOR_PROBE_ADMIN_SECRET },
+    });
+    expect(del.status()).toBe(200);
+  });
+});

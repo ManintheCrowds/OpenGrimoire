@@ -1,0 +1,4 @@
+# Exact pin. Do not loosen this to a range that can resolve below 4.1.2.
+# FastMCP 4.2.0 itself requires Python >=3.11.
+fastmcp==4.2.0
+pytest>=8.3

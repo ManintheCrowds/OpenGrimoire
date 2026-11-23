@@ -1,0 +1,43 @@
+/**
+ * Single pin for the OpenTelemetry GenAI semantic conventions this mapping implements.
+ * Revision of the mapping starts by changing this constant.
+ *
+ * Release: semantic-conventions-genai v0.1.0 (21 Nov 2026), Apache-2.0.
+ * https://github.com/open-telemetry/semantic-conventions-genai/releases/tag/v0.1.0
+ */
+export const GEN_AI_SEMCONV_SCHEMA_VERSION = 'gen_ai semconv 0.1.0' as const;
+
+/**
+ * Spec content-capture mode. This mapping implements only the default.
+ * SPAN_ONLY, EVENT_ONLY, and SPAN_AND_EVENT are not implemented.
+ */
+export const GEN_AI_CONTENT_CAPTURE_MODE = 'NO_CONTENT' as const;
+
+/**
+ * Names removed or replaced in v0.1.0. OpenGrimoire has no consumer of these
+ * names, so the mapper does not emit them beside the v0.1.0 names.
+ */
+export const RETIRED_GEN_AI_SIGNAL_NAMES = [
+  'gen_ai.workflow.name',
+  'gen_ai.client.token.usage',
+  'gen_ai.token.type',
+  'rpc.response.status_code',
+  'gen_ai.usage.cache_creation.input_tokens',
+] as const;
+
+/** Explicit bucket boundaries for the per-operation inference token histograms. */
+export const INFERENCE_OPERATION_TOKEN_BUCKETS = [
+  1, 4, 16, 64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216, 67108864,
+] as const;
+
+/** Explicit bucket boundaries for `gen_ai.invoke_agent.duration`, in seconds. */
+export const INVOKE_AGENT_DURATION_BUCKETS = [
+  0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8, 25.6, 51.2, 102.4, 204.8, 409.6, 900, 1800, 3600, 7200,
+  14400, 43200, 86400,
+] as const;
+
+/**
+ * JSON-RPC codes a MCP server span records on `rpc.status_code` but does not
+ * treat as operation failures. Client spans treat every JSON-RPC code as a failure.
+ */
+export const MCP_SERVER_CALLER_FAULT_CODES = [-32700, -32600, -32601, -32602, -32002] as const;

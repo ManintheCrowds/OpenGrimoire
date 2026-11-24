@@ -39,10 +39,29 @@ jobs:
           CI: true
         run: npm run test:e2e
 
+  fastmcp-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install hash-locked FastMCP trial
+        working-directory: experiments/fastmcp-skills
+        run: python -m pip install --require-hashes -r requirements.txt
+
+      - name: FastMCP skills tests
+        working-directory: experiments/fastmcp-skills
+        run: python -m pytest -q
+
   # Branch protection requires a check context literally named "CI"
   # (job id), while the real work lives in verify-and-e2e.
   CI:
-    needs: verify-and-e2e
+    needs: [verify-and-e2e, fastmcp-skills]
     runs-on: ubuntu-latest
     steps:
       - name: Protection check alias

@@ -77,6 +77,34 @@ def _resource(resources: list[SkillResource] | str, suffix: str) -> SkillResourc
     return matches[0]
 
 
+def test_ci_workflow_runs_the_skills_suite() -> None:
+    import yaml
+
+    workflow = yaml.safe_load(
+        (server.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    )
+    steps = workflow["jobs"]["fastmcp-skills"]["steps"]
+    commands = [
+        (step.get("working-directory"), step.get("run", ""))
+        for step in steps
+        if isinstance(step, dict)
+    ]
+    assert any(
+        directory == "experiments/fastmcp-skills"
+        and "--require-hashes" in command
+        and "requirements.txt" in command
+        for directory, command in commands
+    )
+    assert any(
+        directory == "experiments/fastmcp-skills" and "pytest" in command
+        for directory, command in commands
+    )
+    needs = workflow["jobs"]["CI"]["needs"]
+    if isinstance(needs, str):
+        needs = [needs]
+    assert "fastmcp-skills" in needs
+
+
 def test_runtime_pins() -> None:
     assert sys.version_info >= (3, 11)
     assert version("fastmcp") == "4.2.5"

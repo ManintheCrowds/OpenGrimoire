@@ -444,6 +444,39 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(mapping.spans[0]?.name).toBe('tools/call');
   });
 
+  it('coerces pure integer strings into mcp error codes', () => {
+    const client = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      jsonRpcErrorCode: '-32000',
+    } as never);
+    expect(client.spans[0]?.statusCode).toBe('ERROR');
+    expect(client.spans[0]?.attributes['rpc.status_code']).toBe('-32000');
+    expect(client.spans[0]?.attributes['error.type']).toBe('-32000');
+
+    const http = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      httpStatus: '500',
+    } as never);
+    expect(http.spans[0]?.statusCode).toBe('ERROR');
+    expect(http.spans[0]?.attributes['error.type']).toBe('500');
+    expect(http.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+
+    const dirty = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      jsonRpcErrorCode: '-32000 body=MSG-CANARY',
+      httpStatus: '500 body',
+    } as never);
+    expect(dirty.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+    expect(dirty.spans[0]?.attributes['error.type']).not.toBe('500 body');
+    expect(JSON.stringify(dirty)).not.toContain('MSG-CANARY');
+  });
+
   it('records an HTTP failure without a JSON-RPC code on error.type only', () => {
     const mapping = mapAssistantTeamObservation({
       signal: 'mcp',

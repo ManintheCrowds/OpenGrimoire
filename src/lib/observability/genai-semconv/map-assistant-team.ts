@@ -528,14 +528,23 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
   };
 }
 
+function pureInteger(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  if (typeof value === 'string' && /^-?\d+$/.test(value)) {
+    const parsed = Number(value);
+    if (Number.isSafeInteger(parsed)) return parsed;
+  }
+  return undefined;
+}
+
 function jsonRpcCode(value: unknown): number | undefined {
-  if (typeof value !== 'number' || !Number.isInteger(value)) return undefined;
-  return value;
+  return pureInteger(value);
 }
 
 function httpStatusCode(value: unknown): number | undefined {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 400) return undefined;
-  return value;
+  const parsed = pureInteger(value);
+  if (parsed === undefined || parsed < 400) return undefined;
+  return parsed;
 }
 
 function requestId(value: unknown): string | undefined {

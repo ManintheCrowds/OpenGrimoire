@@ -740,6 +740,15 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('does not map an inherited signal', () => {
+    const inherited = Object.create({ signal: 'execute_tool' }) as { toolName: string };
+    inherited.toolName = 'read_file';
+    const mapping = mapAssistantTeamObservation(inherited as never);
+    expect(mapping.spans).toEqual([]);
+    expect(mapping.metrics).toEqual([]);
+    expect(mapping.omissions).toContain('unknown_signal');
+  });
+
   it('hides messages thrown by getters and proxies', () => {
     const leaked = 'THROW-CANARY-9f3a';
     const hostile: { signal: 'invoke_agent'; controlFlow: 'agent' } = {

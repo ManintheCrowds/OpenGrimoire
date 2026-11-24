@@ -78,7 +78,7 @@ Other fields:
 | `gen_ai.conversation.id`, `gen_ai.tool.call.id`, `jsonrpc.request.id` | `^[A-Za-z0-9_-]{1,64}$` and the value must contain a digit and `_` or `-`. A safe integer request id is stringified. |
 | JSON-RPC and HTTP codes | A number, or a string that is only an optional minus and digits. Mixed text is ignored |
 
-Non-string identifier fields are ignored. The cleaners do not call methods on those values. Inherited properties are not read.
+Non-string identifier fields are ignored. The cleaners do not call methods on those values. `signal` and the other observation fields are read only when they are own properties. A throwing getter or proxy returns an empty mapping (`observation_unreadable`) and the thrown message is not copied. Name and id checks are patterns, not a complete list of tokens or client names.
 
 ## Left out on purpose
 

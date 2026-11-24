@@ -689,24 +689,27 @@ function isKnownSignal(value: unknown): value is AssistantTeamObservation['signa
 }
 
 function mapAssistantTeamObservationInner(observation: AssistantTeamObservation): AssistantTeamMapping {
-  if (!observation || typeof observation !== 'object' || !isKnownSignal(observation.signal)) {
-    const dropped =
-      observation && typeof observation === 'object' ? collectDroppedFields(observation) : [];
-    return emptyMapping(dropped, ['unknown_signal']);
+  if (!observation || typeof observation !== 'object') {
+    return emptyMapping([], ['unknown_signal']);
+  }
+  const signal = ownData(observation, 'signal');
+  if (!isKnownSignal(signal)) {
+    return emptyMapping(collectDroppedFields(observation), ['unknown_signal']);
   }
 
-  switch (observation.signal) {
+  switch (signal) {
     case 'invoke_agent':
-      return mapInvoke(observation);
+      return mapInvoke(observation as Extract<AssistantTeamObservation, { signal: 'invoke_agent' }>);
     case 'execute_tool':
-      return mapTool(observation);
+      return mapTool(observation as Extract<AssistantTeamObservation, { signal: 'execute_tool' }>);
     case 'inference':
-      return mapInference(observation);
+      return mapInference(observation as Extract<AssistantTeamObservation, { signal: 'inference' }>);
     case 'mcp':
-      return mapMcp(observation);
+      return mapMcp(observation as Extract<AssistantTeamObservation, { signal: 'mcp' }>);
     default: {
-      const unreachable: never = observation;
-      return emptyMapping(collectDroppedFields(unreachable), ['unknown_signal']);
+      const unreachable: never = signal;
+      void unreachable;
+      return emptyMapping(collectDroppedFields(observation), ['unknown_signal']);
     }
   }
 }

@@ -748,9 +748,20 @@ export function mapAssistantTeamObservation(observation: AssistantTeamObservatio
   }
 }
 
-export function mapLocalAiActivityEvent(event: LocalAiActivityLike): AssistantTeamMapping {
+function mapLocalAiActivityEventInner(event: LocalAiActivityLike): AssistantTeamMapping {
+  if (!event || typeof event !== 'object') {
+    return emptyMapping([], ['local_ai_activity_not_gen_ai']);
+  }
   const droppedFields: string[] = [];
-  if (event.summary !== undefined) droppedFields.push('summary');
-  if (event.detail !== undefined) droppedFields.push('detail');
+  if (ownData(event, 'summary') !== undefined) droppedFields.push('summary');
+  if (ownData(event, 'detail') !== undefined) droppedFields.push('detail');
   return emptyMapping(droppedFields, ['local_ai_activity_not_gen_ai']);
+}
+
+export function mapLocalAiActivityEvent(event: LocalAiActivityLike): AssistantTeamMapping {
+  try {
+    return mapLocalAiActivityEventInner(event);
+  } catch {
+    return emptyMapping([], ['observation_unreadable']);
+  }
 }

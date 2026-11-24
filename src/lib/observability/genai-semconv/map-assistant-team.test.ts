@@ -808,6 +808,26 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('hides a throwing local activity summary', () => {
+    const leaked = 'ACTIVITY-SENTINEL-8b';
+    const event = { id: 'evt-9', ts: '2026-11-24T00:00:00.000Z', kind: 'workflow' } as {
+      id: string;
+      ts: string;
+      kind: 'workflow';
+      summary?: string;
+    };
+    Object.defineProperty(event, 'summary', {
+      enumerable: true,
+      get() {
+        throw new Error(leaked);
+      },
+    });
+    const mapping = mapLocalAiActivityEvent(event);
+    expect(mapping.spans).toEqual([]);
+    expect(mapping.omissions).toContain('observation_unreadable');
+    expect(JSON.stringify(mapping)).not.toContain(leaked);
+  });
+
   it('leaves the local AI activity log unmapped and does not copy its text', () => {
     const mapping = mapLocalAiActivityEvent({
       id: 'evt-1',

@@ -76,11 +76,11 @@ Other fields:
 | agent names | Exact `ASSISTANT_TEAM_AGENT_NAMES` (`Scout`, `recipe_runner`). Anything else is omitted. |
 | tool and prompt names | Exact `ASSISTANT_TEAM_TOOL_NAMES` (`read_file`). Anything else is omitted. |
 | model names | Exact `GEN_AI_MODEL_NAMES` only. Any other non-empty string, including a listed id plus a suffix, is `_OTHER` on the span name, `gen_ai.request.model`, `gen_ai.response.model`, and inference metrics. |
-| ids and other free strings | Still pattern-checked. The token-prefix denylist is defense in depth and includes `ghr_`, `sk_test_`, `rk_test_`, `pypi-`, `xai-`, `gsk_`, `pplx-`, `ya29.`, `lin_api_`, `xapp-`, `glsa_`, `shpat_`, `r8_`, `xoxr-`, and `dop_v1_` in addition to the earlier prefixes. Lowercase joined names and hyphenated host labels such as short `word-digit` names are omitted, except ids that start with `req-`, `call_`, or `conv_`. |
-| `gen_ai.conversation.id`, `gen_ai.tool.call.id`, `jsonrpc.request.id` | `^[A-Za-z0-9_-]{1,64}$` and the value must contain a digit and `_` or `-`. A safe integer request id is stringified. |
+| model ids | Closed set: exact `GEN_AI_MODEL_NAMES` only. Every other non-empty string is `_OTHER`. |
+| `gen_ai.conversation.id`, `gen_ai.tool.call.id`, `jsonrpc.request.id` | Closed set: a UUID, a ULID, a provider id (`call_`, `chatcmpl-`, or `resp_` plus 8–40 letters or digits), or `hmac_` plus 64 hex digits from the local key. Free text, including values prefixed `req-`, `call_`, or `conv_`, is dropped. A token prefix (`sk-`, `sk-proj-`, `sk-ant-`, `shpat_`, `ghr_`, `sk_test_`, `rk_test_`, `pypi-`, `xai-`, `gsk_`, `pplx-`, `ya29.`, `lin_api_`, `xapp-`, `glsa_`, `r8_`, `xoxr-`, `dop_v1_`, and `bearer` with or without a separator) is rejected before the shape check. |
 | JSON-RPC and HTTP codes | A finite integer whose absolute value is at most 99999, or a trimmed string of only an optional minus and digits in that range. Exponent text such as `1e21` is rejected. Mixed text is an error of type `_OTHER` and is not copied. HTTP 100–399 does not fail the span. HTTP 400–599 is an error. Other HTTP statuses are `_OTHER`. |
 
-Non-string identifier fields are ignored. The cleaners do not call methods on those values. `signal` and the other observation fields are read only when they are own properties. A throwing getter or proxy returns an empty mapping (`observation_unreadable`) and the thrown message is not copied. Name and id checks are patterns, not a complete list of tokens or client names.
+Non-string identifier fields are ignored. The cleaners do not call methods on those values. `signal` and the other observation fields are read only when they are own properties. A throwing getter or proxy returns an empty mapping (`observation_unreadable`) and the thrown message is not copied. Model ids and the conversation, tool-call, and request ids are closed sets.
 
 ## Left out on purpose
 

@@ -1477,6 +1477,9 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(note).toContain('`_OTHER`');
     expect(note).toContain('ASSISTANT_TEAM_AGENT_NAMES');
     expect(note).toContain('GEN_AI_MODEL_NAMES');
+    expect(note).toContain('Model ids and the conversation, tool-call, and request ids are closed sets.');
+    expect(note).toContain('a UUID, a ULID');
+    expect(note).not.toContain('except ids that start with');
     expect(note).toContain('Mixed text is an error of type `_OTHER`');
     expect(note).not.toContain('Mixed text is ignored');
     expect(note).not.toContain('Secrets, API tokens, client names, IP addresses, and hostnames.');

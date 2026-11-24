@@ -224,6 +224,19 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(longCode.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
   });
 
+  it('rejects bearer with any separator regardless of case', () => {
+    for (const sample of ['Bearer_x', 'bearer-x', 'BEARER x', 'Bearer_x1', 'bearer-x1']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      expect(JSON.stringify(mapping)).not.toContain(sample);
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+    }
+  });
+
   it('allowlists agent, tool, and model names', () => {
     const models = mapAssistantTeamObservation({
       signal: 'inference',

@@ -110,6 +110,53 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(attributeKeys(mapping)).not.toContain('gen_ai.workflow.name');
   });
 
+  it('keeps prompts, tool results, and server addresses off every operation', () => {
+    const prompt = 'PROMPT-CANARY-inference-messages';
+    const result = 'TOOL-RESULT-CANARY-mcp';
+    const address = '10.1.2.80';
+
+    const inference = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: 'gpt-4',
+      inputMessages: [{ role: 'user', content: prompt }],
+      serverAddress: address,
+    });
+    expect(inference.spans[0]?.attributes).not.toHaveProperty('gen_ai.input.messages');
+    expect(inference.spans[0]?.attributes).not.toHaveProperty('server.address');
+    expect(JSON.stringify(inference)).not.toContain(prompt);
+    expect(JSON.stringify(inference)).not.toContain(address);
+
+    const tool = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      toolResult: { body: result },
+      serverAddress: address,
+    });
+    expect(tool.spans[0]?.attributes).not.toHaveProperty('gen_ai.tool.call.result');
+    expect(tool.spans[0]?.attributes).not.toHaveProperty('server.address');
+    expect(JSON.stringify(tool)).not.toContain(result);
+
+    for (const role of ['client', 'server'] as const) {
+      const mcp = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role,
+        methodName: 'tools/call',
+        toolName: 'read_file',
+        toolResult: { body: result },
+        inputMessages: [{ content: prompt }],
+        serverAddress: address,
+      });
+      expect(mcp.spans[0]?.attributes).not.toHaveProperty('gen_ai.tool.call.result');
+      expect(mcp.spans[0]?.attributes).not.toHaveProperty('gen_ai.input.messages');
+      expect(mcp.spans[0]?.attributes).not.toHaveProperty('server.address');
+      expect(JSON.stringify(mcp)).not.toContain(result);
+      expect(JSON.stringify(mcp)).not.toContain(prompt);
+      expect(JSON.stringify(mcp)).not.toContain(address);
+    }
+  });
+
   it('drops ipv4 addresses and hostnames used as agent or tool names', () => {
     const ipv4 = mapAssistantTeamObservation({
       signal: 'invoke_agent',

@@ -740,6 +740,60 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('locks the remaining redaction and http status checks', () => {
+    const longError = '4111111111111111';
+    const errorType = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      errorType: longError,
+    });
+    expect(errorType.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(JSON.stringify(errorType)).not.toContain(longError);
+
+    const accessKey = 'AKIAEXAMPLE_x01';
+    const agent = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: accessKey,
+    });
+    expect(JSON.stringify(agent)).not.toContain(accessKey);
+
+    const id = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: 'a-b',
+    });
+    expect(id.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+
+    const model = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: 'model:extra:name',
+    });
+    expect(model.spans[0]?.attributes).not.toHaveProperty('gen_ai.request.model');
+    expect(model.spans[0]?.name).toBe('chat');
+    expect(JSON.stringify(model)).not.toContain('model:extra:name');
+
+    const missing = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      httpStatus: 404,
+    });
+    expect(missing.spans[0]?.statusCode).toBe('ERROR');
+    expect(missing.spans[0]?.attributes['error.type']).toBe('404');
+
+    const dotted = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'build01.',
+    });
+    expect(dotted.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    expect(JSON.stringify(dotted)).not.toContain('build01.');
+  });
+
   it('redacts a string jsonrpc request id', () => {
     const bad = 'session-token';
     const dropped = mapAssistantTeamObservation({
@@ -997,6 +1051,15 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
           signal: 'mcp',
           role: 'client',
           methodName: canary,
+          toolName: canary,
+          promptName: canary,
+          requestId: canary,
+          errorType: canary,
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'mcp',
+          role: 'client',
+          methodName: 'tools/call',
           toolName: canary,
           promptName: canary,
           requestId: canary,

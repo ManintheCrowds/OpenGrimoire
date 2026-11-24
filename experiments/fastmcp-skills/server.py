@@ -11,22 +11,34 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+
+
+def _require_fastmcp_4_2_5() -> None:
+    """Refuse any FastMCP distribution other than 4.2.5 before importing it.
+
+    Importing a different build first would run that build's import-time code.
+    GHSA-78c8-3jhx-5mg7 is patched in 4.2.4; this trial stays on the exact pin.
+    """
+    if sys.version_info < (3, 11):
+        raise RuntimeError("This trial requires Python 3.11 or newer.")
+    try:
+        installed = version("fastmcp")
+    except PackageNotFoundError as exc:
+        raise RuntimeError("This trial requires fastmcp==4.2.5.") from exc
+    if installed != "4.2.5":
+        raise RuntimeError(
+            "This trial requires fastmcp==4.2.5 "
+            "(GHSA-78c8-3jhx-5mg7 is patched in 4.2.4; never below 4.1.2). "
+            f"Found {installed}."
+        )
+
+
+_require_fastmcp_4_2_5()
 
 from fastmcp import FastMCP, Skill
 from fastmcp.skills.provider import SkillCatalogProvider
-
-if sys.version_info < (3, 11):
-    raise RuntimeError("This trial requires Python 3.11 or newer.")
-
-_FASTMCP_VERSION = version("fastmcp")
-if _FASTMCP_VERSION != "4.2.5":
-    raise RuntimeError(
-        "This trial requires fastmcp==4.2.5 "
-        "(4.2.4 or newer for GHSA-78c8-3jhx-5mg7; never below 4.1.2). "
-        f"Found {_FASTMCP_VERSION}."
-    )
 
 # experiments/fastmcp-skills/server.py -> repository root.
 REPO_ROOT = Path(__file__).resolve().parents[2]

@@ -6,6 +6,7 @@ import ast
 import asyncio
 import hashlib
 import sys
+import tomllib
 from collections.abc import Awaitable, Callable
 from importlib.metadata import version
 from pathlib import Path
@@ -80,6 +81,140 @@ def test_runtime_pins() -> None:
     assert sys.version_info >= (3, 11)
     assert version("fastmcp") == "4.2.5"
     assert server.TRANSPORT == "stdio"
+
+
+def _server_tree() -> ast.Module:
+    return ast.parse(Path(server.__file__).read_text(encoding="utf-8"))
+
+
+def _first_fastmcp_import(tree: ast.Module) -> ast.stmt:
+    for stmt in tree.body:
+        if isinstance(stmt, ast.ImportFrom) and stmt.module and stmt.module.startswith("fastmcp"):
+            return stmt
+        if isinstance(stmt, ast.Import) and any(
+            alias.name.startswith("fastmcp") for alias in stmt.names
+        ):
+            return stmt
+    raise AssertionError("server.py does not import fastmcp")
+
+
+def _is_version_fastmcp_call(node: ast.expr) -> bool:
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "version"
+        and len(node.args) == 1
+        and isinstance(node.args[0], ast.Constant)
+        and node.args[0].value == "fastmcp"
+    )
+
+
+def _name_assigned_from_version(func: ast.FunctionDef, name: str) -> bool:
+    for node in ast.walk(func):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if (
+                    isinstance(target, ast.Name)
+                    and target.id == name
+                    and _is_version_fastmcp_call(node.value)
+                ):
+                    return True
+        if (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == name
+            and node.value is not None
+            and _is_version_fastmcp_call(node.value)
+        ):
+            return True
+    return False
+
+
+def _guard_compares_installed_version(func: ast.FunctionDef) -> bool:
+    for stmt in func.body:
+        if not isinstance(stmt, ast.If) or not isinstance(stmt.test, ast.Compare):
+            continue
+        test = stmt.test
+        exact = (
+            len(test.ops) == 1
+            and isinstance(test.ops[0], ast.NotEq)
+            and len(test.comparators) == 1
+            and isinstance(test.comparators[0], ast.Constant)
+            and test.comparators[0].value == "4.2.5"
+        )
+        if not exact:
+            continue
+        left = test.left
+        left_ok = _is_version_fastmcp_call(left) or (
+            isinstance(left, ast.Name) and _name_assigned_from_version(func, left.id)
+        )
+        raises = any(isinstance(item, ast.Raise) for item in stmt.body)
+        if left_ok and raises:
+            return True
+    return False
+
+
+def test_version_guard_rejects_anything_but_4_2_5_before_import() -> None:
+    """A no-op gate, or one that also accepts 4.2.0, fails this test."""
+    tree = _server_tree()
+    fastmcp_import = _first_fastmcp_import(tree)
+    guard = next(
+        stmt
+        for stmt in tree.body
+        if isinstance(stmt, ast.FunctionDef) and stmt.name == "_require_fastmcp_4_2_5"
+    )
+    assert guard.lineno < fastmcp_import.lineno
+    assert _guard_compares_installed_version(guard)
+    called = any(
+        isinstance(stmt, ast.Expr)
+        and isinstance(stmt.value, ast.Call)
+        and isinstance(stmt.value.func, ast.Name)
+        and stmt.value.func.id == "_require_fastmcp_4_2_5"
+        and stmt.lineno < fastmcp_import.lineno
+        for stmt in tree.body
+    )
+    assert called
+
+
+def _requirement_names(text: str) -> dict[str, str]:
+    logical: list[str] = []
+    buffer = ""
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line.endswith("\\"):
+            buffer = f"{buffer} {line[:-1]}".strip()
+            continue
+        buffer = f"{buffer} {line}".strip()
+        logical.append(buffer)
+        buffer = ""
+    if buffer:
+        logical.append(buffer)
+    specs: dict[str, str] = {}
+    for line in logical:
+        token = line.split()[0]
+        if token.startswith("--"):
+            continue
+        name = token
+        for separator in "[<>=!~":
+            name = name.split(separator, 1)[0]
+        specs[name] = token
+    return specs
+
+
+def test_declared_fastmcp_pin_is_exactly_4_2_5() -> None:
+    root = Path(server.__file__).resolve().parent
+    pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    direct = [
+        spec
+        for spec in pyproject["project"]["dependencies"]
+        if spec.split("[", 1)[0].split("=", 1)[0].split("<", 1)[0].split(">", 1)[0].split("!", 1)[0].split("~", 1)[0]
+        == "fastmcp"
+    ]
+    assert direct == ["fastmcp==4.2.5"]
+    locked = _requirement_names((root / "requirements.txt").read_text(encoding="utf-8"))
+    assert locked["fastmcp"] == "fastmcp==4.2.5"
 
 
 def test_server_module_does_not_use_removed_or_network_apis() -> None:

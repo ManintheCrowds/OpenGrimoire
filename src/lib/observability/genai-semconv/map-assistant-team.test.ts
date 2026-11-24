@@ -241,6 +241,17 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('treats shpat_ as the token prefix', () => {
+    const sample = 'shpat_sample1';
+    const mapping = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      toolCallId: sample,
+    });
+    expect(mapping.omissions).toContain('secret_id_rejected');
+    expect(JSON.stringify(mapping)).not.toContain(sample);
+  });
+
   it('rejects bearer with no separator', () => {
     for (const sample of ['BearerToken_1', 'BearerX']) {
       const mapping = mapAssistantTeamObservation({

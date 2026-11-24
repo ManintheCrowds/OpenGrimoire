@@ -1,0 +1,4 @@
+# Direct pins. The hashed lock is requirements.txt.
+# GHSA-78c8-3jhx-5mg7 affects fastmcp >=2.13.0, <=4.2.3 and is patched in 4.2.4.
+fastmcp==4.2.5
+pytest==9.2.0

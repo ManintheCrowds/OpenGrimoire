@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opengrimoire-fastmcp-skills-trial"
+version = "0.0.0"
+description = "Offline trial of FastMCP 4.2 skills as a shared catalog next to one tool."
+requires-python = ">=3.11"
+dependencies = [
+  "fastmcp==4.2.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3"]
+
+[tool.setuptools]
+py-modules = ["server"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

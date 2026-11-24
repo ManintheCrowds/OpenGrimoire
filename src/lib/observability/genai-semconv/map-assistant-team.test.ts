@@ -482,6 +482,44 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
   });
 
+  it('keeps safe integer jsonrpc request ids', () => {
+    const asNumber = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: 7,
+    });
+    expect(asNumber.spans[0]?.attributes['jsonrpc.request.id']).toBe('7');
+    expect(asNumber.omissions).not.toContain('request_id_rejected');
+
+    const asString = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: '7',
+    });
+    expect(asString.spans[0]?.attributes['jsonrpc.request.id']).toBe('7');
+
+    const prefixed = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: 'req-7',
+    });
+    expect(prefixed.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+    expect(prefixed.omissions).toContain('id_shape_rejected');
+    expect(JSON.stringify(prefixed)).not.toContain('req-7');
+
+    const unsafe = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: Number.MAX_SAFE_INTEGER + 1,
+    });
+    expect(unsafe.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+    expect(unsafe.omissions).toContain('request_id_rejected');
+  });
+
   it('loads the hmac key per install and has no built-in key', () => {
     const source = fs.readFileSync(path.join(__dirname, 'map-assistant-team.ts'), 'utf8');
     const example = fs.readFileSync(path.join(__dirname, '../../../../.env.example'), 'utf8');

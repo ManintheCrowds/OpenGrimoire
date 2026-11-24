@@ -642,8 +642,30 @@ function httpStatusCode(value: unknown): number | 'rejected' | undefined {
   return 'rejected';
 }
 
+function safeIntegerToken(value: unknown): string | undefined {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) ? String(value) : undefined;
+  }
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!/^-?\d+$/.test(trimmed)) return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isSafeInteger(parsed) || String(parsed) !== trimmed) return undefined;
+  return trimmed;
+}
+
 function requestId(value: unknown): string | undefined {
-  return cleanToken(value);
+  return safeIntegerToken(value) ?? cleanToken(value);
+}
+
+function requestIdOmissions(value: unknown): string[] {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) ? [] : ['request_id_rejected'];
+  }
+  if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) {
+    return safeIntegerToken(value) === undefined ? ['request_id_rejected'] : [];
+  }
+  return idOmissions(value);
 }
 
 function mcpFailure(
@@ -724,7 +746,7 @@ function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }
   const registryType = role === 'client' ? 'mcp.client' : 'mcp.server';
 
   return {
-    ...emptyMapping(droppedFields, idOmissions(ownData(observation, 'requestId'))),
+    ...emptyMapping(droppedFields, requestIdOmissions(ownData(observation, 'requestId'))),
     spans: [
       span({
         name: target ? `${methodName} ${target}` : methodName,

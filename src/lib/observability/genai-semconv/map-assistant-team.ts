@@ -1,6 +1,7 @@
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_CONTROL_FLOWS,
+  GEN_AI_ERROR_TYPES,
   GEN_AI_INFERENCE_OPERATIONS,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
@@ -172,12 +173,15 @@ function cleanToken(value: string | undefined): string | undefined {
   return trimmed;
 }
 
-function cleanErrorType(value: string | undefined): string | undefined {
-  if (value === undefined) return undefined;
+const ERROR_TYPE_ALLOWLIST = new Set<string>(GEN_AI_ERROR_TYPES);
+
+function cleanErrorType(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
-  if (hasSecretMarker(trimmed) || isIpv4(trimmed)) return undefined;
-  return trimmed;
+  if (trimmed.length === 0) return undefined;
+  if (/^-?[0-9]{1,5}$/.test(trimmed)) return trimmed;
+  if (ERROR_TYPE_ALLOWLIST.has(trimmed)) return trimmed;
+  return '_OTHER';
 }
 
 function cleanMethodName(value: string | undefined): string | undefined {

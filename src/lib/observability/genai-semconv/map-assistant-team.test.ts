@@ -463,6 +463,36 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('replaces free-text error.type with _OTHER', () => {
+    const samples = [
+      `ghp_${'A'.repeat(20)}`,
+      'db.canary.internal',
+      'fe80::1',
+      'localhost',
+      '10.0.0.5:5432',
+      'Error:NorthwindPractice_private_note',
+    ];
+    for (const errorType of samples) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'execute_tool',
+        toolName: 'read_file',
+        durationSeconds: 0.2,
+        errorType,
+      });
+      expect(mapping.spans[0]?.statusCode).toBe('ERROR');
+      expect(mapping.spans[0]?.attributes['error.type']).toBe('_OTHER');
+      expect(mapping.metrics[0]?.attributes['error.type']).toBe('_OTHER');
+      expect(JSON.stringify(mapping)).not.toContain(errorType);
+    }
+
+    const allowed = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      errorType: 'timeout',
+    });
+    expect(allowed.spans[0]?.attributes['error.type']).toBe('timeout');
+  });
+
   it('drops control flow, inference operation, and mcp role values outside the closed sets', () => {
     const prompt = 'PROMPT-CANARY-enum-please-summarise';
     const flow = mapAssistantTeamObservation({

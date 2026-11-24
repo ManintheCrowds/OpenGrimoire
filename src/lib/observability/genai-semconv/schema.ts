@@ -19,6 +19,20 @@ export const GEN_AI_INFERENCE_OPERATIONS = ['chat', 'generate_content', 'text_co
 export const MCP_ROLES = ['client', 'server'] as const;
 
 /**
+ * Low-cardinality `error.type` classes. Any other non-numeric text is recorded
+ * as `_OTHER` so free-text errors, hosts, and secrets are not copied.
+ */
+export const GEN_AI_ERROR_TYPES = [
+  'timeout',
+  'rate_limited',
+  'tool_error',
+  'cancelled',
+  'invalid_request',
+  'provider_error',
+  '_OTHER',
+] as const;
+
+/**
  * Names removed or replaced in v0.1.0. OpenGrimoire has no consumer of these
  * names, so the mapper does not emit them beside the v0.1.0 names.
  */

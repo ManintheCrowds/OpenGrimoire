@@ -567,15 +567,18 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
 }
 
 function pureInteger(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isInteger(value)) {
-    if (String(Math.abs(value)).length > 5) return undefined;
-    return value;
+  let parsed: number | undefined;
+  if (typeof value === 'number') {
+    if (!Number.isInteger(value)) return undefined;
+    parsed = value;
+  } else if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!/^-?\d+$/.test(trimmed)) return undefined;
+    parsed = Number(trimmed);
+  } else {
+    return undefined;
   }
-  if (typeof value !== 'string') return undefined;
-  const trimmed = value.trim();
-  if (!/^-?\d+$/.test(trimmed)) return undefined;
-  const parsed = Number(trimmed);
-  if (!Number.isSafeInteger(parsed) || String(Math.abs(parsed)).length > 5) return undefined;
+  if (!Number.isSafeInteger(parsed) || Math.abs(parsed) > 99999) return undefined;
   return parsed;
 }
 

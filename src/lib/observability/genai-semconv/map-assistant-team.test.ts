@@ -224,6 +224,22 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(longCode.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
   });
 
+  it('rejects exponent-form numeric codes', () => {
+    for (const jsonRpcErrorCode of [1e21, '1e+21'] as const) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        jsonRpcErrorCode,
+      } as never);
+      expect(mapping.spans[0]?.statusCode).toBe('ERROR');
+      expect(mapping.spans[0]?.attributes['error.type']).toBe('_OTHER');
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+      expect(JSON.stringify(mapping)).not.toContain('1e+21');
+      expect(JSON.stringify(mapping)).not.toContain('1e21');
+    }
+  });
+
   it('rejects bearer with any separator regardless of case', () => {
     for (const sample of ['Bearer_x', 'bearer-x', 'BEARER x', 'Bearer_x1', 'bearer-x1']) {
       const mapping = mapAssistantTeamObservation({

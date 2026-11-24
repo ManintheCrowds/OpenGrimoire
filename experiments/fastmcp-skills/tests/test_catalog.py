@@ -217,6 +217,73 @@ def test_declared_fastmcp_pin_is_exactly_4_2_5() -> None:
     assert locked["fastmcp"] == "fastmcp==4.2.5"
 
 
+_NETWORK_TRANSPORTS = frozenset({"http", "sse", "streamable-http"})
+_NETWORK_RUNNERS = frozenset(
+    {
+        "run_http",
+        "run_http_async",
+        "run_sse_async",
+        "run_streamable_http_async",
+        "http_app",
+    }
+)
+
+
+def _module_constants(tree: ast.Module) -> dict[str, object]:
+    values: dict[str, object] = {}
+    for stmt in tree.body:
+        if (
+            isinstance(stmt, ast.Assign)
+            and len(stmt.targets) == 1
+            and isinstance(stmt.targets[0], ast.Name)
+            and isinstance(stmt.value, ast.Constant)
+        ):
+            values[stmt.targets[0].id] = stmt.value.value
+    return values
+
+
+def _stdio_transport(expr: ast.expr, constants: dict[str, object]) -> str:
+    if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
+        return expr.value
+    if isinstance(expr, ast.Name) and isinstance(constants.get(expr.id), str):
+        return str(constants[expr.id])
+    raise AssertionError("main() transport is not the stdio constant")
+
+
+def test_main_stays_on_stdio_without_oauth_proxy() -> None:
+    """main() must pass stdio to mcp.run. HTTP, SSE, and OAuthProxy fail this test."""
+    text = Path(server.__file__).read_text(encoding="utf-8")
+    tree = _server_tree()
+    assert not any(isinstance(node, ast.Name) and node.id == "OAuthProxy" for node in ast.walk(tree))
+    assert "oauth_proxy" not in text
+    constants = _module_constants(tree)
+    main = next(
+        stmt for stmt in tree.body if isinstance(stmt, ast.FunctionDef) and stmt.name == "main"
+    )
+    run_calls = [
+        node
+        for node in ast.walk(main)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "run"
+    ]
+    assert len(run_calls) == 1
+    call = run_calls[0]
+    assert call.func.attr not in _NETWORK_RUNNERS
+    transport_kw = next((kw.value for kw in call.keywords if kw.arg == "transport"), None)
+    transport_expr = transport_kw if transport_kw is not None else (call.args[0] if call.args else None)
+    assert transport_expr is not None
+    assert _stdio_transport(transport_expr, constants) == "stdio"
+    assert _stdio_transport(transport_expr, constants) not in _NETWORK_TRANSPORTS
+    assert not any(kw.arg in {"host", "port"} for kw in call.keywords)
+    assert not any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in _NETWORK_RUNNERS
+        for node in ast.walk(tree)
+    )
+
+
 def test_server_module_does_not_use_removed_or_network_apis() -> None:
     text = Path(server.__file__).read_text(encoding="utf-8")
     tree = ast.parse(text)

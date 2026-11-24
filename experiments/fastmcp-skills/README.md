@@ -1,13 +1,13 @@
 # FastMCP 4.2 skills trial
 
-Small, stdio-only prototype. One MCP server publishes three existing OpenGrimoire markdown files as [FastMCP 4.2.0](https://github.com/PrefectHQ/fastmcp/releases/tag/v4.2.0) skills and one trivial tool (`catalog_ping`).
+Small, stdio-only prototype. One MCP server publishes three existing OpenGrimoire markdown files as [FastMCP 4.2](https://github.com/PrefectHQ/fastmcp/releases/tag/v4.2.0) skills and one trivial tool (`catalog_ping`). The installed release is **4.2.5**.
 
 This directory does not change the app. OpenGrimoire still has no first-party MCP server; see [docs/agent/INTEGRATION_PATHS.md](../../docs/agent/INTEGRATION_PATHS.md).
 
 ## Requirements
 
-- Python **3.11 or newer**. FastMCP 4.2.0 declares `Requires-Python: >=3.11`, and `server.py` refuses to import on older interpreters.
-- `fastmcp==4.2.0` exactly. Do not install any release below **4.1.2**. That floor closes the October 2026 advisory batch. [GHSA-gpgx-58w2-xwwf](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-gpgx-58w2-xwwf) (client code execution when parsing a server-supplied tool output schema) is fixed in 4.0.11; 4.1.2 is the 4.x line that also picks up the rest of that batch. The pin is exact so a resolver cannot float below 4.1.2 or onto 4.3 while this trial is the reference.
+- Python **3.11 or newer**. FastMCP 4.2.5 declares `Requires-Python: >=3.11`, and `server.py` refuses to import on older interpreters.
+- `fastmcp==4.2.5` exactly. Do not install any release below **4.2.4**. [GHSA-78c8-3jhx-5mg7](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-78c8-3jhx-5mg7) (OAuthProxy can redeem one authorization code more than once) covers 4.2.0 through 4.2.3 and is fixed in 4.2.4. This server is stdio-only and does not construct `OAuthProxy`, so that path is not reached here; the pin still stays off the affected releases. The older floor of **4.1.2** still applies: [GHSA-gpgx-58w2-xwwf](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-gpgx-58w2-xwwf) is fixed in 4.0.11, and 4.1.2 closes the rest of that October 2026 batch. The pin is exact so a resolver cannot float onto 4.3 while this trial is the reference.
 
 ## Which skills API this uses
 
@@ -56,7 +56,7 @@ GitHub Actions on this account is billing-blocked and will not run. This prototy
 
 ## What worked
 
-Verified with FastMCP 4.2.0 on Python 3.12, in-process, and once via `fastmcp list server.py --skills` (stdio):
+Verified with FastMCP 4.2.5 on Python 3.12, in-process, and once via `fastmcp list server.py --skills` (stdio):
 
 - One server listed the three skills through `skills/list` when the client passed `SkillsClientExtension()`, and listed `catalog_ping` beside them. The tool call returned `ok`.
 - `read_skill("skill://<name>/SKILL.md")` returned the repository file bytes unchanged for all three docs.
@@ -104,4 +104,4 @@ Git is already the catalog: the three files are reviewed, diffed, and present in
 
 The agents this repo targets still load skills from local folders. The Skills extension is experimental, `skills/list` requires an explicit client opt-in, and this trial never showed a host installing a skill on its own. OpenGrimoire's integration note still says any MCP surface should be a thin wrapper over HTTP, not a second copy of the docs. A shared server would also need an auth story this prototype does not have, and the digest would still trust that server's manifest.
 
-Use 4.2's `read_skill` later if a stdio sync step (`read_skill`, then `Skill.to_directory`) is actually how a machine should install a skill, and pin `fastmcp==4.2.0` or a newer release that is still at least 4.1.2 and still on the `Skill` / `SkillCatalogProvider` API. Until then, leave the skill files in git.
+Use 4.2's `read_skill` later if a stdio sync step (`read_skill`, then `Skill.to_directory`) is actually how a machine should install a skill, and pin `fastmcp==4.2.5` or a newer release that is still at least 4.2.4 and still on the `Skill` / `SkillCatalogProvider` API. Until then, leave the skill files in git.

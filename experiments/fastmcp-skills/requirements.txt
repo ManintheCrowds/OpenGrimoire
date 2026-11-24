@@ -1,4 +1,6 @@
-# Exact pin. Do not loosen this to a range that can resolve below 4.1.2.
-# FastMCP 4.2.0 itself requires Python >=3.11.
-fastmcp==4.2.0
+# Exact pin. Do not loosen this to a range that can resolve below 4.2.4.
+# 4.2.0 through 4.2.3 are in GHSA-78c8-3jhx-5mg7 (OAuthProxy authorization-code reuse).
+# 4.2.4 is the patched release. This trial pins 4.2.5.
+# FastMCP 4.2.5 requires Python >=3.11. No lockfile and no hash pins in this directory.
+fastmcp==4.2.5
 pytest>=8.3

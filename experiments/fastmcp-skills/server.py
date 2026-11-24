@@ -21,9 +21,10 @@ if sys.version_info < (3, 11):
     raise RuntimeError("This trial requires Python 3.11 or newer.")
 
 _FASTMCP_VERSION = version("fastmcp")
-if _FASTMCP_VERSION != "4.2.0":
+if _FASTMCP_VERSION != "4.2.5":
     raise RuntimeError(
-        "This trial requires fastmcp==4.2.0 (never below 4.1.2). "
+        "This trial requires fastmcp==4.2.5 "
+        "(4.2.4 or newer for GHSA-78c8-3jhx-5mg7; never below 4.1.2). "
         f"Found {_FASTMCP_VERSION}."
     )
 

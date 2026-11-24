@@ -78,7 +78,7 @@ def _resource(resources: list[SkillResource] | str, suffix: str) -> SkillResourc
 
 def test_runtime_pins() -> None:
     assert sys.version_info >= (3, 11)
-    assert version("fastmcp") == "4.2.0"
+    assert version("fastmcp") == "4.2.5"
     assert server.TRANSPORT == "stdio"
 
 

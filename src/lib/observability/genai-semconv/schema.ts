@@ -13,6 +13,11 @@ export const GEN_AI_SEMCONV_SCHEMA_VERSION = 'gen_ai semconv 0.1.0' as const;
  */
 export const GEN_AI_CONTENT_CAPTURE_MODE = 'NO_CONTENT' as const;
 
+/** Closed runtime sets. Values outside these lists are omitted, not copied into span names. */
+export const GEN_AI_CONTROL_FLOWS = ['agent', 'workflow'] as const;
+export const GEN_AI_INFERENCE_OPERATIONS = ['chat', 'generate_content', 'text_completion'] as const;
+export const MCP_ROLES = ['client', 'server'] as const;
+
 /**
  * Names removed or replaced in v0.1.0. OpenGrimoire has no consumer of these
  * names, so the mapper does not emit them beside the v0.1.0 names.

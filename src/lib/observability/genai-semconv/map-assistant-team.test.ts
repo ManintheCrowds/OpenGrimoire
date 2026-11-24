@@ -463,6 +463,38 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('drops control flow, inference operation, and mcp role values outside the closed sets', () => {
+    const prompt = 'PROMPT-CANARY-enum-please-summarise';
+    const flow = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: `please summarise client notes ${prompt}`,
+    } as never);
+    expect(flow.spans).toEqual([]);
+    expect(flow.metrics).toEqual([]);
+    expect(flow.omissions).toContain('control_flow_rejected');
+    expect(JSON.stringify(flow)).not.toContain(prompt);
+
+    const operation = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: `chat ${prompt}${'x'.repeat(200)}`,
+      providerName: 'openai',
+    } as never);
+    expect(operation.spans).toEqual([]);
+    expect(operation.metrics).toEqual([]);
+    expect(operation.omissions).toContain('inference_operation_rejected');
+    expect(JSON.stringify(operation)).not.toContain(prompt);
+
+    const role = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'CANARYROLE',
+      methodName: 'tools/call',
+      jsonRpcErrorCode: -32602,
+    } as never);
+    expect(role.spans).toEqual([]);
+    expect(role.omissions).toContain('mcp_role_rejected');
+    expect(JSON.stringify(role)).not.toContain('CANARYROLE');
+  });
+
   it('does not return the raw input for an unknown signal', () => {
     const canary = 'PROMPT-CANARY-unknown-signal';
     const token = `ghp_${'A'.repeat(36)}`;

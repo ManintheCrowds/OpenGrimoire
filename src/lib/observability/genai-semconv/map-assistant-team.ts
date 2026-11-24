@@ -1,8 +1,11 @@
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
+  GEN_AI_CONTROL_FLOWS,
+  GEN_AI_INFERENCE_OPERATIONS,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
   INVOKE_AGENT_DURATION_BUCKETS,
+  MCP_ROLES,
   MCP_SERVER_CALLER_FAULT_CODES,
 } from './schema';
 
@@ -234,7 +237,19 @@ function metric(fields: Omit<MappedMetric, 'schemaVersion'>): MappedMetric {
   return { schemaVersion: GEN_AI_SEMCONV_SCHEMA_VERSION, ...fields };
 }
 
-function invokeOperation(controlFlow: 'agent' | 'workflow'): 'invoke_agent' | 'invoke_workflow' {
+function isControlFlow(value: unknown): value is (typeof GEN_AI_CONTROL_FLOWS)[number] {
+  return typeof value === 'string' && (GEN_AI_CONTROL_FLOWS as readonly string[]).includes(value);
+}
+
+function isInferenceOperation(value: unknown): value is (typeof GEN_AI_INFERENCE_OPERATIONS)[number] {
+  return typeof value === 'string' && (GEN_AI_INFERENCE_OPERATIONS as readonly string[]).includes(value);
+}
+
+function isMcpRole(value: unknown): value is (typeof MCP_ROLES)[number] {
+  return typeof value === 'string' && (MCP_ROLES as readonly string[]).includes(value);
+}
+
+function invokeOperation(controlFlow: (typeof GEN_AI_CONTROL_FLOWS)[number]): 'invoke_agent' | 'invoke_workflow' {
   switch (controlFlow) {
     case 'agent':
       return 'invoke_agent';
@@ -248,6 +263,9 @@ function invokeOperation(controlFlow: 'agent' | 'workflow'): 'invoke_agent' | 'i
 }
 
 function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'invoke_agent' }>): AssistantTeamMapping {
+  if (!isControlFlow(observation.controlFlow)) {
+    return emptyMapping(collectDroppedFields(observation), ['control_flow_rejected']);
+  }
   const operation = invokeOperation(observation.controlFlow);
   const agentName = cleanAgentOrTool(observation.agentName);
   const conversationId = cleanToken(observation.conversationId);
@@ -364,6 +382,9 @@ function tokenCounter(
 
 function mapInference(observation: Extract<AssistantTeamObservation, { signal: 'inference' }>): AssistantTeamMapping {
   const droppedFields = collectDroppedFields(observation);
+  if (!isInferenceOperation(observation.operationName)) {
+    return emptyMapping(droppedFields, ['inference_operation_rejected']);
+  }
   const providerName = cleanProvider(observation.providerName);
   if (!providerName) {
     return emptyMapping(droppedFields, ['inference_provider_required']);
@@ -489,6 +510,9 @@ function mcpFailure(role: 'client' | 'server', code: number | undefined, httpSta
 }
 
 function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }>): AssistantTeamMapping {
+  if (!isMcpRole(observation.role)) {
+    return emptyMapping(collectDroppedFields(observation), ['mcp_role_rejected']);
+  }
   const methodName = cleanMethodName(observation.methodName);
   const droppedFields = collectDroppedFields(observation);
   if (!methodName) return emptyMapping(droppedFields, ['mcp_method_required']);

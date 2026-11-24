@@ -547,7 +547,17 @@ function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }
   };
 }
 
+function isKnownSignal(value: unknown): value is AssistantTeamObservation['signal'] {
+  return value === 'invoke_agent' || value === 'execute_tool' || value === 'inference' || value === 'mcp';
+}
+
 export function mapAssistantTeamObservation(observation: AssistantTeamObservation): AssistantTeamMapping {
+  if (!observation || typeof observation !== 'object' || !isKnownSignal(observation.signal)) {
+    const dropped =
+      observation && typeof observation === 'object' ? collectDroppedFields(observation) : [];
+    return emptyMapping(dropped, ['unknown_signal']);
+  }
+
   switch (observation.signal) {
     case 'invoke_agent':
       return mapInvoke(observation);
@@ -559,7 +569,7 @@ export function mapAssistantTeamObservation(observation: AssistantTeamObservatio
       return mapMcp(observation);
     default: {
       const unreachable: never = observation;
-      return unreachable;
+      return emptyMapping(collectDroppedFields(unreachable), ['unknown_signal']);
     }
   }
 }

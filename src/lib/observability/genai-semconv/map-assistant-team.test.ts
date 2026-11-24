@@ -463,6 +463,25 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('does not return the raw input for an unknown signal', () => {
+    const canary = 'PROMPT-CANARY-unknown-signal';
+    const token = `ghp_${'A'.repeat(36)}`;
+    const mapping = mapAssistantTeamObservation({
+      signal: 'invoke_agent ',
+      inputMessages: [{ content: canary }],
+      apiToken: token,
+    } as never);
+
+    expect(mapping.schemaVersion).toBe(GEN_AI_SEMCONV_SCHEMA_VERSION);
+    expect(mapping.contentCapture).toBe('NO_CONTENT');
+    expect(mapping.spans).toEqual([]);
+    expect(mapping.metrics).toEqual([]);
+    expect(mapping.omissions).toContain('unknown_signal');
+    expect(mapping.droppedFields).toEqual(expect.arrayContaining(['inputMessages', 'apiToken']));
+    expect(JSON.stringify(mapping)).not.toContain(canary);
+    expect(JSON.stringify(mapping)).not.toContain(token);
+  });
+
   it('stays offline: the mapping module does not export or dial a network endpoint', () => {
     const source = fs.readFileSync(path.join(__dirname, 'map-assistant-team.ts'), 'utf8');
     const schema = fs.readFileSync(path.join(__dirname, 'schema.ts'), 'utf8');

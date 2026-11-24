@@ -152,7 +152,7 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
   return dropped;
 }
 
-const NAME_CHARSET = /^[A-Za-z0-9_.:-]{1,64}$/;
+const NAME_CHARSET = /^[A-Za-z0-9_.-]{1,64}$/;
 const SECRET_PREFIX = /^(?:ghp_|gho_|github_pat_|sk-|AKIA|ASIA|eyJ|xox[abp]-|Bearer)/;
 const BARE_NAMES = new Set<string>(ASSISTANT_TEAM_BARE_NAMES);
 const PROVIDER_NAMES = new Set<string>(GEN_AI_PROVIDER_NAMES);
@@ -177,7 +177,7 @@ function isHostPort(value: string): boolean {
   const port = value.slice(idx + 1);
   if (!/^\d{1,5}$/.test(port)) return false;
   const host = value.slice(0, idx);
-  return isIpv4(host) || isHostname(host) || isIpv6(host) || /^[A-Za-z0-9_-]+$/.test(host);
+  return host.length > 0 && !host.includes(':');
 }
 
 function isUnsafeNetworkIdentity(value: string): boolean {

@@ -739,6 +739,105 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain(token);
   });
 
+  it('keeps synthetic canaries out of every emitted string field', () => {
+    const canaries = [
+      `ghp_${'A'.repeat(36)}`,
+      `sk-${'B'.repeat(20)}`,
+      `sk-live-${'C'.repeat(16)}`,
+      `AKIA${'EXAMPLE0000TEST'}`,
+      `eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.${'c'.repeat(20)}`,
+      '192.0.2.44',
+      '192.0.2.44:8080',
+      '10.0.0.5:22',
+      'fe80::1',
+      '2001:db8::17',
+      'canary.example.com',
+      'canary.example.',
+      'canary_host.corp',
+      'canary.corp:443',
+      'model.canary.internal',
+      'labhost07',
+      'buildbox01',
+      'localhost',
+      '/home/devuser/clients/northwind',
+      'resources/read/canary.internal',
+      'tools/call?token=FAKECANARY',
+      'C:\\Users\\devuser',
+      'https://llm.internal/secret',
+      'devuser@sample.test',
+      'Northwind Practice',
+      'Scout\nNorthwind Practice',
+      'ft:gpt-4o:canaryclient::abc',
+      'ECONNREFUSED_192.0.2.9:5432',
+      'X'.repeat(10000),
+    ];
+
+    const stringsIn = (value: unknown, found: string[] = []): string[] => {
+      if (typeof value === 'string') found.push(value);
+      else if (Array.isArray(value)) for (const item of value) stringsIn(item, found);
+      else if (value && typeof value === 'object') for (const item of Object.values(value)) stringsIn(item, found);
+      return found;
+    };
+
+    for (const canary of canaries) {
+      const mappings = [
+        mapAssistantTeamObservation({
+          signal: 'invoke_agent',
+          controlFlow: 'agent',
+          agentName: canary,
+          conversationId: canary,
+          errorType: canary,
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'invoke_agent',
+          controlFlow: canary,
+          agentName: 'Scout',
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'execute_tool',
+          toolName: canary,
+          toolCallId: canary,
+          agentName: canary,
+          errorType: canary,
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'inference',
+          operationName: 'chat',
+          providerName: canary,
+          requestModel: canary,
+          responseModel: canary,
+          errorType: canary,
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'inference',
+          operationName: canary,
+          providerName: 'openai',
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'mcp',
+          role: 'client',
+          methodName: canary,
+          toolName: canary,
+          promptName: canary,
+          requestId: canary,
+          errorType: canary,
+        } as never),
+        mapAssistantTeamObservation({
+          signal: 'mcp',
+          role: canary,
+          methodName: 'initialize',
+        } as never),
+      ];
+      for (const mapping of mappings) {
+        expect(stringsIn(mapping).some((text) => text.includes(canary))).toBe(false);
+      }
+    }
+
+    for (const toolName of [42, null, { trim: () => 'LEAK' }, ['a']]) {
+      expect(() => mapAssistantTeamObservation({ signal: 'execute_tool', toolName } as never)).not.toThrow();
+    }
+  });
+
   it('stays offline: the mapping module does not export or dial a network endpoint', () => {
     const source = fs.readFileSync(path.join(__dirname, 'map-assistant-team.ts'), 'utf8');
     const schema = fs.readFileSync(path.join(__dirname, 'schema.ts'), 'utf8');

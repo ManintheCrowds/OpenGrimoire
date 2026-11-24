@@ -568,6 +568,29 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(mapping.spans[0]?.name).toBe('tools/call');
   });
 
+  it('records out-of-range numeric codes as _OTHER', () => {
+    const rpc = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      jsonRpcErrorCode: 123456789012,
+    } as never);
+    expect(rpc.spans[0]?.statusCode).toBe('ERROR');
+    expect(rpc.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(rpc.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+    expect(JSON.stringify(rpc)).not.toContain('123456789012');
+
+    const http = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      httpStatus: 600,
+    });
+    expect(http.spans[0]?.statusCode).toBe('ERROR');
+    expect(http.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(JSON.stringify(http)).not.toContain('600');
+  });
+
   it('coerces pure integer strings into mcp error codes', () => {
     const client = mapAssistantTeamObservation({
       signal: 'mcp',

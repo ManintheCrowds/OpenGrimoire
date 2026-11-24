@@ -557,13 +557,24 @@ function pureInteger(value: unknown): number | undefined {
   return undefined;
 }
 
-function jsonRpcCode(value: unknown): number | undefined {
-  return pureInteger(value);
+function jsonRpcCode(value: unknown): number | 'rejected' | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = pureInteger(value);
+  if (parsed !== undefined) return parsed;
+  if (typeof value === 'number' && Number.isInteger(value)) return 'rejected';
+  if (typeof value === 'string' && /^-?\d+$/.test(value)) return 'rejected';
+  return undefined;
 }
 
-function httpStatusCode(value: unknown): number | undefined {
+function httpStatusCode(value: unknown): number | 'rejected' | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
   const parsed = pureInteger(value);
-  if (parsed === undefined || parsed < 400) return undefined;
+  if (parsed === undefined) {
+    if (typeof value === 'number' && Number.isInteger(value)) return 'rejected';
+    if (typeof value === 'string' && /^-?\d+$/.test(value)) return 'rejected';
+    return undefined;
+  }
+  if (parsed < 400 || parsed > 599) return 'rejected';
   return parsed;
 }
 
@@ -575,11 +586,19 @@ function requestId(value: unknown): string | undefined {
   return cleanToken(value);
 }
 
-function mcpFailure(role: 'client' | 'server', code: number | undefined, httpStatus: number | undefined, errorType: string | undefined): {
+function mcpFailure(
+  role: 'client' | 'server',
+  code: number | 'rejected' | undefined,
+  httpStatus: number | 'rejected' | undefined,
+  errorType: string | undefined
+): {
   statusCode: 'UNSET' | 'ERROR';
   errorType?: string;
   rpcStatusCode?: string;
 } {
+  if (code === 'rejected' || httpStatus === 'rejected') {
+    return { statusCode: 'ERROR', errorType: '_OTHER' };
+  }
   if (code !== undefined) {
     const callerFault = SERVER_CALLER_FAULTS.has(code);
     const failed = role === 'client' || !callerFault;

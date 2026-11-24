@@ -253,6 +253,56 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('replaces unlisted model ids with _OTHER', () => {
+    const listed = ['gpt-4o-mini', 'claude-sonnet-4-5', 'Qwen2.5-7B-Instruct', 'Mistral-Large-2', 'nomic-embed-text:latest'];
+    for (const requestModel of listed) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'inference',
+        operationName: 'chat',
+        providerName: 'openai',
+        requestModel,
+        inputTokens: 2,
+        outputTokens: 1,
+      });
+      expect(mapping.spans[0]?.attributes['gen_ai.request.model']).toBe(requestModel);
+      expect(mapping.spans[0]?.name).toBe(`chat ${requestModel}`);
+      expect(mapping.metrics[0]?.attributes['gen_ai.request.model']).toBe(requestModel);
+    }
+
+    const blocked = [
+      'sk-proj-syntheticunit01',
+      'TWluaUJhc2U2NFNhbXBsZTE',
+      '1020304050607080',
+      'CACHEBOX02',
+      'PineconeDesk7',
+      'gpt-4-extra9',
+    ];
+    for (const requestModel of blocked) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'inference',
+        operationName: 'chat',
+        providerName: 'openai',
+        requestModel,
+        responseModel: requestModel,
+        inputTokens: 2,
+        outputTokens: 1,
+        durationSeconds: 0.2,
+      });
+      expect(mapping.spans[0]?.name).toBe('chat _OTHER');
+      expect(mapping.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+      expect(mapping.spans[0]?.attributes['gen_ai.response.model']).toBe('_OTHER');
+      for (const metric of mapping.metrics) {
+        if ('gen_ai.request.model' in metric.attributes) {
+          expect(metric.attributes['gen_ai.request.model']).toBe('_OTHER');
+        }
+        if ('gen_ai.response.model' in metric.attributes) {
+          expect(metric.attributes['gen_ai.response.model']).toBe('_OTHER');
+        }
+      }
+      expect(JSON.stringify(mapping)).not.toContain(requestModel);
+    }
+  });
+
   it('allowlists agent, tool, and model names', () => {
     const models = mapAssistantTeamObservation({
       signal: 'inference',
@@ -952,8 +1002,8 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       providerName: 'openai',
       requestModel: 'model:extra:name',
     });
-    expect(model.spans[0]?.attributes).not.toHaveProperty('gen_ai.request.model');
-    expect(model.spans[0]?.name).toBe('chat');
+    expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+    expect(model.spans[0]?.name).toBe('chat _OTHER');
     expect(JSON.stringify(model)).not.toContain('model:extra:name');
 
     const missing = mapAssistantTeamObservation({

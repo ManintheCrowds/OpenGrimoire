@@ -271,22 +271,12 @@ function cleanMethodName(value: unknown): string | undefined {
   return trimmed;
 }
 
-function safeModelShape(value: string): boolean {
-  if (value.length < 2 || value.length > 64) return false;
-  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(value)) return false;
-  const colons = value.split(':').length - 1;
-  if (value.includes('::') || colons > 1) return false;
-  if (!/\d/.test(value)) return false;
-  if (!/[A-Z]/.test(value) && !/[.:]/.test(value)) return false;
-  return !isUnsafeNetworkIdentity(value);
-}
-
 function cleanModel(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || looksSecret(trimmed)) return undefined;
-  if (MODEL_NAMES.has(trimmed) || safeModelShape(trimmed)) return trimmed;
-  return undefined;
+  if (trimmed.length === 0) return undefined;
+  if (MODEL_NAMES.has(trimmed)) return trimmed;
+  return '_OTHER';
 }
 
 function cleanProvider(value: unknown): string | undefined {

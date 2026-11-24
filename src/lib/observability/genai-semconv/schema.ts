@@ -69,16 +69,19 @@ export const ASSISTANT_TEAM_AGENT_NAMES = ['Scout', 'recipe_runner'] as const;
 export const ASSISTANT_TEAM_TOOL_NAMES = ['read_file'] as const;
 
 /**
- * Exact model ids, plus the safe-shape rule in the mapper (a digit, and an
- * uppercase letter or a `.` or `:`). Host-style labels are not in this list.
+ * Exact model ids this mapping will record. Anything else is `_OTHER`.
+ * Includes ids named in local recipes and the public ids the tests pin.
  */
-export const GEN_AI_MODEL_NAMES = [
+export const GEN_AI_MODEL_NAMES = Object.freeze([
   'gpt-4',
+  'gpt-4o-mini',
+  'claude-sonnet-4-5',
   'llama3.2:3b',
+  'nomic-embed-text:latest',
   'mistral-small',
   'Qwen2.5-7B-Instruct',
   'Mistral-Large-2',
-] as const;
+] as const);
 
 /** `mcp.method.name` members from semantic-conventions-genai v0.1.0. */
 export const MCP_METHOD_NAMES = [

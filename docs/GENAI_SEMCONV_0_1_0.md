@@ -73,8 +73,10 @@ Other fields:
 | --- | --- |
 | `gen_ai.provider.name` | `GEN_AI_PROVIDER_NAMES`, or `_OTHER` when the string is non-empty and not in that list |
 | `error.type` | `GEN_AI_ERROR_TYPES`, or a pure integer of at most 5 digits. Every other string is `_OTHER` |
-| agent, tool, and prompt names | `^[A-Za-z0-9_.-]{1,64}$`, rejected when the value is an IPv4 address, an IPv6 address, a dotted hostname, `host:port`, a `DESKTOP-` hostname, a capitalised name joined by `-` or `_`, a secret prefix (`ghp_`, `gho_`, `ghs_`, `ghu_`, `github_pat_`, `sk-`, `sk_live_`, `rk_live_`, `glpat-`, `npm_`, `hf_`, `AIza`, `xoxe-`/`xoxs-`/`xoxa-`/`xoxb-`/`xoxp-`, `bearer-`, `GITHUB_PAT_`, `AKIA`, `ASIA`, `eyJ`), or contains whitespace, `/`, `\`, `@`, or `://`. A name with no `_`, `-`, or `.` is kept only when it is in `ASSISTANT_TEAM_BARE_NAMES` (`Scout`). These are pattern checks. Callers must not pass untrusted text in name or id fields. |
-| model names | `^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$` with at most one `:`, the same network and secret rejection, and at least one `.`, `:`, `_`, or `-` |
+| agent names | Exact `ASSISTANT_TEAM_AGENT_NAMES` (`Scout`, `recipe_runner`). Anything else is omitted. |
+| tool and prompt names | Exact `ASSISTANT_TEAM_TOOL_NAMES` (`read_file`). Anything else is omitted. |
+| model names | Exact `GEN_AI_MODEL_NAMES`, or a safe shape: 2–64 characters, charset `[A-Za-z0-9._:-]`, at most one `:`, a digit, and either an uppercase letter or a `.` or `:`. Host labels, lowercase joined names, and secret prefixes are omitted. `Qwen2.5-7B-Instruct` and `Mistral-Large-2` match the safe shape. |
+| ids and other free strings | Still pattern-checked. The token-prefix denylist is defense in depth and includes `ghr_`, `sk_test_`, `rk_test_`, `pypi-`, `xai-`, `gsk_`, `pplx-`, `ya29.`, `lin_api_`, `xapp-`, `glsa_`, `shpat_`, `r8_`, `xoxr-`, and `dop_v1_` in addition to the earlier prefixes. Lowercase joined names and hyphenated host labels such as short `word-digit` names are omitted, except ids that start with `req-`, `call_`, or `conv_`. |
 | `gen_ai.conversation.id`, `gen_ai.tool.call.id`, `jsonrpc.request.id` | `^[A-Za-z0-9_-]{1,64}$` and the value must contain a digit and `_` or `-`. A safe integer request id is stringified. |
 | JSON-RPC and HTTP codes | A number, or a string that is only an optional minus and digits. Mixed text is ignored |
 

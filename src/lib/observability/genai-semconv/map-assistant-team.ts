@@ -1,7 +1,9 @@
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_CONTROL_FLOWS,
-  ASSISTANT_TEAM_BARE_NAMES,
+  ASSISTANT_TEAM_AGENT_NAMES,
+  ASSISTANT_TEAM_TOOL_NAMES,
+  GEN_AI_MODEL_NAMES,
   GEN_AI_ERROR_TYPES,
   GEN_AI_INFERENCE_OPERATIONS,
   GEN_AI_PROVIDER_NAMES,
@@ -152,10 +154,11 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
   return dropped;
 }
 
-const NAME_CHARSET = /^[A-Za-z0-9_.-]{1,64}$/;
 const SECRET_PREFIX =
-  /^(?:ghp_|gho_|ghs_|ghu_|github_pat_|sk_live_|rk_live_|sk-|glpat-|npm_|hf_|aiza|akia|asia|eyj|xox[abpse]-|bearer-)/i;
-const BARE_NAMES = new Set<string>(ASSISTANT_TEAM_BARE_NAMES);
+  /^(?:github_pat_|sk_live_|sk_test_|rk_live_|rk_test_|lin_api_|dop_v1_|glpat-|pypi-|xapp-|glsa_|shpat-|ya29\.|ghp_|gho_|ghs_|ghu_|ghr_|gsk_|npm_|pplx-|xai-|xox[abpser]-|hf_|aiza|akia|asia|eyj|r8_|bearer-)/i;
+const AGENT_NAMES = new Set<string>(ASSISTANT_TEAM_AGENT_NAMES);
+const TOOL_NAMES = new Set<string>(ASSISTANT_TEAM_TOOL_NAMES);
+const MODEL_NAMES = new Set<string>(GEN_AI_MODEL_NAMES);
 const PROVIDER_NAMES = new Set<string>(GEN_AI_PROVIDER_NAMES);
 const MCP_METHODS = new Set<string>(MCP_METHOD_NAMES);
 
@@ -197,9 +200,15 @@ function isUnsafeNetworkIdentity(value: string): boolean {
     isHostPort(value) ||
     isDesktopHost(value) ||
     isJoinedClientName(value) ||
+    isLowerJoinedOrHostLabel(value) ||
     value === 'localhost' ||
     value.endsWith('.')
   );
+}
+
+function isLowerJoinedOrHostLabel(value: string): boolean {
+  if (/^(?:req|call|conv)[_-]/i.test(value)) return false;
+  return /^[a-z0-9]+(?:[_-][a-z0-9]+){1,4}$/.test(value);
 }
 
 function looksSecret(value: string): boolean {
@@ -218,13 +227,19 @@ function ownData(source: object, key: string): unknown {
   return (source as Record<string, unknown>)[key];
 }
 
-function cleanAgentOrTool(value: unknown): string | undefined {
+function listedName(value: unknown, allow: Set<string>): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (!NAME_CHARSET.test(trimmed) || looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) return undefined;
-  const bare = !/[_.:-]/.test(trimmed);
-  if (bare && !BARE_NAMES.has(trimmed)) return undefined;
+  if (trimmed.length === 0 || looksSecret(trimmed) || !allow.has(trimmed)) return undefined;
   return trimmed;
+}
+
+function cleanAgentName(value: unknown): string | undefined {
+  return listedName(value, AGENT_NAMES);
+}
+
+function cleanToolName(value: unknown): string | undefined {
+  return listedName(value, TOOL_NAMES);
 }
 
 function cleanToken(value: unknown): string | undefined {
@@ -255,15 +270,22 @@ function cleanMethodName(value: unknown): string | undefined {
   return trimmed;
 }
 
+function safeModelShape(value: string): boolean {
+  if (value.length < 2 || value.length > 64) return false;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(value)) return false;
+  const colons = value.split(':').length - 1;
+  if (value.includes('::') || colons > 1) return false;
+  if (!/\d/.test(value)) return false;
+  if (!/[A-Z]/.test(value) && !/[.:]/.test(value)) return false;
+  return !isUnsafeNetworkIdentity(value);
+}
+
 function cleanModel(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(trimmed)) return undefined;
-  if (looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) return undefined;
-  const colons = trimmed.split(':').length - 1;
-  if (trimmed.includes('::') || colons > 1) return undefined;
-  if (!/[-._:]/.test(trimmed)) return undefined;
-  return trimmed;
+  if (trimmed.length === 0 || looksSecret(trimmed)) return undefined;
+  if (MODEL_NAMES.has(trimmed) || safeModelShape(trimmed)) return trimmed;
+  return undefined;
 }
 
 function cleanProvider(value: unknown): string | undefined {
@@ -336,7 +358,7 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
     return emptyMapping(collectDroppedFields(observation), ['control_flow_rejected']);
   }
   const operation = invokeOperation(controlFlow);
-  const agentName = cleanAgentOrTool(ownData(observation, 'agentName'));
+  const agentName = cleanAgentName(ownData(observation, 'agentName'));
   const conversationId = cleanToken(ownData(observation, 'conversationId'));
   const errorType = cleanErrorType(ownData(observation, 'errorType'));
   const inputTokens = controlFlow === 'agent' ? knownTokenCount(ownData(observation, 'inputTokens')) : undefined;
@@ -384,12 +406,12 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
 }
 
 function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execute_tool' }>): AssistantTeamMapping {
-  const toolName = cleanAgentOrTool(ownData(observation, 'toolName'));
+  const toolName = cleanToolName(ownData(observation, 'toolName'));
   const droppedFields = collectDroppedFields(observation);
   if (!toolName) {
     return emptyMapping(droppedFields, ['tool_name_required']);
   }
-  const agentName = cleanAgentOrTool(ownData(observation, 'agentName'));
+  const agentName = cleanAgentName(ownData(observation, 'agentName'));
   const toolCallId = cleanToken(ownData(observation, 'toolCallId'));
   const errorType = cleanErrorType(ownData(observation, 'errorType'));
   const spanAttributes = attributes([
@@ -631,8 +653,8 @@ function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }
   const droppedFields = collectDroppedFields(observation);
   if (!methodName) return emptyMapping(droppedFields, ['mcp_method_required']);
 
-  const toolName = cleanAgentOrTool(ownData(observation, 'toolName'));
-  const promptName = toolName ? undefined : cleanAgentOrTool(ownData(observation, 'promptName'));
+  const toolName = cleanToolName(ownData(observation, 'toolName'));
+  const promptName = toolName ? undefined : cleanToolName(ownData(observation, 'promptName'));
   const target = toolName ?? promptName;
   const code = jsonRpcCode(ownData(observation, 'jsonRpcErrorCode'));
   const failure = mcpFailure(role, code, httpStatusCode(ownData(observation, 'httpStatus')), cleanErrorType(ownData(observation, 'errorType')));

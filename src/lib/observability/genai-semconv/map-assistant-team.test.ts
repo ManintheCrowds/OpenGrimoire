@@ -224,6 +224,38 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(longCode.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
   });
 
+  it('allowlists agent, tool, and model names', () => {
+    const models = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: 'Qwen2.5-7B-Instruct',
+      responseModel: 'Mistral-Large-2',
+    });
+    expect(models.spans[0]?.name).toBe('chat Qwen2.5-7B-Instruct');
+    expect(models.spans[0]?.attributes['gen_ai.request.model']).toBe('Qwen2.5-7B-Instruct');
+    expect(models.spans[0]?.attributes['gen_ai.response.model']).toBe('Mistral-Large-2');
+
+    const blocked = ['shelf-04', 'notebook-q', 'maple-grove', 'ghr_sample1', 'sk_test_sample1', 'ya29.sample1'];
+    for (const sample of blocked) {
+      const agent = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: sample,
+        conversationId: sample,
+      });
+      const inference = mapAssistantTeamObservation({
+        signal: 'inference',
+        operationName: 'chat',
+        providerName: 'openai',
+        requestModel: sample,
+      });
+      expect(JSON.stringify(agent)).not.toContain(sample);
+      expect(JSON.stringify(inference)).not.toContain(sample);
+      expect(agent.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    }
+  });
+
   it('drops ipv4 addresses and hostnames used as agent or tool names', () => {
     const ipv4 = mapAssistantTeamObservation({
       signal: 'invoke_agent',
@@ -993,7 +1025,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(note).toContain('https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev');
     expect(note).toContain('GEN_AI_SEMCONV_SCHEMA_VERSION');
     expect(note).toContain('`_OTHER`');
-    expect(note).toContain('ASSISTANT_TEAM_BARE_NAMES');
+    expect(note).toContain('ASSISTANT_TEAM_AGENT_NAMES');
     expect(note).not.toContain('Secrets, API tokens, client names, IP addresses, and hostnames.');
     expect(note).not.toContain('Agent or tool names that are an IP address or a hostname.');
   });

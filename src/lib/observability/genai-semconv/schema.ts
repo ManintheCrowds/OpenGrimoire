@@ -60,10 +60,25 @@ export const GEN_AI_PROVIDER_NAMES = [
 ] as const;
 
 /**
- * Bare agent or tool names with no `_`, `-`, `.`, or `:`.
- * Every other bare token is dropped so single-label hosts cannot pass as names.
+ * Exact agent names this mapping will record. Any other agent name is omitted.
+ * `recipe_runner` is the local workflow name used by the cockpit recipes.
  */
-export const ASSISTANT_TEAM_BARE_NAMES = ['Scout'] as const;
+export const ASSISTANT_TEAM_AGENT_NAMES = ['Scout', 'recipe_runner'] as const;
+
+/** Exact tool and prompt names this mapping will record. Any other name is omitted. */
+export const ASSISTANT_TEAM_TOOL_NAMES = ['read_file'] as const;
+
+/**
+ * Exact model ids, plus the safe-shape rule in the mapper (a digit, and an
+ * uppercase letter or a `.` or `:`). Host-style labels are not in this list.
+ */
+export const GEN_AI_MODEL_NAMES = [
+  'gpt-4',
+  'llama3.2:3b',
+  'mistral-small',
+  'Qwen2.5-7B-Instruct',
+  'Mistral-Large-2',
+] as const;
 
 /** `mcp.method.name` members from semantic-conventions-genai v0.1.0. */
 export const MCP_METHOD_NAMES = [

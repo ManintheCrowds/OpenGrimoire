@@ -740,6 +740,28 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('redacts a string jsonrpc request id', () => {
+    const bad = 'session-token';
+    const dropped = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      toolName: 'read_file',
+      requestId: bad,
+    });
+    expect(dropped.spans[0]?.name).toBe('tools/call read_file');
+    expect(dropped.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+    expect(JSON.stringify(dropped)).not.toContain(bad);
+
+    const kept = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      requestId: 'req-7',
+    });
+    expect(kept.spans[0]?.attributes['jsonrpc.request.id']).toBe('req-7');
+  });
+
   it('does not map an inherited signal', () => {
     const inherited = Object.create({ signal: 'execute_tool' }) as { toolName: string };
     inherited.toolName = 'read_file';

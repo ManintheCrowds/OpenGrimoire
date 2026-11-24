@@ -244,6 +244,131 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('locks remaining secret, name, model, and status survivors', () => {
+    const prefixes = [
+      'ghs_',
+      'ghu_',
+      'sk_live_',
+      'rk_live_',
+      'glpat-',
+      'npm_',
+      'hf_',
+      'xoxe-',
+      'xoxs-',
+      'sk_test_',
+      'xoxr-',
+      'pypi-',
+      'ghr_',
+      'dop_v1_',
+    ];
+    for (const prefix of prefixes) {
+      const sample = `${prefix}sample1`;
+      const conversation = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      const tool = mapAssistantTeamObservation({
+        signal: 'execute_tool',
+        toolName: 'read_file',
+        toolCallId: sample,
+      });
+      const request = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        requestId: sample,
+      });
+      for (const mapping of [conversation, tool, request]) {
+        expect(mapping.omissions).toContain('secret_id_rejected');
+        expect(JSON.stringify(mapping)).not.toContain(sample);
+      }
+      const model = mapAssistantTeamObservation({
+        signal: 'inference',
+        operationName: 'chat',
+        providerName: 'openai',
+        requestModel: sample,
+      });
+      expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+      expect(JSON.stringify(model)).not.toContain(sample);
+    }
+
+    for (const agentName of ['scout', 'RECIPE_RUNNER', 'Scout_extra']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName,
+      });
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+      expect(JSON.stringify(mapping)).not.toContain(agentName);
+    }
+    for (const toolName of ['READ_FILE', 'read_file2', 'Scout']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'execute_tool',
+        toolName,
+      });
+      expect(mapping.spans).toEqual([]);
+      expect(mapping.omissions).toContain('tool_name_required');
+      expect(JSON.stringify(mapping)).not.toContain(toolName);
+    }
+
+    for (const requestModel of ['Node:Box:9', 'node01.', 'gpt-4-extra9']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'inference',
+        operationName: 'chat',
+        providerName: 'openai',
+        requestModel,
+        responseModel: requestModel,
+      });
+      expect(mapping.spans[0]?.name).toBe('chat _OTHER');
+      expect(mapping.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+      expect(mapping.spans[0]?.attributes['gen_ai.response.model']).toBe('_OTHER');
+      expect(JSON.stringify(mapping)).not.toContain(requestModel);
+    }
+
+    for (const httpStatus of [100, 199] as const) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        httpStatus,
+      } as never);
+      expect(mapping.spans[0]?.statusCode).toBe('UNSET');
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('error.type');
+    }
+
+    for (const code of ['2e2', '1e5', '1000', '99'] as const) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        jsonRpcErrorCode: code,
+        httpStatus: code,
+      } as never);
+      expect(mapping.spans[0]?.statusCode).toBe('ERROR');
+      expect(mapping.spans[0]?.attributes['error.type']).toBe('_OTHER');
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+      expect(JSON.stringify(mapping)).not.toContain(code);
+    }
+
+    for (const sample of ['Bearer.x1', 'bearer~x1']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      expect(mapping.omissions).toContain('secret_id_rejected');
+      expect(JSON.stringify(mapping)).not.toContain(sample);
+    }
+
+    expect(() => mapLocalAiActivityEvent(null as never)).not.toThrow();
+    const empty = mapLocalAiActivityEvent(null as never);
+    expect(empty.spans).toEqual([]);
+    expect(empty.omissions).toContain('local_ai_activity_not_gen_ai');
+  });
+
   it('ignores an inherited local activity summary', () => {
     const proto = { summary: 'inherited-summary-unit', detail: 'inherited-detail-unit' };
     const event = Object.create(proto) as { kind: string };

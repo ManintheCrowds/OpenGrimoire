@@ -32,6 +32,62 @@ export const GEN_AI_ERROR_TYPES = [
   '_OTHER',
 ] as const;
 
+/** v0.1.0 `gen_ai.provider.name` members. Anything else is recorded as `_OTHER`. */
+export const GEN_AI_PROVIDER_NAMES = [
+  'anthropic',
+  'aws.bedrock',
+  'azure.ai.inference',
+  'azure.ai.openai',
+  'cohere',
+  'deepseek',
+  'gcp.gemini',
+  'gcp.gen_ai',
+  'gcp.vertex_ai',
+  'groq',
+  'ibm.watsonx.ai',
+  'mistral',
+  'moonshot_ai',
+  'ollama',
+  'openai',
+  'perplexity',
+  'x_ai',
+] as const;
+
+/**
+ * Bare agent or tool names with no `_`, `-`, `.`, or `:`.
+ * Every other bare token is dropped so single-label hosts cannot pass as names.
+ */
+export const ASSISTANT_TEAM_BARE_NAMES = ['Scout'] as const;
+
+/** `mcp.method.name` members from semantic-conventions-genai v0.1.0. */
+export const MCP_METHOD_NAMES = [
+  'notifications/cancelled',
+  'initialize',
+  'notifications/initialized',
+  'notifications/progress',
+  'ping',
+  'resources/list',
+  'resources/templates/list',
+  'resources/read',
+  'notifications/resources/list_changed',
+  'resources/subscribe',
+  'resources/unsubscribe',
+  'notifications/resources/updated',
+  'prompts/list',
+  'prompts/get',
+  'notifications/prompts/list_changed',
+  'tools/list',
+  'tools/call',
+  'notifications/tools/list_changed',
+  'logging/setLevel',
+  'notifications/message',
+  'sampling/createMessage',
+  'completion/complete',
+  'roots/list',
+  'notifications/roots/list_changed',
+  'elicitation/create',
+] as const;
+
 /**
  * Names removed or replaced in v0.1.0. OpenGrimoire has no consumer of these
  * names, so the mapper does not emit them beside the v0.1.0 names.

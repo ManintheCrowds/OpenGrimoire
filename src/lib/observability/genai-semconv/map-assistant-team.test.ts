@@ -90,24 +90,51 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     const mapping = mapAssistantTeamObservation({
       signal: 'invoke_agent',
       controlFlow: 'workflow',
-      agentName: 'Recipe runner',
+      agentName: 'recipe_runner',
       durationSeconds: 3,
     });
 
     expect(mapping.spans[0]).toEqual(
       expect.objectContaining({
-        name: 'invoke_workflow Recipe runner',
+        name: 'invoke_workflow recipe_runner',
         registryType: 'gen_ai.invoke_agent.internal',
         kind: 'INTERNAL',
         attributes: {
           'gen_ai.operation.name': 'invoke_workflow',
-          'gen_ai.agent.name': 'Recipe runner',
+          'gen_ai.agent.name': 'recipe_runner',
         },
       })
     );
     expect(metricNames(mapping)).toEqual(['gen_ai.invoke_agent.duration']);
     expect(mapping.metrics[0]?.attributes['gen_ai.operation.name']).toBe('invoke_workflow');
     expect(attributeKeys(mapping)).not.toContain('gen_ai.workflow.name');
+  });
+
+  it('drops ipv4 addresses and hostnames used as agent or tool names', () => {
+    const ipv4 = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: '192.0.2.44',
+    });
+    expect(ipv4.spans[0]?.name).toBe('invoke_agent');
+    expect(ipv4.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    expect(JSON.stringify(ipv4)).not.toContain('192.0.2.44');
+
+    const host = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'canary.example.com',
+    });
+    expect(host.spans).toEqual([]);
+    expect(host.omissions).toContain('tool_name_required');
+    expect(JSON.stringify(host)).not.toContain('canary.example.com');
+
+    const spaced = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Northwind Practice',
+    });
+    expect(spaced.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    expect(JSON.stringify(spaced)).not.toContain('Northwind Practice');
   });
 
   it('omits the agent name from the span name when none is available', () => {

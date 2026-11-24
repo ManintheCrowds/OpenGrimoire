@@ -1,11 +1,14 @@
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_CONTROL_FLOWS,
+  ASSISTANT_TEAM_BARE_NAMES,
   GEN_AI_ERROR_TYPES,
   GEN_AI_INFERENCE_OPERATIONS,
+  GEN_AI_PROVIDER_NAMES,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
   INVOKE_AGENT_DURATION_BUCKETS,
+  MCP_METHOD_NAMES,
   MCP_ROLES,
   MCP_SERVER_CALLER_FAULT_CODES,
 } from './schema';
@@ -145,16 +148,54 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
   return dropped;
 }
 
+const NAME_CHARSET = /^[A-Za-z0-9_.:-]{1,64}$/;
+const SECRET_PREFIX = /^(?:ghp_|gho_|github_pat_|sk-|AKIA|ASIA|eyJ|xox[abp]-|Bearer)/;
+const BARE_NAMES = new Set<string>(ASSISTANT_TEAM_BARE_NAMES);
+const PROVIDER_NAMES = new Set<string>(GEN_AI_PROVIDER_NAMES);
+const MCP_METHODS = new Set<string>(MCP_METHOD_NAMES);
+
 function isIpv4(value: string): boolean {
   return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value);
 }
 
 function isHostname(value: string): boolean {
-  return /^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/i.test(value);
+  const normalized = value.endsWith('.') ? value.slice(0, -1) : value;
+  return /^(?:[a-z0-9_-]+\.)+[a-z]{2,}$/i.test(normalized);
 }
 
-function hasSecretMarker(value: string): boolean {
-  return value.includes('://') || value.includes('@');
+function isIpv6(value: string): boolean {
+  return value.includes(':') && /^[0-9a-f:]+$/i.test(value);
+}
+
+function isHostPort(value: string): boolean {
+  const idx = value.lastIndexOf(':');
+  if (idx <= 0) return false;
+  const port = value.slice(idx + 1);
+  if (!/^\d{1,5}$/.test(port)) return false;
+  const host = value.slice(0, idx);
+  return isIpv4(host) || isHostname(host) || isIpv6(host) || /^[A-Za-z0-9_-]+$/.test(host);
+}
+
+function isUnsafeNetworkIdentity(value: string): boolean {
+  return (
+    isIpv4(value) ||
+    isIpv6(value) ||
+    isHostname(value) ||
+    isHostPort(value) ||
+    value === 'localhost' ||
+    value.endsWith('.')
+  );
+}
+
+function looksSecret(value: string): boolean {
+  return (
+    SECRET_PREFIX.test(value) ||
+    value.includes('://') ||
+    value.includes('@') ||
+    value.includes('\\') ||
+    value.includes('/') ||
+    /\s/.test(value)
+  );
 }
 
 function ownData(source: object, key: string): unknown {
@@ -165,16 +206,19 @@ function ownData(source: object, key: string): unknown {
 function cleanAgentOrTool(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128) return undefined;
-  if (hasSecretMarker(trimmed) || trimmed.includes('/') || isIpv4(trimmed) || isHostname(trimmed)) return undefined;
+  if (!NAME_CHARSET.test(trimmed) || looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) return undefined;
+  const bare = !/[_.:-]/.test(trimmed);
+  if (bare && !BARE_NAMES.has(trimmed)) return undefined;
   return trimmed;
 }
 
 function cleanToken(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
-  if (hasSecretMarker(trimmed) || isIpv4(trimmed) || isHostname(trimmed)) return undefined;
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(trimmed) || looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) {
+    return undefined;
+  }
+  if (!/[_-]/.test(trimmed) || !/\d/.test(trimmed)) return undefined;
   return trimmed;
 }
 
@@ -192,29 +236,28 @@ function cleanErrorType(value: unknown): string | undefined {
 function cleanMethodName(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
-  if (hasSecretMarker(trimmed) || isIpv4(trimmed)) return undefined;
-  if (!trimmed.includes('/') && isHostname(trimmed)) return undefined;
+  if (!MCP_METHODS.has(trimmed)) return undefined;
   return trimmed;
 }
 
 function cleanModel(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
-  if (trimmed.includes('://') || trimmed.includes('@') || trimmed.includes('/') || isIpv4(trimmed)) return undefined;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(trimmed)) return undefined;
+  if (looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) return undefined;
+  const colons = trimmed.split(':').length - 1;
+  if (trimmed.includes('::') || colons > 1) return undefined;
+  if (!/[-._:]/.test(trimmed)) return undefined;
   return trimmed;
 }
 
 function cleanProvider(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 64 || /\s/.test(trimmed)) return undefined;
+  if (trimmed.length === 0) return undefined;
   const normalized = trimmed === 'mistral_ai' ? 'mistral' : trimmed;
-  if (normalized.includes('://') || normalized.includes('@') || normalized.includes('/') || isIpv4(normalized)) {
-    return undefined;
-  }
-  return normalized;
+  if (PROVIDER_NAMES.has(normalized)) return normalized;
+  return '_OTHER';
 }
 
 function knownTokenCount(value: unknown): number | undefined {
@@ -496,13 +539,11 @@ function httpStatusCode(value: unknown): number | undefined {
 }
 
 function requestId(value: unknown): string | undefined {
-  if (typeof value === 'number' && Number.isSafeInteger(value)) return String(value);
-  if (typeof value !== 'string') return undefined;
-  const trimmed = value.trim();
-  if (trimmed.length === 0 || trimmed.length > 128 || hasSecretMarker(trimmed) || isIpv4(trimmed) || isHostname(trimmed)) {
-    return undefined;
+  if (typeof value === 'number') {
+    if (!Number.isSafeInteger(value)) return undefined;
+    return String(value);
   }
-  return trimmed;
+  return cleanToken(value);
 }
 
 function mcpFailure(role: 'client' | 'server', code: number | undefined, httpStatus: number | undefined, errorType: string | undefined): {

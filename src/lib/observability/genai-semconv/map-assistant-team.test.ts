@@ -161,6 +161,69 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('rejects extra token prefixes, desktop hosts, and joined client names', () => {
+    const prefixes = [
+      'sk_live_',
+      'rk_live_',
+      'glpat-',
+      'npm_',
+      'AIza',
+      'hf_',
+      'xoxe-',
+      'xoxs-',
+      'ghs_',
+      'ghu_',
+      'bearer-',
+      'GITHUB_PAT_',
+    ];
+    const desktop = 'DESKTOP-ZZ9YY8X';
+    const joined = 'Harbor-Office1';
+    const samples = [
+      ...prefixes.map((prefix) =>
+        prefix.endsWith('-') || prefix.endsWith('_') ? `${prefix}sample1` : `${prefix}_sample1`
+      ),
+      desktop,
+      joined,
+    ];
+
+    for (const sample of samples) {
+      const agent = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: sample,
+        conversationId: sample,
+      });
+      const tool = mapAssistantTeamObservation({
+        signal: 'execute_tool',
+        toolName: 'read_file',
+        toolCallId: sample,
+        agentName: 'Scout',
+      });
+      const mcp = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'tools/call',
+        requestId: sample,
+      });
+      for (const mapping of [agent, tool, mcp]) {
+        expect(JSON.stringify(mapping)).not.toContain(sample);
+      }
+      expect(agent.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+      expect(agent.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+      expect(tool.spans[0]?.attributes).not.toHaveProperty('gen_ai.tool.call.id');
+      expect(mcp.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+    }
+
+    const longCode = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      jsonRpcErrorCode: 123456789012,
+    } as never);
+    expect(JSON.stringify(longCode)).not.toContain('123456789012');
+    expect(longCode.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+  });
+
   it('drops ipv4 addresses and hostnames used as agent or tool names', () => {
     const ipv4 = mapAssistantTeamObservation({
       signal: 'invoke_agent',

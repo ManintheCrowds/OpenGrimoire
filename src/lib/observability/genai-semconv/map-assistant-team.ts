@@ -153,7 +153,8 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
 }
 
 const NAME_CHARSET = /^[A-Za-z0-9_.-]{1,64}$/;
-const SECRET_PREFIX = /^(?:ghp_|gho_|github_pat_|sk-|AKIA|ASIA|eyJ|xox[abp]-|Bearer)/;
+const SECRET_PREFIX =
+  /^(?:ghp_|gho_|ghs_|ghu_|github_pat_|sk_live_|rk_live_|sk-|glpat-|npm_|hf_|aiza|akia|asia|eyj|xox[abpse]-|bearer-)/i;
 const BARE_NAMES = new Set<string>(ASSISTANT_TEAM_BARE_NAMES);
 const PROVIDER_NAMES = new Set<string>(GEN_AI_PROVIDER_NAMES);
 const MCP_METHODS = new Set<string>(MCP_METHOD_NAMES);
@@ -180,12 +181,22 @@ function isHostPort(value: string): boolean {
   return host.length > 0 && !host.includes(':');
 }
 
+function isDesktopHost(value: string): boolean {
+  return /^desktop-[a-z0-9]+$/i.test(value);
+}
+
+function isJoinedClientName(value: string): boolean {
+  return /[A-Z][A-Za-z0-9]*[_-][A-Z]/.test(value);
+}
+
 function isUnsafeNetworkIdentity(value: string): boolean {
   return (
     isIpv4(value) ||
     isIpv6(value) ||
     isHostname(value) ||
     isHostPort(value) ||
+    isDesktopHost(value) ||
+    isJoinedClientName(value) ||
     value === 'localhost' ||
     value.endsWith('.')
   );
@@ -534,10 +545,14 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
 }
 
 function pureInteger(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    if (String(Math.abs(value)).length > 5) return undefined;
+    return value;
+  }
   if (typeof value === 'string' && /^-?\d+$/.test(value)) {
     const parsed = Number(value);
-    if (Number.isSafeInteger(parsed)) return parsed;
+    if (!Number.isSafeInteger(parsed) || String(Math.abs(parsed)).length > 5) return undefined;
+    return parsed;
   }
   return undefined;
 }

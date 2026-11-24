@@ -580,8 +580,9 @@ function httpStatusCode(value: unknown): number | 'rejected' | undefined {
     if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return 'rejected';
     return undefined;
   }
-  if (parsed < 400 || parsed > 599) return 'rejected';
-  return parsed;
+  if (parsed >= 100 && parsed <= 399) return undefined;
+  if (parsed >= 400 && parsed <= 599) return parsed;
+  return 'rejected';
 }
 
 function requestId(value: unknown): string | undefined {

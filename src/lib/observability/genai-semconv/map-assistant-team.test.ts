@@ -591,6 +591,31 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mixed)).not.toContain('500 note');
   });
 
+  it('keeps HTTP 100-399 as success, including numeric strings', () => {
+    for (const httpStatus of [200, 204, 302, 399, '200'] as const) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        httpStatus,
+      } as never);
+      expect(mapping.spans[0]?.statusCode).toBe('UNSET');
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('error.type');
+    }
+
+    const callerFault = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'server',
+      methodName: 'tools/call',
+      toolName: 'read_file',
+      jsonRpcErrorCode: -32602,
+      httpStatus: 200,
+    });
+    expect(callerFault.spans[0]?.statusCode).toBe('UNSET');
+    expect(callerFault.spans[0]?.attributes['rpc.status_code']).toBe('-32602');
+    expect(callerFault.spans[0]?.attributes).not.toHaveProperty('error.type');
+  });
+
   it('records out-of-range numeric codes as _OTHER', () => {
     const rpc = mapAssistantTeamObservation({
       signal: 'mcp',

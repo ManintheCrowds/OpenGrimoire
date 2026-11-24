@@ -463,6 +463,33 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('does not throw when identifier fields are not strings', () => {
+    const hostile = {
+      get trim() {
+        throw new Error('getter CANARY-TOKEN');
+      },
+    };
+    const nonStrings = [42, { a: 1 }, null, ['a'], hostile, Symbol('s')];
+    for (const toolName of nonStrings) {
+      expect(() => mapAssistantTeamObservation({ signal: 'execute_tool', toolName } as never)).not.toThrow();
+      const mapping = mapAssistantTeamObservation({ signal: 'execute_tool', toolName } as never);
+      expect(mapping.omissions).toContain('tool_name_required');
+      expect(JSON.stringify(mapping)).not.toContain('CANARY-TOKEN');
+      expect(JSON.stringify(mapping)).not.toContain('LEAK');
+    }
+
+    expect(() =>
+      mapAssistantTeamObservation({ signal: 'inference', operationName: 'chat', providerName: undefined } as never)
+    ).not.toThrow();
+
+    const inherited = Object.create({ errorType: `ghp_${'B'.repeat(20)}` }) as { signal: 'execute_tool'; toolName: string };
+    inherited.signal = 'execute_tool';
+    inherited.toolName = 'read_file';
+    const polluted = mapAssistantTeamObservation(inherited as never);
+    expect(polluted.spans[0]?.attributes).not.toHaveProperty('error.type');
+    expect(JSON.stringify(polluted)).not.toContain('ghp_');
+  });
+
   it('replaces free-text error.type with _OTHER', () => {
     const samples = [
       `ghp_${'A'.repeat(20)}`,

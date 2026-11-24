@@ -157,16 +157,21 @@ function hasSecretMarker(value: string): boolean {
   return value.includes('://') || value.includes('@');
 }
 
-function cleanAgentOrTool(value: string | undefined): string | undefined {
-  if (value === undefined) return undefined;
+function ownData(source: object, key: string): unknown {
+  if (!Object.hasOwn(source, key)) return undefined;
+  return (source as Record<string, unknown>)[key];
+}
+
+function cleanAgentOrTool(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 128) return undefined;
   if (hasSecretMarker(trimmed) || trimmed.includes('/') || isIpv4(trimmed) || isHostname(trimmed)) return undefined;
   return trimmed;
 }
 
-function cleanToken(value: string | undefined): string | undefined {
-  if (value === undefined) return undefined;
+function cleanToken(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
   if (hasSecretMarker(trimmed) || isIpv4(trimmed) || isHostname(trimmed)) return undefined;
@@ -184,8 +189,8 @@ function cleanErrorType(value: unknown): string | undefined {
   return '_OTHER';
 }
 
-function cleanMethodName(value: string | undefined): string | undefined {
-  if (value === undefined) return undefined;
+function cleanMethodName(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
   if (hasSecretMarker(trimmed) || isIpv4(trimmed)) return undefined;
@@ -193,15 +198,16 @@ function cleanMethodName(value: string | undefined): string | undefined {
   return trimmed;
 }
 
-function cleanModel(value: string | undefined): string | undefined {
-  if (value === undefined) return undefined;
+function cleanModel(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 128 || /\s/.test(trimmed)) return undefined;
   if (trimmed.includes('://') || trimmed.includes('@') || trimmed.includes('/') || isIpv4(trimmed)) return undefined;
   return trimmed;
 }
 
-function cleanProvider(value: string): string | undefined {
+function cleanProvider(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 64 || /\s/.test(trimmed)) return undefined;
   const normalized = trimmed === 'mistral_ai' ? 'mistral' : trimmed;
@@ -211,16 +217,16 @@ function cleanProvider(value: string): string | undefined {
   return normalized;
 }
 
-function knownTokenCount(value: number | null | undefined): number | undefined {
+function knownTokenCount(value: unknown): number | undefined {
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) return undefined;
   return value;
 }
 
-function histogramTokenCount(value: number | null | undefined): number {
+function histogramTokenCount(value: unknown): number {
   return knownTokenCount(value) ?? 0;
 }
 
-function durationOrUndefined(value: number | undefined): number | undefined {
+function durationOrUndefined(value: unknown): number | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return undefined;
   return value;
 }
@@ -267,15 +273,16 @@ function invokeOperation(controlFlow: (typeof GEN_AI_CONTROL_FLOWS)[number]): 'i
 }
 
 function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'invoke_agent' }>): AssistantTeamMapping {
-  if (!isControlFlow(observation.controlFlow)) {
+  const controlFlow = ownData(observation, 'controlFlow');
+  if (!isControlFlow(controlFlow)) {
     return emptyMapping(collectDroppedFields(observation), ['control_flow_rejected']);
   }
-  const operation = invokeOperation(observation.controlFlow);
-  const agentName = cleanAgentOrTool(observation.agentName);
-  const conversationId = cleanToken(observation.conversationId);
-  const errorType = cleanErrorType(observation.errorType);
-  const inputTokens = observation.controlFlow === 'agent' ? knownTokenCount(observation.inputTokens) : undefined;
-  const outputTokens = observation.controlFlow === 'agent' ? knownTokenCount(observation.outputTokens) : undefined;
+  const operation = invokeOperation(controlFlow);
+  const agentName = cleanAgentOrTool(ownData(observation, 'agentName'));
+  const conversationId = cleanToken(ownData(observation, 'conversationId'));
+  const errorType = cleanErrorType(ownData(observation, 'errorType'));
+  const inputTokens = controlFlow === 'agent' ? knownTokenCount(ownData(observation, 'inputTokens')) : undefined;
+  const outputTokens = controlFlow === 'agent' ? knownTokenCount(ownData(observation, 'outputTokens')) : undefined;
   const spanAttributes = attributes([
     ['gen_ai.operation.name', operation],
     ['error.type', errorType],
@@ -284,7 +291,7 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
     ['gen_ai.usage.input_tokens', inputTokens],
     ['gen_ai.usage.output_tokens', outputTokens],
   ]);
-  const duration = durationOrUndefined(observation.durationSeconds);
+  const duration = durationOrUndefined(ownData(observation, 'durationSeconds'));
   const metrics: MappedMetric[] = [];
   if (duration !== undefined) {
     metrics.push(
@@ -304,7 +311,7 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
   }
 
   return {
-    ...emptyMapping(collectDroppedFields(observation), agentName === undefined && observation.agentName ? ['agent_name_rejected'] : []),
+    ...emptyMapping(collectDroppedFields(observation), agentName === undefined && ownData(observation, 'agentName') !== undefined ? ['agent_name_rejected'] : []),
     spans: [
       span({
         name: agentName ? `${operation} ${agentName}` : operation,
@@ -319,14 +326,14 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
 }
 
 function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execute_tool' }>): AssistantTeamMapping {
-  const toolName = cleanAgentOrTool(observation.toolName);
+  const toolName = cleanAgentOrTool(ownData(observation, 'toolName'));
   const droppedFields = collectDroppedFields(observation);
   if (!toolName) {
     return emptyMapping(droppedFields, ['tool_name_required']);
   }
-  const agentName = cleanAgentOrTool(observation.agentName);
-  const toolCallId = cleanToken(observation.toolCallId);
-  const errorType = cleanErrorType(observation.errorType);
+  const agentName = cleanAgentOrTool(ownData(observation, 'agentName'));
+  const toolCallId = cleanToken(ownData(observation, 'toolCallId'));
+  const errorType = cleanErrorType(ownData(observation, 'errorType'));
   const spanAttributes = attributes([
     ['gen_ai.operation.name', 'execute_tool'],
     ['gen_ai.tool.name', toolName],
@@ -334,7 +341,7 @@ function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execu
     ['gen_ai.agent.name', agentName],
     ['error.type', errorType],
   ]);
-  const duration = durationOrUndefined(observation.durationSeconds);
+  const duration = durationOrUndefined(ownData(observation, 'durationSeconds'));
   const metrics: MappedMetric[] = [];
   if (duration !== undefined) {
     metrics.push(
@@ -386,24 +393,25 @@ function tokenCounter(
 
 function mapInference(observation: Extract<AssistantTeamObservation, { signal: 'inference' }>): AssistantTeamMapping {
   const droppedFields = collectDroppedFields(observation);
-  if (!isInferenceOperation(observation.operationName)) {
+  const operationName = ownData(observation, 'operationName');
+  if (!isInferenceOperation(operationName)) {
     return emptyMapping(droppedFields, ['inference_operation_rejected']);
   }
-  const providerName = cleanProvider(observation.providerName);
+  const providerName = cleanProvider(ownData(observation, 'providerName'));
   if (!providerName) {
     return emptyMapping(droppedFields, ['inference_provider_required']);
   }
 
-  const requestModel = cleanModel(observation.requestModel);
-  const responseModel = cleanModel(observation.responseModel);
-  const errorType = cleanErrorType(observation.errorType);
-  const inputTokens = knownTokenCount(observation.inputTokens);
-  const outputTokens = knownTokenCount(observation.outputTokens);
-  const cacheRead = knownTokenCount(observation.cacheReadInputTokens);
-  const cacheWrite = knownTokenCount(observation.cacheWriteInputTokens);
-  const reasoning = knownTokenCount(observation.reasoningOutputTokens);
+  const requestModel = cleanModel(ownData(observation, 'requestModel'));
+  const responseModel = cleanModel(ownData(observation, 'responseModel'));
+  const errorType = cleanErrorType(ownData(observation, 'errorType'));
+  const inputTokens = knownTokenCount(ownData(observation, 'inputTokens'));
+  const outputTokens = knownTokenCount(ownData(observation, 'outputTokens'));
+  const cacheRead = knownTokenCount(ownData(observation, 'cacheReadInputTokens'));
+  const cacheWrite = knownTokenCount(ownData(observation, 'cacheWriteInputTokens'));
+  const reasoning = knownTokenCount(ownData(observation, 'reasoningOutputTokens'));
   const shared = attributes([
-    ['gen_ai.operation.name', observation.operationName],
+    ['gen_ai.operation.name', operationName],
     ['gen_ai.provider.name', providerName],
     ['gen_ai.request.model', requestModel],
     ['gen_ai.response.model', responseModel],
@@ -415,7 +423,7 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
       name: 'gen_ai.client.inference.operation.input_tokens',
       instrument: 'histogram',
       unit: '{token}',
-      value: histogramTokenCount(observation.inputTokens),
+      value: histogramTokenCount(ownData(observation, 'inputTokens')),
       explicitBucketBoundaries: INFERENCE_OPERATION_TOKEN_BUCKETS,
       attributes: histogramAttributes,
     }),
@@ -423,7 +431,7 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
       name: 'gen_ai.client.inference.operation.output_tokens',
       instrument: 'histogram',
       unit: '{token}',
-      value: histogramTokenCount(observation.outputTokens),
+      value: histogramTokenCount(ownData(observation, 'outputTokens')),
       explicitBucketBoundaries: INFERENCE_OPERATION_TOKEN_BUCKETS,
       attributes: histogramAttributes,
     }),
@@ -439,7 +447,7 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
     if (counter) metrics.push(counter);
   }
 
-  const duration = durationOrUndefined(observation.durationSeconds);
+  const duration = durationOrUndefined(ownData(observation, 'durationSeconds'));
   if (duration !== undefined) {
     metrics.push(
       metric({
@@ -456,12 +464,12 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
     ...emptyMapping(droppedFields),
     spans: [
       span({
-        name: requestModel ? `${observation.operationName} ${requestModel}` : observation.operationName,
+        name: requestModel ? `${operationName} ${requestModel}` : operationName,
         kind: 'CLIENT',
         registryType: 'gen_ai.client.inference',
         statusCode: errorType ? 'ERROR' : 'UNSET',
         attributes: attributes([
-          ['gen_ai.operation.name', observation.operationName],
+          ['gen_ai.operation.name', operationName],
           ['gen_ai.provider.name', providerName],
           ['error.type', errorType],
           ['gen_ai.request.model', requestModel],
@@ -477,13 +485,18 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
   };
 }
 
-function jsonRpcCode(value: number | undefined): number | undefined {
+function jsonRpcCode(value: unknown): number | undefined {
   if (typeof value !== 'number' || !Number.isInteger(value)) return undefined;
   return value;
 }
 
-function requestId(value: string | number | null | undefined): string | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+function httpStatusCode(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 400) return undefined;
+  return value;
+}
+
+function requestId(value: unknown): string | undefined {
+  if (typeof value === 'number' && Number.isSafeInteger(value)) return String(value);
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > 128 || hasSecretMarker(trimmed) || isIpv4(trimmed) || isHostname(trimmed)) {
@@ -514,34 +527,35 @@ function mcpFailure(role: 'client' | 'server', code: number | undefined, httpSta
 }
 
 function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }>): AssistantTeamMapping {
-  if (!isMcpRole(observation.role)) {
+  const role = ownData(observation, 'role');
+  if (!isMcpRole(role)) {
     return emptyMapping(collectDroppedFields(observation), ['mcp_role_rejected']);
   }
-  const methodName = cleanMethodName(observation.methodName);
+  const methodName = cleanMethodName(ownData(observation, 'methodName'));
   const droppedFields = collectDroppedFields(observation);
   if (!methodName) return emptyMapping(droppedFields, ['mcp_method_required']);
 
-  const toolName = cleanAgentOrTool(observation.toolName);
-  const promptName = toolName ? undefined : cleanAgentOrTool(observation.promptName);
+  const toolName = cleanAgentOrTool(ownData(observation, 'toolName'));
+  const promptName = toolName ? undefined : cleanAgentOrTool(ownData(observation, 'promptName'));
   const target = toolName ?? promptName;
-  const code = jsonRpcCode(observation.jsonRpcErrorCode);
-  const failure = mcpFailure(observation.role, code, observation.httpStatus, cleanErrorType(observation.errorType));
+  const code = jsonRpcCode(ownData(observation, 'jsonRpcErrorCode'));
+  const failure = mcpFailure(role, code, httpStatusCode(ownData(observation, 'httpStatus')), cleanErrorType(ownData(observation, 'errorType')));
   const isToolCall = methodName === 'tools/call';
   const spanAttributes = attributes([
     ['mcp.method.name', methodName],
     ['gen_ai.tool.name', toolName],
     ['gen_ai.prompt.name', promptName],
     ['gen_ai.operation.name', isToolCall ? 'execute_tool' : undefined],
-    ['jsonrpc.request.id', requestId(observation.requestId)],
+    ['jsonrpc.request.id', requestId(ownData(observation, 'requestId'))],
     ['rpc.status_code', failure.rpcStatusCode],
     ['error.type', failure.errorType],
   ]);
-  const duration = durationOrUndefined(observation.durationSeconds);
+  const duration = durationOrUndefined(ownData(observation, 'durationSeconds'));
   const metrics: MappedMetric[] = [];
   if (duration !== undefined) {
     metrics.push(
       metric({
-        name: observation.role === 'client' ? 'mcp.client.operation.duration' : 'mcp.server.operation.duration',
+        name: role === 'client' ? 'mcp.client.operation.duration' : 'mcp.server.operation.duration',
         instrument: 'histogram',
         unit: 's',
         value: duration,
@@ -557,8 +571,8 @@ function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }
     );
   }
 
-  const kind = observation.role === 'client' ? 'CLIENT' : 'SERVER';
-  const registryType = observation.role === 'client' ? 'mcp.client' : 'mcp.server';
+  const kind = role === 'client' ? 'CLIENT' : 'SERVER';
+  const registryType = role === 'client' ? 'mcp.client' : 'mcp.server';
 
   return {
     ...emptyMapping(droppedFields),

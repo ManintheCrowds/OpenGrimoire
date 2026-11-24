@@ -1,3 +1,5 @@
+import { createHmac } from 'node:crypto';
+
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_CONTROL_FLOWS,
@@ -243,13 +245,24 @@ function cleanToolName(value: unknown): string | undefined {
   return listedName(value, TOOL_NAMES);
 }
 
+const LOCAL_ID_HMAC_KEY = 'opengrimoire-local-id-v1';
+const UUID_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ULID_ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
+const PROVIDER_ID = /^(?:call_|chatcmpl-|resp_)[A-Za-z0-9]{8,40}$/;
+const HMAC_ID = /^hmac_[0-9a-f]{64}$/;
+
+export function hmacLocalId(value: string): string {
+  return `hmac_${createHmac('sha256', LOCAL_ID_HMAC_KEY).update(value).digest('hex')}`;
+}
+
+export function isAcceptedLocalId(value: string): boolean {
+  return UUID_ID.test(value) || ULID_ID.test(value) || PROVIDER_ID.test(value) || HMAC_ID.test(value);
+}
+
 function cleanToken(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (!/^[A-Za-z0-9_-]{1,64}$/.test(trimmed) || looksSecret(trimmed) || isUnsafeNetworkIdentity(trimmed)) {
-    return undefined;
-  }
-  if (!/[_-]/.test(trimmed) || !/\d/.test(trimmed)) return undefined;
+  if (trimmed.length === 0 || looksSecret(trimmed) || !isAcceptedLocalId(trimmed)) return undefined;
   return trimmed;
 }
 
@@ -602,10 +615,6 @@ function httpStatusCode(value: unknown): number | 'rejected' | undefined {
 }
 
 function requestId(value: unknown): string | undefined {
-  if (typeof value === 'number') {
-    if (!Number.isSafeInteger(value)) return undefined;
-    return String(value);
-  }
   return cleanToken(value);
 }
 

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  hmacLocalId,
   mapAssistantTeamObservation,
   mapLocalAiActivityEvent,
 } from './map-assistant-team';
@@ -57,7 +58,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       controlFlow: 'agent',
       agentName: 'Scout',
       durationSeconds: 1.25,
-      conversationId: 'conv_scout_1',
+      conversationId: '11111111-2222-4333-8444-555555555555',
     });
 
     expect(mapping.spans).toEqual([
@@ -69,7 +70,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
         attributes: {
           'gen_ai.operation.name': 'invoke_agent',
           'gen_ai.agent.name': 'Scout',
-          'gen_ai.conversation.id': 'conv_scout_1',
+          'gen_ai.conversation.id': '11111111-2222-4333-8444-555555555555',
         },
       }),
     ]);
@@ -289,6 +290,55 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
   });
 
+  it('accepts only uuid, ulid, provider, and hmac ids', () => {
+    const uuid = '11111111-2222-4333-8444-555555555555';
+    const ulid = '01HZXK4Q2N8Y7C6B5A4D3E2F1G';
+    const provider = 'chatcmpl-Abcd1234Wxyz5678';
+    const hmac = hmacLocalId('maple-unit-4');
+    const kept = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: uuid,
+    });
+    expect(kept.spans[0]?.attributes['gen_ai.conversation.id']).toBe(uuid);
+
+    const tool = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      toolCallId: provider,
+    });
+    expect(tool.spans[0]?.attributes['gen_ai.tool.call.id']).toBe(provider);
+
+    const request = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: hmac,
+    });
+    expect(request.spans[0]?.attributes['jsonrpc.request.id']).toBe(hmac);
+    expect(JSON.stringify(request)).not.toContain('maple-unit-4');
+
+    const ulidSpan = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: ulid,
+    });
+    expect(ulidSpan.spans[0]?.attributes['jsonrpc.request.id']).toBe(ulid);
+
+    for (const sample of ['req-maple-1', 'call_short', 'conv_text_3', 'session-token']) {
+      const dropped = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      expect(dropped.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+      expect(JSON.stringify(dropped)).not.toContain(sample);
+    }
+  });
+
   it('replaces unlisted model ids with _OTHER', () => {
     const listed = ['gpt-4o-mini', 'claude-sonnet-4-5', 'Qwen2.5-7B-Instruct', 'Mistral-Large-2', 'nomic-embed-text:latest'];
     for (const requestModel of listed) {
@@ -414,7 +464,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     const mapping = mapAssistantTeamObservation({
       signal: 'execute_tool',
       toolName: 'read_file',
-      toolCallId: 'call_1',
+      toolCallId: 'call_Abcd1234Wxyz5678',
       agentName: 'Scout',
       durationSeconds: 0.4,
       toolArguments: { path: SECRET_PROMPT },
@@ -430,7 +480,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
         attributes: {
           'gen_ai.operation.name': 'execute_tool',
           'gen_ai.tool.name': 'read_file',
-          'gen_ai.tool.call.id': 'call_1',
+          'gen_ai.tool.call.id': 'call_Abcd1234Wxyz5678',
           'gen_ai.agent.name': 'Scout',
         },
       })
@@ -626,7 +676,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       role: 'client',
       methodName: 'tools/call',
       toolName: 'read_file',
-      requestId: 'req-7',
+      requestId: '01HZXK4Q2N8Y7C6B5A4D3E2F1G',
       jsonRpcErrorCode: -32602,
       jsonRpcMessage: SECRET_PROMPT,
     });
@@ -641,7 +691,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
           'mcp.method.name': 'tools/call',
           'gen_ai.tool.name': 'read_file',
           'gen_ai.operation.name': 'execute_tool',
-          'jsonrpc.request.id': 'req-7',
+          'jsonrpc.request.id': '01HZXK4Q2N8Y7C6B5A4D3E2F1G',
           'rpc.status_code': '-32602',
           'error.type': '-32602',
         },
@@ -1077,9 +1127,9 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       signal: 'mcp',
       role: 'client',
       methodName: 'tools/call',
-      requestId: 'req-7',
+      requestId: '01HZXK4Q2N8Y7C6B5A4D3E2F1G',
     });
-    expect(kept.spans[0]?.attributes['jsonrpc.request.id']).toBe('req-7');
+    expect(kept.spans[0]?.attributes['jsonrpc.request.id']).toBe('01HZXK4Q2N8Y7C6B5A4D3E2F1G');
   });
 
   it('does not map an inherited signal', () => {

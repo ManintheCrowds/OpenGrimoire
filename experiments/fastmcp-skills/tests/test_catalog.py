@@ -105,6 +105,15 @@ def test_ci_workflow_runs_the_skills_suite() -> None:
     assert "fastmcp-skills" in needs
 
 
+def test_readme_points_at_4_2_5_and_the_advisory_range() -> None:
+    readme = (Path(server.__file__).resolve().parent / "README.md").read_text(encoding="utf-8")
+    assert "https://github.com/PrefectHQ/fastmcp/releases/tag/v4.2.5" in readme
+    assert "releases/tag/v4.2.0" not in readme
+    assert ">=2.13.0, <=4.2.3" in readme
+    assert "patched in 4.2.4" in readme
+    assert "billing-blocked" not in readme
+
+
 def test_runtime_pins() -> None:
     assert sys.version_info >= (3, 11)
     assert version("fastmcp") == "4.2.5"

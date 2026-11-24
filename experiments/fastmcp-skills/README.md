@@ -1,13 +1,13 @@
 # FastMCP 4.2 skills trial
 
-Small, stdio-only prototype. One MCP server publishes three existing OpenGrimoire markdown files as [FastMCP 4.2](https://github.com/PrefectHQ/fastmcp/releases/tag/v4.2.0) skills and one trivial tool (`catalog_ping`). The installed release is **4.2.5**.
+Small, stdio-only prototype. One MCP server publishes three existing OpenGrimoire markdown files as [FastMCP 4.2.5](https://github.com/PrefectHQ/fastmcp/releases/tag/v4.2.5) skills and one trivial tool (`catalog_ping`).
 
 This directory does not change the app. OpenGrimoire still has no first-party MCP server; see [docs/agent/INTEGRATION_PATHS.md](../../docs/agent/INTEGRATION_PATHS.md).
 
 ## Requirements
 
 - Python **3.11 or newer**. FastMCP 4.2.5 declares `Requires-Python: >=3.11`, and `server.py` refuses to import on older interpreters.
-- `fastmcp==4.2.5` exactly. Do not install any release below **4.2.4**. [GHSA-78c8-3jhx-5mg7](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-78c8-3jhx-5mg7) (OAuthProxy can redeem one authorization code more than once) covers 4.2.0 through 4.2.3 and is fixed in 4.2.4. This server is stdio-only and does not construct `OAuthProxy`, so that path is not reached here; the pin still stays off the affected releases. The older floor of **4.1.2** still applies: [GHSA-gpgx-58w2-xwwf](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-gpgx-58w2-xwwf) is fixed in 4.0.11, and 4.1.2 closes the rest of that October 2026 batch. The pin is exact so a resolver cannot float onto 4.3 while this trial is the reference.
+- `fastmcp==4.2.5` exactly. [GHSA-78c8-3jhx-5mg7](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-78c8-3jhx-5mg7) (OAuthProxy can redeem one authorization code more than once) affects fastmcp `>=2.13.0, <=4.2.3` and is patched in 4.2.4. This server is stdio-only and does not construct `OAuthProxy`, so that path is not reached here; the pin still stays off the affected releases. The older floor of **4.1.2** still applies: [GHSA-gpgx-58w2-xwwf](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-gpgx-58w2-xwwf) is fixed in 4.0.11, and 4.1.2 closes the rest of that October 2026 batch. The pin is exact so a resolver cannot float onto 4.3 while this trial is the reference. `pip install -r requirements.txt` checks the PyPI artifact hashes in that file.
 
 ## Which skills API this uses
 
@@ -52,7 +52,7 @@ That starts the same server with transport `stdio`, lists `catalog_ping`, and li
 
 Tests use an in-process client (`Client(server)`). They refuse `socket.create_connection`, `connect`, and `connect_ex`, so a test that opens a connection fails. No listener is started.
 
-GitHub Actions on this account is billing-blocked and will not run. This prototype is not wired into `.github/workflows/ci.yml`. Run pytest locally.
+GitHub Actions runs this suite from [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (the `fastmcp-skills` job, using the hash-locked requirements). You can also run pytest locally.
 
 ## What worked
 

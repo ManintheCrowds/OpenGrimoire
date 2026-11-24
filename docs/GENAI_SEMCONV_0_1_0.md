@@ -2,7 +2,7 @@
 
 OpenGrimoire does not emit OpenTelemetry spans or metrics today. This note pins an in-memory mapping from assistant-team observations onto [OpenTelemetry GenAI semantic conventions v0.1.0](https://github.com/open-telemetry/semantic-conventions-genai/releases/tag/v0.1.0) (published 2026-11-21, commit `d0e74ba6c48bcc4ded473b1828a8212f06b23753`, Apache-2.0, depends on semantic-conventions v1.45.0).
 
-The pin is `GEN_AI_SEMCONV_SCHEMA_VERSION` in `src/lib/observability/genai-semconv/schema.ts` (`gen_ai semconv 0.1.0`). Bucket boundaries and the MCP server caller-fault codes live in that same file. Call `mapAssistantTeamObservation` in `src/lib/observability/genai-semconv/map-assistant-team.ts`. No package was added. The mapping does not import an OpenTelemetry SDK and does not export telemetry.
+The internal label is `GEN_AI_SEMCONV_SCHEMA_VERSION` in `src/lib/observability/genai-semconv/schema.ts` (`gen_ai semconv 0.1.0`). That string is not an OTel schema URL. The v0.1.0 manifest URL is `GEN_AI_SEMCONV_SCHEMA_URL` (`https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev`). Bucket boundaries, closed sets, and the MCP server caller-fault codes live in that same file. Call `mapAssistantTeamObservation` in `src/lib/observability/genai-semconv/map-assistant-team.ts`. No package was added. The mapping does not import an OpenTelemetry SDK and does not export telemetry.
 
 ## What this repo records today
 
@@ -44,22 +44,44 @@ Histogram attributes require `gen_ai.operation.name` and `gen_ai.provider.name`.
 | --- | --- | --- | --- | --- | --- |
 | `invoke_agent` / `agent` | `invoke_agent` or `invoke_agent {gen_ai.agent.name}` | `gen_ai.invoke_agent.internal` | `INTERNAL` | `gen_ai.operation.name=invoke_agent`. `gen_ai.agent.name` and `gen_ai.conversation.id` only when the caller supplied a usable value. Usage token attributes only for this operation, and only for a known integer count. | `gen_ai.invoke_agent.duration` when `durationSeconds` is set |
 | `invoke_agent` / `workflow` | `invoke_workflow` or `invoke_workflow {gen_ai.agent.name}` | `gen_ai.invoke_agent.internal` | `INTERNAL` | `gen_ai.operation.name=invoke_workflow`. No `gen_ai.workflow.name`. No usage attributes (those are recommended on this span only when the operation is `invoke_agent`). | `gen_ai.invoke_agent.duration` |
-| `execute_tool` | `execute_tool {gen_ai.tool.name}` | `gen_ai.execute_tool` | `INTERNAL` | `gen_ai.operation.name`, `gen_ai.tool.name`. `gen_ai.tool.call.id` only when the caller supplied the model or provider id. `gen_ai.agent.name` when usable. | `gen_ai.execute_tool.duration` when duration is set |
+| `execute_tool` | `execute_tool {gen_ai.tool.name}` | `gen_ai.execute_tool` | `INTERNAL` | Span: `gen_ai.operation.name`, `gen_ai.tool.name`. `gen_ai.tool.call.id` only when the id matches the id charset. `gen_ai.agent.name` when it passes the name rules. | `gen_ai.execute_tool.duration` when duration is set. The histogram attributes are `gen_ai.tool.name`, `gen_ai.agent.name` when present, and `error.type` on failure. `gen_ai.operation.name` is not a v0.1.0 attribute of this metric. |
 | `inference` | `{gen_ai.operation.name} {gen_ai.request.model}` | `gen_ai.client.inference` | `CLIENT` | `gen_ai.operation.name`, `gen_ai.provider.name`. Request and response model when usable. `error.type` on failure. Usage attributes for known counts. | The token histograms and positive counters above. `gen_ai.client.inference.duration` when duration is set |
 | `mcp` client | `{mcp.method.name}` or `{mcp.method.name} {target}` | `mcp.client` | `CLIENT` | `mcp.method.name`. `gen_ai.tool.name` or `gen_ai.prompt.name` for the target. `gen_ai.operation.name=execute_tool` only for `tools/call`. `jsonrpc.request.id` when the id is present and not null. `rpc.status_code` / `error.type` as above. | `mcp.client.operation.duration` when duration is set |
 | `mcp` server | same name rule | `mcp.server` | `SERVER` | Same attribute rules, with the server failure split above. | `mcp.server.operation.duration` when duration is set |
 
 `target` is the tool name or, if there is no tool name, the prompt name. Resource URIs are not used as span names.
 
-An empty `providerName` produces no inference span and no token metric (`inference_provider_required`). The mapping does not invent a provider.
+An empty `providerName` produces no inference span and no token metric (`inference_provider_required`). A non-empty provider outside `GEN_AI_PROVIDER_NAMES` is stored as `_OTHER`. `mistral_ai` is stored as `mistral`.
+
+## What the mapper validates
+
+`GEN_AI_CONTENT_CAPTURE_MODE` is the constant `NO_CONTENT`. The other spec modes are not implemented. These own fields are never copied into attributes or span names; only the field name is listed in `droppedFields`: `inputMessages`, `outputMessages`, `systemInstructions`, `toolArguments`, `toolResult`, `secret`, `apiToken`, `clientName`, `clientAddress`, `hostname`, `serverAddress`, `jsonRpcMessage`. `server.address`, `server.port`, `client.address`, `client.port`, and `mcp.resource.uri` are not set. JSON-RPC error messages are not copied.
+
+Closed sets, rejected at runtime with an omission and no span when the value is outside the set:
+
+| Field | Accepted values |
+| --- | --- |
+| `signal` | `invoke_agent`, `execute_tool`, `inference`, `mcp` |
+| `controlFlow` | `agent`, `workflow` |
+| inference `operationName` | `chat`, `generate_content`, `text_completion` |
+| `role` | `client`, `server` |
+| `mcp.method.name` | the v0.1.0 `MCP_METHOD_NAMES` list |
+
+Other fields:
+
+| Field | Rule |
+| --- | --- |
+| `gen_ai.provider.name` | `GEN_AI_PROVIDER_NAMES`, or `_OTHER` when the string is non-empty and not in that list |
+| `error.type` | `GEN_AI_ERROR_TYPES`, or a pure integer of at most 5 digits. Every other string is `_OTHER` |
+| agent, tool, and prompt names | `^[A-Za-z0-9_.-]{1,64}$`, rejected when the value is an IPv4 address, an IPv6 address, a dotted hostname, `host:port`, a secret prefix (`ghp_`, `gho_`, `github_pat_`, `sk-`, `AKIA`, `ASIA`, `eyJ`, `xoxa-`/`xoxb-`/`xoxp-`, `Bearer`), or contains whitespace, `/`, `\`, `@`, or `://`. A name with no `_`, `-`, or `.` is kept only when it is in `ASSISTANT_TEAM_BARE_NAMES` (`Scout`) |
+| model names | `^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$` with at most one `:`, the same network and secret rejection, and at least one `.`, `:`, `_`, or `-` |
+| `gen_ai.conversation.id`, `gen_ai.tool.call.id`, `jsonrpc.request.id` | `^[A-Za-z0-9_-]{1,64}$` and the value must contain a digit and `_` or `-`. A safe integer request id is stringified. |
+| JSON-RPC and HTTP codes | A number, or a string that is only an optional minus and digits. Mixed text is ignored |
+
+Non-string identifier fields are ignored. The cleaners do not call methods on those values. Inherited properties are not read.
 
 ## Left out on purpose
 
-- Prompt and message content, system instructions, tool arguments, tool results, prompt variables, and tool definitions. `GEN_AI_CONTENT_CAPTURE_MODE` is `NO_CONTENT`. The spec's `SPAN_ONLY`, `EVENT_ONLY`, and `SPAN_AND_EVENT` modes are not implemented.
-- Secrets, API tokens, client names, IP addresses, and hostnames. `server.address`, `server.port`, `client.address`, and `client.port` are recommended by the spec and are not set here.
-- `mcp.resource.uri` (paths and hosts).
-- JSON-RPC error messages.
-- Agent or tool names that are an IP address or a hostname.
 - A2A, embeddings, realtime sessions, memory, retrieval, plan, and fetch-response operations.
 - The `gen_ai.main_agent` resource, exception events, and `gen_ai.client.inference.operation.details`.
 - Per-modality token splits other than `unknown`.
@@ -70,4 +92,4 @@ An empty `providerName` produces no inference span and no token metric (`inferen
 
 GenAI attributes in v0.1.0 are still marked Development. The release is the break from semantic-conventions v1.41.0: workflow spans merged into `gen_ai.invoke_agent.internal`, registry span types renamed (`gen_ai.inference.client` to `gen_ai.client.inference`, `gen_ai.execute_tool.internal` to `gen_ai.execute_tool`), and inference, embeddings, invoke-agent, and execute-tool durations moved off `gen_ai.client.operation.duration`. The next release can rename those again.
 
-Because no route writes these names yet, a later revision stays inside `src/lib/observability/genai-semconv/` and `docs/GENAI_SEMCONV_0_1_0.md`. Change `GEN_AI_SEMCONV_SCHEMA_VERSION` in the same edit as the attribute and metric names.
+Because no route writes these names yet, a later revision stays inside `src/lib/observability/genai-semconv/` and `docs/GENAI_SEMCONV_0_1_0.md`. Change `GEN_AI_SEMCONV_SCHEMA_VERSION` and `GEN_AI_SEMCONV_SCHEMA_URL` in the same edit as the attribute and metric names.

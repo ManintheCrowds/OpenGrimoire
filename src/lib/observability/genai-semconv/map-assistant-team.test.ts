@@ -739,6 +739,16 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain(token);
   });
 
+  it('documents the privacy boundary as closed sets, not a blanket drop', () => {
+    const note = fs.readFileSync(path.join(__dirname, '../../../../docs/GENAI_SEMCONV_0_1_0.md'), 'utf8');
+    expect(note).toContain('https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev');
+    expect(note).toContain('GEN_AI_SEMCONV_SCHEMA_VERSION');
+    expect(note).toContain('`_OTHER`');
+    expect(note).toContain('ASSISTANT_TEAM_BARE_NAMES');
+    expect(note).not.toContain('Secrets, API tokens, client names, IP addresses, and hostnames.');
+    expect(note).not.toContain('Agent or tool names that are an IP address or a hostname.');
+  });
+
   it('keeps synthetic canaries out of every emitted string field', () => {
     const canaries = [
       `ghp_${'A'.repeat(36)}`,

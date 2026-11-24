@@ -9,6 +9,7 @@ import {
 } from './map-assistant-team';
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
+  GEN_AI_SEMCONV_SCHEMA_URL,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   GEN_AI_SHORT_DURATION_BUCKETS,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
@@ -34,6 +35,7 @@ function metricNames(mapping: ReturnType<typeof mapAssistantTeamObservation>): s
 describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
   it('pins the schema version and keeps content capture off', () => {
     expect(GEN_AI_SEMCONV_SCHEMA_VERSION).toBe('gen_ai semconv 0.1.0');
+    expect(GEN_AI_SEMCONV_SCHEMA_URL).toBe('https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev');
     expect(GEN_AI_CONTENT_CAPTURE_MODE).toBe('NO_CONTENT');
 
     const mapping = mapAssistantTeamObservation({
@@ -43,6 +45,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     });
 
     expect(mapping.schemaVersion).toBe(GEN_AI_SEMCONV_SCHEMA_VERSION);
+    expect(mapping.schemaUrl).toBe(GEN_AI_SEMCONV_SCHEMA_URL);
     expect(mapping.contentCapture).toBe('NO_CONTENT');
     expect(mapping.spans.every((span) => span.schemaVersion === GEN_AI_SEMCONV_SCHEMA_VERSION)).toBe(true);
     expect(mapping.metrics.every((metric) => metric.schemaVersion === GEN_AI_SEMCONV_SCHEMA_VERSION)).toBe(true);

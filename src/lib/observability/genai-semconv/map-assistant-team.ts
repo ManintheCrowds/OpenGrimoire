@@ -5,6 +5,7 @@ import {
   GEN_AI_ERROR_TYPES,
   GEN_AI_INFERENCE_OPERATIONS,
   GEN_AI_PROVIDER_NAMES,
+  GEN_AI_SEMCONV_SCHEMA_URL,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   GEN_AI_SHORT_DURATION_BUCKETS,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
@@ -37,6 +38,7 @@ export interface MappedMetric {
 
 export interface AssistantTeamMapping {
   schemaVersion: typeof GEN_AI_SEMCONV_SCHEMA_VERSION;
+  schemaUrl: typeof GEN_AI_SEMCONV_SCHEMA_URL;
   contentCapture: typeof GEN_AI_CONTENT_CAPTURE_MODE;
   spans: MappedSpan[];
   metrics: MappedMetric[];
@@ -133,6 +135,7 @@ const SERVER_CALLER_FAULTS = new Set<number>(MCP_SERVER_CALLER_FAULT_CODES);
 function emptyMapping(droppedFields: string[], omissions: string[] = []): AssistantTeamMapping {
   return {
     schemaVersion: GEN_AI_SEMCONV_SCHEMA_VERSION,
+    schemaUrl: GEN_AI_SEMCONV_SCHEMA_URL,
     contentCapture: GEN_AI_CONTENT_CAPTURE_MODE,
     spans: [],
     metrics: [],

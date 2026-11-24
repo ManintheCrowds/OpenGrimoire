@@ -8,6 +8,12 @@
 export const GEN_AI_SEMCONV_SCHEMA_VERSION = 'gen_ai semconv 0.1.0' as const;
 
 /**
+ * OTel schema URL from semantic-conventions-genai v0.1.0 model/manifest.yaml.
+ * `GEN_AI_SEMCONV_SCHEMA_VERSION` is only an internal label. Exporters must use this URL.
+ */
+export const GEN_AI_SEMCONV_SCHEMA_URL = 'https://opentelemetry.io/schemas/semconv-genai-dev/0.1.0-dev' as const;
+
+/**
  * Spec content-capture mode. This mapping implements only the default.
  * SPAN_ONLY, EVENT_ONLY, and SPAN_AND_EVENT are not implemented.
  */

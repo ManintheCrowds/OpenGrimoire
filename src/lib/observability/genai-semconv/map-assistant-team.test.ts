@@ -10,6 +10,9 @@ import {
 } from './map-assistant-team';
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
+  GEN_AI_CONTROL_FLOWS,
+  GEN_AI_INFERENCE_OPERATIONS,
+  MCP_ROLES,
   GEN_AI_SEMCONV_SCHEMA_URL,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
   GEN_AI_SHORT_DURATION_BUCKETS,
@@ -239,6 +242,33 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       expect(JSON.stringify(mapping)).not.toContain('1e+21');
       expect(JSON.stringify(mapping)).not.toContain('1e21');
     }
+  });
+
+  it('ignores runtime mutation of control, operation, and role lists', () => {
+    const lists = [GEN_AI_CONTROL_FLOWS, GEN_AI_INFERENCE_OPERATIONS, MCP_ROLES] as unknown as string[][];
+    for (const list of lists) {
+      expect(() => list.push('injected')).toThrow();
+    }
+    const flow = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'injected',
+      agentName: 'Scout',
+    });
+    const operation = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'injected',
+      providerName: 'openai',
+      requestModel: 'gpt-4',
+    });
+    const role = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'injected',
+      methodName: 'initialize',
+    });
+    expect(flow.spans).toEqual([]);
+    expect(operation.spans).toEqual([]);
+    expect(role.spans).toEqual([]);
+    expect(JSON.stringify({ flow, operation, role })).not.toContain('injected');
   });
 
   it('treats shpat_ as the token prefix', () => {

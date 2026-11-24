@@ -20,9 +20,9 @@ export const GEN_AI_SEMCONV_SCHEMA_URL = 'https://opentelemetry.io/schemas/semco
 export const GEN_AI_CONTENT_CAPTURE_MODE = 'NO_CONTENT' as const;
 
 /** Closed runtime sets. Values outside these lists are omitted, not copied into span names. */
-export const GEN_AI_CONTROL_FLOWS = ['agent', 'workflow'] as const;
-export const GEN_AI_INFERENCE_OPERATIONS = ['chat', 'generate_content', 'text_completion'] as const;
-export const MCP_ROLES = ['client', 'server'] as const;
+export const GEN_AI_CONTROL_FLOWS = Object.freeze(['agent', 'workflow'] as const);
+export const GEN_AI_INFERENCE_OPERATIONS = Object.freeze(['chat', 'generate_content', 'text_completion'] as const);
+export const MCP_ROLES = Object.freeze(['client', 'server'] as const);
 
 /**
  * Low-cardinality `error.type` classes. Any other non-numeric text is recorded

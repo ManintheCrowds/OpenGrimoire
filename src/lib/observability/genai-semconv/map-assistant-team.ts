@@ -340,16 +340,20 @@ function metric(fields: Omit<MappedMetric, 'schemaVersion'>): MappedMetric {
   return { schemaVersion: GEN_AI_SEMCONV_SCHEMA_VERSION, ...fields };
 }
 
+const CONTROL_FLOW_SET = new Set<string>(GEN_AI_CONTROL_FLOWS);
+const INFERENCE_OPERATION_SET = new Set<string>(GEN_AI_INFERENCE_OPERATIONS);
+const MCP_ROLE_SET = new Set<string>(MCP_ROLES);
+
 function isControlFlow(value: unknown): value is (typeof GEN_AI_CONTROL_FLOWS)[number] {
-  return typeof value === 'string' && (GEN_AI_CONTROL_FLOWS as readonly string[]).includes(value);
+  return typeof value === 'string' && CONTROL_FLOW_SET.has(value);
 }
 
 function isInferenceOperation(value: unknown): value is (typeof GEN_AI_INFERENCE_OPERATIONS)[number] {
-  return typeof value === 'string' && (GEN_AI_INFERENCE_OPERATIONS as readonly string[]).includes(value);
+  return typeof value === 'string' && INFERENCE_OPERATION_SET.has(value);
 }
 
 function isMcpRole(value: unknown): value is (typeof MCP_ROLES)[number] {
-  return typeof value === 'string' && (MCP_ROLES as readonly string[]).includes(value);
+  return typeof value === 'string' && MCP_ROLE_SET.has(value);
 }
 
 function invokeOperation(controlFlow: (typeof GEN_AI_CONTROL_FLOWS)[number]): 'invoke_agent' | 'invoke_workflow' {

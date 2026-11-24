@@ -245,14 +245,23 @@ function cleanToolName(value: unknown): string | undefined {
   return listedName(value, TOOL_NAMES);
 }
 
-const LOCAL_ID_HMAC_KEY = 'opengrimoire-local-id-v1';
 const UUID_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ULID_ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 const PROVIDER_ID = /^(?:call_|chatcmpl-|resp_)[A-Za-z0-9]{8,40}$/;
 const HMAC_ID = /^hmac_[0-9a-f]{64}$/;
 
-export function hmacLocalId(value: string): string {
-  return `hmac_${createHmac('sha256', LOCAL_ID_HMAC_KEY).update(value).digest('hex')}`;
+function hmacKey(): string | undefined {
+  const raw = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) return undefined;
+  return trimmed;
+}
+
+export function hmacLocalId(value: string): string | undefined {
+  const key = hmacKey();
+  if (key === undefined || value.length === 0) return undefined;
+  return `hmac_${createHmac('sha256', key).update(value).digest('hex')}`;
 }
 
 export function isAcceptedLocalId(value: string): boolean {
@@ -264,6 +273,7 @@ function idOmissions(value: unknown): string[] {
   const trimmed = value.trim();
   if (trimmed.length === 0) return [];
   if (looksSecret(trimmed)) return ['secret_id_rejected'];
+  if (HMAC_ID.test(trimmed) && hmacKey() === undefined) return ['hmac_key_missing'];
   if (!isAcceptedLocalId(trimmed)) return ['id_shape_rejected'];
   return [];
 }
@@ -271,7 +281,9 @@ function idOmissions(value: unknown): string[] {
 function cleanToken(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
-  if (trimmed.length === 0 || looksSecret(trimmed) || !isAcceptedLocalId(trimmed)) return undefined;
+  if (trimmed.length === 0 || looksSecret(trimmed)) return undefined;
+  if (HMAC_ID.test(trimmed) && hmacKey() === undefined) return undefined;
+  if (!isAcceptedLocalId(trimmed)) return undefined;
   return trimmed;
 }
 

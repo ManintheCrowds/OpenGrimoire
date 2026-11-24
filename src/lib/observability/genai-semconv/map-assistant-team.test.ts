@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -481,10 +482,53 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
   });
 
+  it('loads the hmac key per install and has no built-in key', () => {
+    const source = fs.readFileSync(path.join(__dirname, 'map-assistant-team.ts'), 'utf8');
+    const example = fs.readFileSync(path.join(__dirname, '../../../../.env.example'), 'utf8');
+    expect(source).not.toContain('LOCAL_ID_HMAC_KEY');
+    expect(source).not.toMatch(/createHmac\(\s*'sha256'\s*,\s*['"`]/);
+    expect(example).toContain('OPENGRIMOIRE_GENAI_ID_HMAC_KEY');
+    expect(example).not.toMatch(/OPENGRIMOIRE_GENAI_ID_HMAC_KEY=\S/);
+
+    const previous = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+    delete process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+    try {
+      expect(hmacLocalId('maple-unit-4')).toBeUndefined();
+      const foreign = `hmac_${'ab'.repeat(32)}`;
+      const missing = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        requestId: foreign,
+      });
+      expect(missing.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+      expect(missing.omissions).toContain('hmac_key_missing');
+      expect(JSON.stringify(missing)).not.toContain(foreign);
+
+      process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = randomBytes(32).toString('hex');
+      const produced = hmacLocalId('maple-unit-4');
+      expect(produced).toMatch(/^hmac_[0-9a-f]{64}$/);
+      const kept = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        requestId: produced,
+      });
+      expect(kept.spans[0]?.attributes['jsonrpc.request.id']).toBe(produced);
+      expect(JSON.stringify(kept)).not.toContain('maple-unit-4');
+    } finally {
+      if (previous === undefined) delete process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+      else process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = previous;
+    }
+  });
+
   it('accepts only uuid, ulid, provider, and hmac ids', () => {
     const uuid = '11111111-2222-4333-8444-555555555555';
     const ulid = '01HZXK4Q2N8Y7C6B5A4D3E2F1G';
     const provider = 'chatcmpl-Abcd1234Wxyz5678';
+    const previous = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+    process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = randomBytes(32).toString('hex');
+    try {
     const hmac = hmacLocalId('maple-unit-4');
     const kept = mapAssistantTeamObservation({
       signal: 'invoke_agent',
@@ -527,6 +571,10 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       });
       expect(dropped.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
       expect(JSON.stringify(dropped)).not.toContain(sample);
+    }
+    } finally {
+      if (previous === undefined) delete process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+      else process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = previous;
     }
   });
 

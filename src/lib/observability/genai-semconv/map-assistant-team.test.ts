@@ -808,6 +808,80 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('locks jwt names, lowercase desktop hosts, and string status caps', () => {
+    const jwtName = 'eyJhbGciOiJIUzI1NiJ9_x01';
+    const jwt = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: jwtName,
+    });
+    const jwtModel = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: jwtName,
+    });
+    expect(JSON.stringify(jwt)).not.toContain(jwtName);
+    expect(JSON.stringify(jwtModel)).not.toContain(jwtName);
+    expect(jwt.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+
+    const desktop = 'desktop-k7m2q';
+    const host = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: desktop,
+    });
+    expect(JSON.stringify(host)).not.toContain(desktop);
+
+    const longCode = '4111111111111111';
+    const capped = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      jsonRpcErrorCode: longCode,
+    } as never);
+    expect(capped.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(capped.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+    expect(JSON.stringify(capped)).not.toContain(longCode);
+
+    const sixDigits = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      jsonRpcErrorCode: '100000',
+    } as never);
+    expect(sixDigits.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(JSON.stringify(sixDigits)).not.toContain('100000');
+
+    for (const httpStatus of ['600', '99']) {
+      const status = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        httpStatus,
+      } as never);
+      expect(status.spans[0]?.statusCode).toBe('ERROR');
+      expect(status.spans[0]?.attributes['error.type']).toBe('_OTHER');
+      expect(JSON.stringify(status)).not.toContain(httpStatus);
+    }
+
+    const sentinel = 'CATCH-SENTINEL-2d';
+    const hostile = { signal: 'invoke_agent' as const, controlFlow: 'agent' as const, message: sentinel };
+    Object.defineProperty(hostile, 'agentName', {
+      enumerable: true,
+      get() {
+        throw new Error('thrown-separately');
+      },
+    });
+    const caught = mapAssistantTeamObservation(hostile as never);
+    expect(caught.omissions).toEqual(['observation_unreadable']);
+    expect(caught.droppedFields).toEqual([]);
+    expect(JSON.stringify(caught)).not.toContain(sentinel);
+    expect(JSON.stringify(caught)).not.toContain('thrown-separately');
+  });
+
   it('hides a throwing local activity summary', () => {
     const leaked = 'ACTIVITY-SENTINEL-8b';
     const event = { id: 'evt-9', ts: '2026-11-24T00:00:00.000Z', kind: 'workflow' } as {

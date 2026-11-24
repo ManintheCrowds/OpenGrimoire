@@ -208,6 +208,7 @@ function isUnsafeNetworkIdentity(value: string): boolean {
 
 function isLowerJoinedOrHostLabel(value: string): boolean {
   if (/^(?:req|call|conv)[_-]/i.test(value)) return false;
+  if (/^desktop-/i.test(value)) return false;
   return /^[a-z0-9]+(?:[_-][a-z0-9]+){1,4}$/.test(value);
 }
 

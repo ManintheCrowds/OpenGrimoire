@@ -407,6 +407,32 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(mapping.droppedFields).toContain('jsonRpcMessage');
   });
 
+  it.each([-32700, -32600, -32601, -32602, -32002])(
+    'records server caller fault %s without failing the span',
+    (code) => {
+      const server = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'server',
+        methodName: 'tools/call',
+        toolName: 'read_file',
+        jsonRpcErrorCode: code,
+      });
+      expect(server.spans[0]?.statusCode).toBe('UNSET');
+      expect(server.spans[0]?.attributes['rpc.status_code']).toBe(String(code));
+      expect(server.spans[0]?.attributes).not.toHaveProperty('error.type');
+
+      const client = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'tools/call',
+        toolName: 'read_file',
+        jsonRpcErrorCode: code,
+      });
+      expect(client.spans[0]?.statusCode).toBe('ERROR');
+      expect(client.spans[0]?.attributes['error.type']).toBe(String(code));
+    }
+  );
+
   it('keeps server-side caller faults on rpc.status_code without marking the span failed', () => {
     const mapping = mapAssistantTeamObservation({
       signal: 'mcp',

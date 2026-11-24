@@ -12,6 +12,7 @@
 | API errors | Server logs, browser Network tab | 401 alignment/brain-map when secrets mis-set; 503 misconfig. |
 | Rate limit | `middleware.ts` — survey **429** | Per-process; see REST contract. |
 | E2E health | `npm run test:e2e` | Playwright; CI gate if wired. |
+| Assistant-team GenAI mapping | In-memory only. See [GENAI_SEMCONV_0_1_0.md](./GENAI_SEMCONV_0_1_0.md). | No exporter. Local AI JSONL is not an OTel span. |
 
 **Not in-repo by default:** Centralized APM, log shipping, or Redis-backed rate limits—add only if product scopes them.
 

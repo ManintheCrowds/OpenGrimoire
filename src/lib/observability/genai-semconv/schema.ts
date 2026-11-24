@@ -28,7 +28,7 @@ export const MCP_ROLES = Object.freeze(['client', 'server'] as const);
  * Low-cardinality `error.type` classes. Any other non-numeric text is recorded
  * as `_OTHER` so free-text errors, hosts, and secrets are not copied.
  */
-export const GEN_AI_ERROR_TYPES = [
+export const GEN_AI_ERROR_TYPES = Object.freeze([
   'timeout',
   'rate_limited',
   'tool_error',
@@ -36,10 +36,10 @@ export const GEN_AI_ERROR_TYPES = [
   'invalid_request',
   'provider_error',
   '_OTHER',
-] as const;
+] as const);
 
 /** v0.1.0 `gen_ai.provider.name` members. Anything else is recorded as `_OTHER`. */
-export const GEN_AI_PROVIDER_NAMES = [
+export const GEN_AI_PROVIDER_NAMES = Object.freeze([
   'anthropic',
   'aws.bedrock',
   'azure.ai.inference',
@@ -57,16 +57,16 @@ export const GEN_AI_PROVIDER_NAMES = [
   'openai',
   'perplexity',
   'x_ai',
-] as const;
+] as const);
 
 /**
  * Exact agent names this mapping will record. Any other agent name is omitted.
  * `recipe_runner` is the local workflow name used by the cockpit recipes.
  */
-export const ASSISTANT_TEAM_AGENT_NAMES = ['Scout', 'recipe_runner'] as const;
+export const ASSISTANT_TEAM_AGENT_NAMES = Object.freeze(['Scout', 'recipe_runner'] as const);
 
 /** Exact tool and prompt names this mapping will record. Any other name is omitted. */
-export const ASSISTANT_TEAM_TOOL_NAMES = ['read_file'] as const;
+export const ASSISTANT_TEAM_TOOL_NAMES = Object.freeze(['read_file'] as const);
 
 /**
  * Exact model ids this mapping will record. Anything else is `_OTHER`.
@@ -84,7 +84,7 @@ export const GEN_AI_MODEL_NAMES = Object.freeze([
 ] as const);
 
 /** `mcp.method.name` members from semantic-conventions-genai v0.1.0. */
-export const MCP_METHOD_NAMES = [
+export const MCP_METHOD_NAMES = Object.freeze([
   'notifications/cancelled',
   'initialize',
   'notifications/initialized',
@@ -110,7 +110,7 @@ export const MCP_METHOD_NAMES = [
   'roots/list',
   'notifications/roots/list_changed',
   'elicitation/create',
-] as const;
+] as const);
 
 /**
  * Names removed or replaced in v0.1.0. OpenGrimoire has no consumer of these

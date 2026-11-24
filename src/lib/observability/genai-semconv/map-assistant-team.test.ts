@@ -10,9 +10,14 @@ import {
   mapLocalAiActivityEvent,
 } from './map-assistant-team';
 import {
+  ASSISTANT_TEAM_AGENT_NAMES,
+  ASSISTANT_TEAM_TOOL_NAMES,
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_CONTROL_FLOWS,
+  GEN_AI_ERROR_TYPES,
   GEN_AI_INFERENCE_OPERATIONS,
+  GEN_AI_PROVIDER_NAMES,
+  MCP_METHOD_NAMES,
   MCP_ROLES,
   GEN_AI_SEMCONV_SCHEMA_URL,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
@@ -480,6 +485,51 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(tool.spans).toEqual([]);
     expect(request.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+  });
+
+  it('ignores runtime mutation of the remaining name lists', () => {
+    const lists = [
+      ASSISTANT_TEAM_AGENT_NAMES,
+      ASSISTANT_TEAM_TOOL_NAMES,
+      MCP_METHOD_NAMES,
+      GEN_AI_PROVIDER_NAMES,
+      GEN_AI_ERROR_TYPES,
+    ] as unknown as string[][];
+    for (const list of lists) {
+      expect(() => list.push('injected')).toThrow();
+    }
+    const agent = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'injected',
+    } as never);
+    const tool = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'injected',
+    } as never);
+    const method = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'injected',
+    } as never);
+    const provider = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'injected',
+      requestModel: 'gpt-4',
+    } as never);
+    const errorType = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      errorType: 'injected',
+    } as never);
+    expect(agent.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    expect(tool.spans).toEqual([]);
+    expect(method.spans).toEqual([]);
+    expect(provider.spans[0]?.attributes['gen_ai.provider.name']).toBe('_OTHER');
+    expect(errorType.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(JSON.stringify({ agent, tool, method, provider, errorType })).not.toContain('injected');
   });
 
   it('pins id near-misses, model case, and the sk- omission', () => {

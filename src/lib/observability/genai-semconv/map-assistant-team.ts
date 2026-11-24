@@ -6,6 +6,7 @@ import {
   GEN_AI_INFERENCE_OPERATIONS,
   GEN_AI_PROVIDER_NAMES,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
+  GEN_AI_SHORT_DURATION_BUCKETS,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
   INVOKE_AGENT_DURATION_BUCKETS,
   MCP_METHOD_NAMES,
@@ -393,6 +394,7 @@ function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execu
         instrument: 'histogram',
         unit: 's',
         value: duration,
+        explicitBucketBoundaries: GEN_AI_SHORT_DURATION_BUCKETS,
         attributes: attributes([
           ['gen_ai.tool.name', toolName],
           ['gen_ai.agent.name', agentName],
@@ -497,6 +499,7 @@ function mapInference(observation: Extract<AssistantTeamObservation, { signal: '
         instrument: 'histogram',
         unit: 's',
         value: duration,
+        explicitBucketBoundaries: GEN_AI_SHORT_DURATION_BUCKETS,
         attributes: histogramAttributes,
       })
     );

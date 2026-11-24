@@ -10,6 +10,7 @@ import {
 import {
   GEN_AI_CONTENT_CAPTURE_MODE,
   GEN_AI_SEMCONV_SCHEMA_VERSION,
+  GEN_AI_SHORT_DURATION_BUCKETS,
   INFERENCE_OPERATION_TOKEN_BUCKETS,
   INVOKE_AGENT_DURATION_BUCKETS,
   RETIRED_GEN_AI_SIGNAL_NAMES,
@@ -238,6 +239,37 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(mapping.droppedFields).toEqual(expect.arrayContaining(['toolArguments', 'toolResult']));
     expect(attributeKeys(mapping)).not.toContain('gen_ai.tool.call.arguments');
     expect(attributeKeys(mapping)).not.toContain('gen_ai.tool.call.result');
+  });
+
+  it('records failing tool duration with error.type and the spec buckets', () => {
+    const mapping = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      durationSeconds: 1.5,
+      errorType: 'timeout',
+    });
+    expect(mapping.metrics[0]).toEqual(
+      expect.objectContaining({
+        name: 'gen_ai.execute_tool.duration',
+        explicitBucketBoundaries: GEN_AI_SHORT_DURATION_BUCKETS,
+        attributes: {
+          'gen_ai.tool.name': 'read_file',
+          'error.type': 'timeout',
+        },
+      })
+    );
+
+    const inference = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: 'gpt-4',
+      durationSeconds: 0.5,
+      inputTokens: 1,
+      outputTokens: 1,
+    });
+    const duration = inference.metrics.find((metric) => metric.name === 'gen_ai.client.inference.duration');
+    expect(duration?.explicitBucketBoundaries).toEqual(GEN_AI_SHORT_DURATION_BUCKETS);
   });
 
   it('omits gen_ai.tool.call.id when the provider did not supply one', () => {

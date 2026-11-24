@@ -244,6 +244,18 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('ignores an inherited local activity summary', () => {
+    const proto = { summary: 'inherited-summary-unit', detail: 'inherited-detail-unit' };
+    const event = Object.create(proto) as { kind: string };
+    event.kind = 'health';
+    const mapping = mapLocalAiActivityEvent(event);
+    expect(mapping.droppedFields).not.toContain('summary');
+    expect(mapping.droppedFields).not.toContain('detail');
+    const encoded = JSON.stringify(mapping);
+    expect(encoded).not.toContain('inherited-summary-unit');
+    expect(encoded).not.toContain('inherited-detail-unit');
+  });
+
   it('ignores runtime mutation of control, operation, and role lists', () => {
     const lists = [GEN_AI_CONTROL_FLOWS, GEN_AI_INFERENCE_OPERATIONS, MCP_ROLES] as unknown as string[][];
     for (const list of lists) {

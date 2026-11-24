@@ -241,6 +241,19 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it('rejects bearer with no separator', () => {
+    for (const sample of ['BearerToken_1', 'BearerX']) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      expect(mapping.omissions).toContain('secret_id_rejected');
+      expect(JSON.stringify(mapping)).not.toContain(sample);
+    }
+  });
+
   it('rejects bearer with any separator regardless of case', () => {
     for (const sample of ['Bearer_x', 'bearer-x', 'BEARER x', 'Bearer_x1', 'bearer-x1']) {
       const mapping = mapAssistantTeamObservation({

@@ -157,7 +157,7 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
 }
 
 const SECRET_PREFIX =
-  /^(?:github_pat_|sk-proj-|sk-ant-|sk-|sk_live_|sk_test_|rk_live_|rk_test_|lin_api_|dop_v1_|glpat-|pypi-|xapp-|glsa_|shpat-|ya29\.|ghp_|gho_|ghs_|ghu_|ghr_|gsk_|npm_|pplx-|xai-|xox[abpser]-|hf_|aiza|akia|asia|eyj|r8_|bearer(?:[^a-z0-9]|$))/i;
+  /^(?:github_pat_|sk-proj-|sk-ant-|sk-|sk_live_|sk_test_|rk_live_|rk_test_|lin_api_|dop_v1_|glpat-|pypi-|xapp-|glsa_|shpat-|ya29\.|ghp_|gho_|ghs_|ghu_|ghr_|gsk_|npm_|pplx-|xai-|xox[abpser]-|hf_|aiza|akia|asia|eyj|r8_|bearer)/i;
 const AGENT_NAMES = new Set<string>(ASSISTANT_TEAM_AGENT_NAMES);
 const TOOL_NAMES = new Set<string>(ASSISTANT_TEAM_TOOL_NAMES);
 const MODEL_NAMES = new Set<string>(GEN_AI_MODEL_NAMES);
@@ -257,6 +257,15 @@ export function hmacLocalId(value: string): string {
 
 export function isAcceptedLocalId(value: string): boolean {
   return UUID_ID.test(value) || ULID_ID.test(value) || PROVIDER_ID.test(value) || HMAC_ID.test(value);
+}
+
+function idOmissions(value: unknown): string[] {
+  if (typeof value !== 'string') return [];
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return [];
+  if (looksSecret(trimmed)) return ['secret_id_rejected'];
+  if (!isAcceptedLocalId(trimmed)) return ['id_shape_rejected'];
+  return [];
 }
 
 function cleanToken(value: unknown): string | undefined {
@@ -395,7 +404,10 @@ function mapInvoke(observation: Extract<AssistantTeamObservation, { signal: 'inv
   }
 
   return {
-    ...emptyMapping(collectDroppedFields(observation), agentName === undefined && ownData(observation, 'agentName') !== undefined ? ['agent_name_rejected'] : []),
+    ...emptyMapping(collectDroppedFields(observation), [
+      ...(agentName === undefined && ownData(observation, 'agentName') !== undefined ? ['agent_name_rejected'] : []),
+      ...idOmissions(ownData(observation, 'conversationId')),
+    ]),
     spans: [
       span({
         name: agentName ? `${operation} ${agentName}` : operation,
@@ -445,7 +457,7 @@ function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execu
   }
 
   return {
-    ...emptyMapping(droppedFields),
+    ...emptyMapping(droppedFields, idOmissions(ownData(observation, 'toolCallId'))),
     spans: [
       span({
         name: `execute_tool ${toolName}`,
@@ -696,7 +708,7 @@ function mapMcp(observation: Extract<AssistantTeamObservation, { signal: 'mcp' }
   const registryType = role === 'client' ? 'mcp.client' : 'mcp.server';
 
   return {
-    ...emptyMapping(droppedFields),
+    ...emptyMapping(droppedFields, idOmissions(ownData(observation, 'requestId'))),
     spans: [
       span({
         name: target ? `${methodName} ${target}` : methodName,

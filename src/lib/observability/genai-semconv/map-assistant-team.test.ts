@@ -390,18 +390,18 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
       signal: 'invoke_agent',
       controlFlow: 'injected',
       agentName: 'Scout',
-    });
+    } as never);
     const operation = mapAssistantTeamObservation({
       signal: 'inference',
       operationName: 'injected',
       providerName: 'openai',
       requestModel: 'gpt-4',
-    });
+    } as never);
     const role = mapAssistantTeamObservation({
       signal: 'mcp',
       role: 'injected',
       methodName: 'initialize',
-    });
+    } as never);
     expect(flow.spans).toEqual([]);
     expect(operation.spans).toEqual([]);
     expect(role.spans).toEqual([]);

@@ -203,6 +203,54 @@ def _requirement_names(text: str) -> dict[str, str]:
     return specs
 
 
+_FASTMCP_WHEEL_SHA256 = (
+    "733f6a59705c4141ad74b1aa889561fbccd2790a74e18c4c72d4b08611746107"
+)
+
+
+def _hashed_requirements(text: str) -> dict[str, tuple[str, set[str]]]:
+    logical: list[str] = []
+    buffer = ""
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line.endswith("\\"):
+            buffer = f"{buffer} {line[:-1]}".strip()
+            continue
+        buffer = f"{buffer} {line}".strip()
+        logical.append(buffer)
+        buffer = ""
+    pinned: dict[str, tuple[str, set[str]]] = {}
+    for line in logical:
+        token = line.split()[0]
+        if token.startswith("--"):
+            continue
+        name = token
+        for separator in "[<>=!~":
+            name = name.split(separator, 1)[0]
+        hashes = {
+            item.removeprefix("--hash=sha256:")
+            for item in line.split()
+            if item.startswith("--hash=sha256:")
+        }
+        pinned[name] = (token, hashes)
+    return pinned
+
+
+def test_requirements_hash_pin_fastmcp_and_dependencies() -> None:
+    root = Path(server.__file__).resolve().parent
+    pinned = _hashed_requirements((root / "requirements.txt").read_text(encoding="utf-8"))
+    spec, hashes = pinned["fastmcp"]
+    assert spec == "fastmcp==4.2.5"
+    assert _FASTMCP_WHEEL_SHA256 in hashes
+    slim_spec, slim_hashes = pinned["fastmcp-slim"]
+    assert slim_spec.split("==", 1)[1] == "4.2.5"
+    assert slim_hashes
+    missing = [name for name, (_spec, digests) in pinned.items() if not digests]
+    assert missing == []
+
+
 def test_declared_fastmcp_pin_is_exactly_4_2_5() -> None:
     root = Path(server.__file__).resolve().parent
     pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))

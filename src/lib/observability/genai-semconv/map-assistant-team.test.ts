@@ -228,12 +228,12 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
         unit: 's',
         value: 0.4,
         attributes: {
-          'gen_ai.operation.name': 'execute_tool',
           'gen_ai.tool.name': 'read_file',
           'gen_ai.agent.name': 'Scout',
         },
       })
     );
+    expect(mapping.metrics[0]?.attributes).not.toHaveProperty('gen_ai.operation.name');
     expect(JSON.stringify(mapping)).not.toContain(SECRET_PROMPT);
     expect(mapping.droppedFields).toEqual(expect.arrayContaining(['toolArguments', 'toolResult']));
     expect(attributeKeys(mapping)).not.toContain('gen_ai.tool.call.arguments');

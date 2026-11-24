@@ -394,7 +394,6 @@ function mapTool(observation: Extract<AssistantTeamObservation, { signal: 'execu
         unit: 's',
         value: duration,
         attributes: attributes([
-          ['gen_ai.operation.name', 'execute_tool'],
           ['gen_ai.tool.name', toolName],
           ['gen_ai.agent.name', agentName],
           ['error.type', errorType],

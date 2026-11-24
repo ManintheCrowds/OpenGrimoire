@@ -482,6 +482,66 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
   });
 
+  it('rejects loose provider, ulid, and hmac ids', () => {
+    const previous = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+    process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = randomBytes(32).toString('hex');
+    try {
+      const produced = hmacLocalId('maple-unit-4');
+      const kept = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        requestId: produced,
+      });
+      expect(kept.spans[0]?.attributes['jsonrpc.request.id']).toBe(produced);
+
+      const blocked = [
+        `call_${'MapleUnitDesk'.padEnd(24, 'x')}`,
+        `chatcmpl-${'CedarUnitDesk'.padEnd(29, 'y')}`,
+        `resp_${'1'.repeat(48)}`,
+        'call_abcd1234_wxyz5678ef901',
+        'conv_Ab12Ab12Ab12Ab12Ab12Ab12',
+        'BCDEFGHJKMNPQRSTVWXYZABCDE',
+        `hmac_${'cd'.repeat(32)}`,
+      ];
+      for (const sample of blocked) {
+        const conversation = mapAssistantTeamObservation({
+          signal: 'invoke_agent',
+          controlFlow: 'agent',
+          agentName: 'Scout',
+          conversationId: sample,
+        });
+        const tool = mapAssistantTeamObservation({
+          signal: 'execute_tool',
+          toolName: 'read_file',
+          toolCallId: sample,
+        });
+        const request = mapAssistantTeamObservation({
+          signal: 'mcp',
+          role: 'client',
+          methodName: 'initialize',
+          requestId: sample,
+        });
+        for (const mapping of [conversation, tool, request]) {
+          expect(JSON.stringify(mapping)).not.toContain(sample);
+        }
+        expect(conversation.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+        expect(tool.spans[0]?.attributes).not.toHaveProperty('gen_ai.tool.call.id');
+        expect(request.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+      }
+      const foreign = mapAssistantTeamObservation({
+        signal: 'mcp',
+        role: 'client',
+        methodName: 'initialize',
+        requestId: `hmac_${'cd'.repeat(32)}`,
+      });
+      expect(foreign.omissions).toContain('id_shape_rejected');
+    } finally {
+      if (previous === undefined) delete process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
+      else process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = previous;
+    }
+  });
+
   it('keeps safe integer jsonrpc request ids', () => {
     const asNumber = mapAssistantTeamObservation({
       signal: 'mcp',
@@ -563,7 +623,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
   it('accepts only uuid, ulid, provider, and hmac ids', () => {
     const uuid = '11111111-2222-4333-8444-555555555555';
     const ulid = '01HZXK4Q2N8Y7C6B5A4D3E2F1G';
-    const provider = 'chatcmpl-Abcd1234Wxyz5678';
+    const provider = 'chatcmpl-Abcd1234Wxyz5678Ef90123456789';
     const previous = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
     process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = randomBytes(32).toString('hex');
     try {
@@ -741,7 +801,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     const mapping = mapAssistantTeamObservation({
       signal: 'execute_tool',
       toolName: 'read_file',
-      toolCallId: 'call_Abcd1234Wxyz5678',
+      toolCallId: 'call_Abcd1234Wxyz5678Ef901234',
       agentName: 'Scout',
       durationSeconds: 0.4,
       toolArguments: { path: SECRET_PROMPT },
@@ -757,7 +817,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
         attributes: {
           'gen_ai.operation.name': 'execute_tool',
           'gen_ai.tool.name': 'read_file',
-          'gen_ai.tool.call.id': 'call_Abcd1234Wxyz5678',
+          'gen_ai.tool.call.id': 'call_Abcd1234Wxyz5678Ef901234',
           'gen_ai.agent.name': 'Scout',
         },
       })
@@ -1564,7 +1624,7 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(note).toContain('ASSISTANT_TEAM_AGENT_NAMES');
     expect(note).toContain('GEN_AI_MODEL_NAMES');
     expect(note).toContain('Model ids and the conversation, tool-call, and request ids are closed sets.');
-    expect(note).toContain('a UUID, a ULID');
+    expect(note).toContain('UUID version nibble 1–8');
     expect(note).not.toContain('except ids that start with');
     expect(note).toContain('Mixed text is an error of type `_OTHER`');
     expect(note).not.toContain('Mixed text is ignored');

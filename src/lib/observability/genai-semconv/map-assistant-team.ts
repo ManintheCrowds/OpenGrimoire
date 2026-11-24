@@ -246,9 +246,12 @@ function cleanToolName(value: unknown): string | undefined {
 }
 
 const UUID_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ULID_ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
-const PROVIDER_ID = /^(?:call_|chatcmpl-|resp_)[A-Za-z0-9]{8,40}$/;
+const ULID_ID = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/;
+const CALL_ID = /^call_(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{24}$/;
+const CHATCMPL_ID = /^chatcmpl-(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{29}$/;
+const RESP_ID = /^resp_(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{48}$/;
 const HMAC_ID = /^hmac_[0-9a-f]{64}$/;
+const producedHmacIds = new Set<string>();
 
 function hmacKey(): string | undefined {
   const raw = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
@@ -261,11 +264,21 @@ function hmacKey(): string | undefined {
 export function hmacLocalId(value: string): string | undefined {
   const key = hmacKey();
   if (key === undefined || value.length === 0) return undefined;
-  return `hmac_${createHmac('sha256', key).update(value).digest('hex')}`;
+  const id = `hmac_${createHmac('sha256', key).update(value).digest('hex')}`;
+  producedHmacIds.add(id);
+  return id;
+}
+
+function isProviderId(value: string): boolean {
+  return CALL_ID.test(value) || CHATCMPL_ID.test(value) || RESP_ID.test(value);
+}
+
+function isHmacId(value: string): boolean {
+  return HMAC_ID.test(value) && producedHmacIds.has(value);
 }
 
 export function isAcceptedLocalId(value: string): boolean {
-  return UUID_ID.test(value) || ULID_ID.test(value) || PROVIDER_ID.test(value) || HMAC_ID.test(value);
+  return UUID_ID.test(value) || ULID_ID.test(value) || isProviderId(value) || isHmacId(value);
 }
 
 function idOmissions(value: unknown): string[] {

@@ -253,6 +253,42 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     }
   });
 
+  it.each(['sk-', 'sk-proj-', 'sk-ant-'])('rejects %s on ids, models, and names', (prefix) => {
+    const sample = `${prefix}sample1`;
+    const conversation = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: sample,
+      conversationId: sample,
+    });
+    const tool = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: sample,
+      toolCallId: sample,
+    });
+    const request = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'tools/call',
+      toolName: 'read_file',
+      requestId: sample,
+    });
+    const model = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: sample,
+    });
+    for (const mapping of [conversation, tool, request, model]) {
+      expect(JSON.stringify(mapping)).not.toContain(sample);
+    }
+    expect(conversation.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+    expect(conversation.spans[0]?.attributes).not.toHaveProperty('gen_ai.agent.name');
+    expect(tool.spans).toEqual([]);
+    expect(request.spans[0]?.attributes).not.toHaveProperty('jsonrpc.request.id');
+    expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+  });
+
   it('replaces unlisted model ids with _OTHER', () => {
     const listed = ['gpt-4o-mini', 'claude-sonnet-4-5', 'Qwen2.5-7B-Instruct', 'Mistral-Large-2', 'nomic-embed-text:latest'];
     for (const requestModel of listed) {

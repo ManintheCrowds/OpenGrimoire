@@ -155,7 +155,7 @@ function collectDroppedFields(observation: SensitiveObservationFields): string[]
 }
 
 const SECRET_PREFIX =
-  /^(?:github_pat_|sk_live_|sk_test_|rk_live_|rk_test_|lin_api_|dop_v1_|glpat-|pypi-|xapp-|glsa_|shpat-|ya29\.|ghp_|gho_|ghs_|ghu_|ghr_|gsk_|npm_|pplx-|xai-|xox[abpser]-|hf_|aiza|akia|asia|eyj|r8_|bearer(?:[^a-z0-9]|$))/i;
+  /^(?:github_pat_|sk-proj-|sk-ant-|sk-|sk_live_|sk_test_|rk_live_|rk_test_|lin_api_|dop_v1_|glpat-|pypi-|xapp-|glsa_|shpat-|ya29\.|ghp_|gho_|ghs_|ghu_|ghr_|gsk_|npm_|pplx-|xai-|xox[abpser]-|hf_|aiza|akia|asia|eyj|r8_|bearer(?:[^a-z0-9]|$))/i;
 const AGENT_NAMES = new Set<string>(ASSISTANT_TEAM_AGENT_NAMES);
 const TOOL_NAMES = new Set<string>(ASSISTANT_TEAM_TOOL_NAMES);
 const MODEL_NAMES = new Set<string>(GEN_AI_MODEL_NAMES);

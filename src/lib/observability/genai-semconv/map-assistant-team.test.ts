@@ -482,6 +482,109 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(model.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
   });
 
+  it('pins id near-misses, model case, and the sk- omission', () => {
+    const uuid = '11111111-2222-4333-8444-555555555555';
+    const nearMisses = [
+      `${uuid}-extra`,
+      `prefix-${uuid}`,
+      '11111111-2222-0333-8444-555555555555',
+      '11111111-2222-4333-c444-555555555555',
+      'zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz',
+      '01hzxk4q2n8y7c6b5a4d3e2f1g',
+      `0${'I'.repeat(25)}`,
+      '01HZXK4Q2N8Y7C6B5A4D3E2F1',
+      '01HZXK4Q2N8Y7C6B5A4D3E2F1G0',
+      'call_Abcd1234Wxyz5678Ef90_234',
+      'conv_Abcd1234Wxyz5678Ef901234',
+      'call_Abcd1234Wxyz5678Ef901234extra',
+      `hmac_${'a'.repeat(63)}`,
+      `hmac_${'a'.repeat(65)}`,
+      `hmac_${'AB'.repeat(32)}`,
+    ];
+    for (const sample of nearMisses) {
+      const mapping = mapAssistantTeamObservation({
+        signal: 'invoke_agent',
+        controlFlow: 'agent',
+        agentName: 'Scout',
+        conversationId: sample,
+      });
+      expect(mapping.spans[0]?.attributes).not.toHaveProperty('gen_ai.conversation.id');
+      expect(JSON.stringify(mapping)).not.toContain(sample);
+      expect(mapping.omissions).toContain('id_shape_rejected');
+    }
+
+    const uppercaseModel = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: 'GPT-4',
+    });
+    expect(uppercaseModel.spans[0]?.attributes['gen_ai.request.model']).toBe('_OTHER');
+    expect(uppercaseModel.spans[0]?.name).toBe('chat _OTHER');
+
+    const paddedModel = mapAssistantTeamObservation({
+      signal: 'inference',
+      operationName: 'chat',
+      providerName: 'openai',
+      requestModel: ' gpt-4 ',
+    });
+    expect(paddedModel.spans[0]?.attributes['gen_ai.request.model']).toBe('gpt-4');
+    expect(JSON.stringify(paddedModel)).not.toContain(' gpt-4 ');
+
+    const eyj = 'EYJ0123456789ABCDEFGHJKMNP';
+    const secretShape = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: eyj,
+    });
+    expect(secretShape.omissions).toContain('secret_id_rejected');
+    expect(JSON.stringify(secretShape)).not.toContain(eyj);
+
+    const sk = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: 'sk-sample1',
+    });
+    const skTool = mapAssistantTeamObservation({
+      signal: 'execute_tool',
+      toolName: 'read_file',
+      toolCallId: 'sk-sample1',
+    });
+    const skRequest = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      requestId: 'sk-sample1',
+    });
+    for (const mapping of [sk, skTool, skRequest]) {
+      expect(mapping.omissions).toContain('secret_id_rejected');
+      expect(JSON.stringify(mapping)).not.toContain('sk-sample1');
+    }
+
+    const wideStatus = mapAssistantTeamObservation({
+      signal: 'mcp',
+      role: 'client',
+      methodName: 'initialize',
+      httpStatus: '100000',
+    } as never);
+    expect(wideStatus.spans[0]?.statusCode).toBe('ERROR');
+    expect(wideStatus.spans[0]?.attributes['error.type']).toBe('_OTHER');
+    expect(wideStatus.spans[0]?.attributes).not.toHaveProperty('rpc.status_code');
+    expect(JSON.stringify(wideStatus)).not.toContain('100000');
+
+    const dotted = mapAssistantTeamObservation({
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+      agentName: 'Scout',
+      conversationId: 'cache.box',
+    });
+    expect(JSON.stringify(dotted)).not.toContain('cache.box');
+    const source = fs.readFileSync(path.join(__dirname, 'map-assistant-team.ts'), 'utf8');
+    expect(source).not.toContain('function isUnsafeNetworkIdentity');
+  });
+
   it('rejects loose provider, ulid, and hmac ids', () => {
     const previous = process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY;
     process.env.OPENGRIMOIRE_GENAI_ID_HMAC_KEY = randomBytes(32).toString('hex');

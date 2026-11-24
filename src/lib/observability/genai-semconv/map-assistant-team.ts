@@ -164,56 +164,6 @@ const MODEL_NAMES = new Set<string>(GEN_AI_MODEL_NAMES);
 const PROVIDER_NAMES = new Set<string>(GEN_AI_PROVIDER_NAMES);
 const MCP_METHODS = new Set<string>(MCP_METHOD_NAMES);
 
-function isIpv4(value: string): boolean {
-  return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value);
-}
-
-function isHostname(value: string): boolean {
-  const normalized = value.endsWith('.') ? value.slice(0, -1) : value;
-  return /^(?:[a-z0-9_-]+\.)+[a-z]{2,}$/i.test(normalized);
-}
-
-function isIpv6(value: string): boolean {
-  return value.includes(':') && /^[0-9a-f:]+$/i.test(value);
-}
-
-function isHostPort(value: string): boolean {
-  const idx = value.lastIndexOf(':');
-  if (idx <= 0) return false;
-  const port = value.slice(idx + 1);
-  if (!/^\d{1,5}$/.test(port)) return false;
-  const host = value.slice(0, idx);
-  return host.length > 0 && !host.includes(':');
-}
-
-function isDesktopHost(value: string): boolean {
-  return /^desktop-[a-z0-9]+$/i.test(value);
-}
-
-function isJoinedClientName(value: string): boolean {
-  return /[A-Z][A-Za-z0-9]*[_-][A-Z]/.test(value);
-}
-
-function isUnsafeNetworkIdentity(value: string): boolean {
-  return (
-    isIpv4(value) ||
-    isIpv6(value) ||
-    isHostname(value) ||
-    isHostPort(value) ||
-    isDesktopHost(value) ||
-    isJoinedClientName(value) ||
-    isLowerJoinedOrHostLabel(value) ||
-    value === 'localhost' ||
-    value.endsWith('.')
-  );
-}
-
-function isLowerJoinedOrHostLabel(value: string): boolean {
-  if (/^(?:req|call|conv)[_-]/i.test(value)) return false;
-  if (/^desktop-/i.test(value)) return false;
-  return /^[a-z0-9]+(?:[_-][a-z0-9]+){1,4}$/.test(value);
-}
-
 function looksSecret(value: string): boolean {
   return (
     SECRET_PREFIX.test(value) ||

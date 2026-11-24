@@ -663,7 +663,7 @@ function isKnownSignal(value: unknown): value is AssistantTeamObservation['signa
   return value === 'invoke_agent' || value === 'execute_tool' || value === 'inference' || value === 'mcp';
 }
 
-export function mapAssistantTeamObservation(observation: AssistantTeamObservation): AssistantTeamMapping {
+function mapAssistantTeamObservationInner(observation: AssistantTeamObservation): AssistantTeamMapping {
   if (!observation || typeof observation !== 'object' || !isKnownSignal(observation.signal)) {
     const dropped =
       observation && typeof observation === 'object' ? collectDroppedFields(observation) : [];
@@ -683,6 +683,14 @@ export function mapAssistantTeamObservation(observation: AssistantTeamObservatio
       const unreachable: never = observation;
       return emptyMapping(collectDroppedFields(unreachable), ['unknown_signal']);
     }
+  }
+}
+
+export function mapAssistantTeamObservation(observation: AssistantTeamObservation): AssistantTeamMapping {
+  try {
+    return mapAssistantTeamObservationInner(observation);
+  } catch {
+    return emptyMapping([], ['observation_unreadable']);
   }
 }
 

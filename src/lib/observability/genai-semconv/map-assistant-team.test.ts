@@ -694,6 +694,36 @@ describe('gen_ai semconv 0.1.0 assistant-team mapping', () => {
     expect(JSON.stringify(mapping)).not.toContain('workstation.local');
   });
 
+  it('hides messages thrown by getters and proxies', () => {
+    const leaked = 'THROW-CANARY-9f3a';
+    const hostile: { signal: 'invoke_agent'; controlFlow: 'agent' } = {
+      signal: 'invoke_agent',
+      controlFlow: 'agent',
+    };
+    Object.defineProperty(hostile, 'agentName', {
+      enumerable: true,
+      get() {
+        throw new Error(leaked);
+      },
+    });
+    const fromGetter = mapAssistantTeamObservation(hostile);
+    expect(fromGetter.spans).toEqual([]);
+    expect(fromGetter.omissions).toContain('observation_unreadable');
+    expect(JSON.stringify(fromGetter)).not.toContain(leaked);
+
+    const proxy = new Proxy(
+      { signal: 'execute_tool' as const, toolName: 'read_file' },
+      {
+        getOwnPropertyDescriptor() {
+          throw new Error(leaked);
+        },
+      }
+    );
+    const fromProxy = mapAssistantTeamObservation(proxy as never);
+    expect(fromProxy.omissions).toContain('observation_unreadable');
+    expect(JSON.stringify(fromProxy)).not.toContain(leaked);
+  });
+
   it('does not throw when identifier fields are not strings', () => {
     const hostile = {
       get trim() {

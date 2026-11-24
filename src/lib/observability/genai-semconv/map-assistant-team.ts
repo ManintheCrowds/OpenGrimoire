@@ -549,29 +549,35 @@ function pureInteger(value: unknown): number | undefined {
     if (String(Math.abs(value)).length > 5) return undefined;
     return value;
   }
-  if (typeof value === 'string' && /^-?\d+$/.test(value)) {
-    const parsed = Number(value);
-    if (!Number.isSafeInteger(parsed) || String(Math.abs(parsed)).length > 5) return undefined;
-    return parsed;
-  }
-  return undefined;
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!/^-?\d+$/.test(trimmed)) return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isSafeInteger(parsed) || String(Math.abs(parsed)).length > 5) return undefined;
+  return parsed;
+}
+
+function hasMixedCodeText(value: unknown): boolean {
+  return typeof value === 'string' && value.trim() !== '' && !/^-?\d+$/.test(value.trim());
 }
 
 function jsonRpcCode(value: unknown): number | 'rejected' | undefined {
   if (value === undefined || value === null || value === '') return undefined;
+  if (hasMixedCodeText(value)) return 'rejected';
   const parsed = pureInteger(value);
   if (parsed !== undefined) return parsed;
   if (typeof value === 'number' && Number.isInteger(value)) return 'rejected';
-  if (typeof value === 'string' && /^-?\d+$/.test(value)) return 'rejected';
+  if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return 'rejected';
   return undefined;
 }
 
 function httpStatusCode(value: unknown): number | 'rejected' | undefined {
   if (value === undefined || value === null || value === '') return undefined;
+  if (hasMixedCodeText(value)) return 'rejected';
   const parsed = pureInteger(value);
   if (parsed === undefined) {
     if (typeof value === 'number' && Number.isInteger(value)) return 'rejected';
-    if (typeof value === 'string' && /^-?\d+$/.test(value)) return 'rejected';
+    if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return 'rejected';
     return undefined;
   }
   if (parsed < 400 || parsed > 599) return 'rejected';
